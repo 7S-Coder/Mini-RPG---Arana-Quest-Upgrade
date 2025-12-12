@@ -80,9 +80,13 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 
 			<div className="bars">
 				<div className="hp-bar" style={{ position: "relative" }}>
-					<div className={`fill ${hpPerc <= 0.1 ? 'hp-low' : ''}`} style={{ width: `${hpPerc * 100}%` }} />
+					<div className="track">
+						<div className={`fill ${hpPerc <= 0.1 ? 'hp-low' : ''}`} style={{ width: `${hpPerc * 100}%` }} />
+					</div>
 				</div>
-				<div className="xp-bar"><div className="fill" style={{ width: `${xpPerc * 100}%` }} /></div>
+				<div className="xp-bar">
+					<div className="track"><div className="fill" style={{ width: `${xpPerc * 100}%` }} /></div>
+				</div>
 			</div>
 
 			<div className="player-stats">

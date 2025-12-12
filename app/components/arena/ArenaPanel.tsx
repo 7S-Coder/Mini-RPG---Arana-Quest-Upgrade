@@ -5,13 +5,13 @@ import ArenaActions from "./ArenaActions";
 
 type Props = {
   enemies: any[];
-  logs: string[];
+  logs: React.ReactNode[];
   onAttack: () => void;
   onRun: () => void;
   disableRun?: boolean;
   pickups?: any[];
   collectPickup?: (id: string) => boolean | void;
-  pushLog?: (text: string) => void;
+  pushLog?: (node: React.ReactNode) => void;
   logColor?: string;
 };
 

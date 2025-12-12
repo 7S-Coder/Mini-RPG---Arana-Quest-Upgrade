@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 
 type Props = {
-  logs: string[];
+  logs: React.ReactNode[];
   logColor?: string;
 };
 

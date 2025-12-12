@@ -2,7 +2,7 @@
 	--bg:#0f0f10;
 	--panel:#121214;
 	--muted:#9aa0a6;
-	--accent:#c94b3b;
+	--accent:#a85638;
 	--accent-2:#2fb3ff;
 	--glass: rgba(255,255,255,0.03);
 	--radius:12px;
@@ -85,12 +85,42 @@ body{
 .player-header{display:flex;align-items:center;gap:12px}
 .player-header .avatar{width:44px;height:44px;border-radius:8px;background:linear-gradient(180deg,#593b8f,#2b1343)}
 .player-card h3{margin:0}
-.bars .hp-bar, .bars .xp-bar{height:10px;background:rgba(255,255,255,0.03);border-radius:10px;overflow:hidden}
-.bars .hp-bar .fill{height:100%;background:linear-gradient(90deg,#9ee6a6,#6bd07b)}
-.bars .xp-bar .fill{height:100%;background:linear-gradient(90deg,#ffd96b,#ffb84b)}
+/* Bars: add spacing and subtle colored borders matching fills */
+.bars{display:flex;flex-direction:column;gap:8px}
+.bars .hp-bar, .bars .xp-bar{
+	padding:4px;
+	border-radius:8px;
+	/* container shows a thin gradient border while inner track holds the fill */
+	background-color: transparent;
+	box-shadow: none;
+	overflow:hidden;
+	border:2px solid transparent;
+	background-image: linear-gradient(90deg, rgba(0,0,0,0.0), rgba(0,0,0,0.0)), linear-gradient(90deg, rgba(0,0,0,0.0), rgba(0,0,0,0.0));
+	background-origin: padding-box, border-box;
+	background-clip: padding-box, border-box;
+}
+.bars .hp-bar{background-image: linear-gradient(90deg, rgba(0,0,0,0.0), rgba(0,0,0,0.0)), linear-gradient(90deg,#9ee6a6,#6bd07b)}
+.bars .xp-bar{background-image: linear-gradient(90deg, rgba(0,0,0,0.0), rgba(0,0,0,0.0)), linear-gradient(90deg,#ffd96b,#ffb84b)}
+.bars .hp-bar, .bars .xp-bar{
+	padding:0.1rem;
+	border-radius:8px;
+	/* container keeps thin gradient border */
+	background-color: transparent;
+}
+.bars .hp-bar .track, .bars .xp-bar .track{
+	height:10px;
+	background: rgba(0,0,0,0.50); /* darker track for contrast */
+	border-radius:6px;
+	overflow:hidden;
+	position:relative;
+}
+.bars .hp-bar .fill{height:100%;background:linear-gradient(90deg,#9ee6a6,#6bd07b);border-radius:6px;display:block;box-shadow:0 0 10px rgba(154,230,166,0.18), inset 0 -4px 8px rgba(0,0,0,0.18)}
+.bars .xp-bar .fill{height:100%;background:linear-gradient(90deg,#ffd96b,#ffb84b);border-radius:6px;display:block;box-shadow:0 0 10px rgba(255,217,107,0.18), inset 0 -4px 8px rgba(0,0,0,0.18)}
 .hp-bar{position:relative}
 /* smooth HP bar transition */
-.bars .hp-bar .fill{transition: width 480ms cubic-bezier(.2,.9,.2,1)}
+.bars .hp-bar .fill, .bars .xp-bar .fill{transition: width 480ms cubic-bezier(.2,.9,.2,1)}
+
+/* (track styles defined above) */
 
 /* Floating damage number near the player avatar (MMO-style) */
 .damage-number{

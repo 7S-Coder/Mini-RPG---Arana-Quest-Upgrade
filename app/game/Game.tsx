@@ -51,7 +51,7 @@ export default function Game() {
 
   const [inCombat, setInCombat] = useState(false);
   const inCombatRef = useRef<boolean>(false);
-  const [logs, setLogs] = useState<string[]>([]);
+  const [logs, setLogs] = useState<React.ReactNode[]>([]);
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [effects, setEffects] = useState<Array<{ id: string; type: string; text?: string; kind?: string; target?: string; x?: number; y?: number }>>([]);
   const logClearRef = useRef<number | null>(null);
@@ -61,9 +61,9 @@ export default function Game() {
   const [dungeonUI, setDungeonUI] = useState(() => ({ ...dungeonProgressRef.current }));
   const syncDungeonUI = () => setDungeonUI({ ...dungeonProgressRef.current });
 
-  const pushLog = useCallback((text: string) => {
+  const pushLog = useCallback((node: React.ReactNode) => {
     setLogs((l) => {
-      const next = [...l, text];
+      const next = [...l, node];
       return next.slice(Math.max(0, next.length - 100));
     });
   }, []);
@@ -196,6 +196,10 @@ export default function Game() {
     encounterCountRef.current = 0;
     setInCombat(false);
     setEnemies([]);
+    // if this endEncounter reports a death, restore player HP to max (respawn)
+    if (opts?.type === 'death') {
+      try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
+    }
     if (msg) pushLog(msg);
     // Track farming progress: if player is on a map that has dungeons but the dungeon
     // hasn't been activated yet, count this completed encounter toward the threshold.
@@ -226,6 +230,8 @@ export default function Game() {
             dungeonProgressRef.current.suppressUntilSession = sess + 1;
             syncDungeonUI();
             console.log('[DEBUG] reset dungeon progress on death', { map: currentMap?.id, threshold, session: sess, dungeonProgress: dungeonProgressRef.current });
+            // respawn player
+            try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
             pushLog("Vous avez péri — expulsé du donjon. Le décompte est réinitialisé.");
           } catch (e) { console.error('[DEBUG] error resetting dungeon on death', e); }
           // stop further processing in this endEncounter to avoid immediately decrementing the farm counter

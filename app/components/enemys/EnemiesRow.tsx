@@ -10,7 +10,9 @@ export default function EnemiesRow({ enemies }: Props) {
       {enemies.map((e) => (
         <div key={e.id} style={{ display: "inline-block", marginRight: 12 }}>
           <Enemy {...e} />
-          <div style={{ color: "#ccc", fontSize: 12 }}>{e.name} HP: {e.hp}</div>
+          <div style={{ color: "#ccc", fontSize: 12 }}>
+            <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name}</span> HP: {e.hp}
+          </div>
         </div>
       ))}
     </div>
