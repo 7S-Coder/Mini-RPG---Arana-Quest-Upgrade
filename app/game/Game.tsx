@@ -10,6 +10,7 @@ import Modal from "../components/modales/Modal";
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import useCombat from "./useCombat";
 import EffectsLayer from "../components/EffectsLayer";
+import BestiaryModal from "../components/modales/BestiaryModal";
 
 export default function Game() {
   const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup } = useGameState();
@@ -210,6 +211,9 @@ export default function Game() {
           }}
           onClose={closeModal}
         />
+      )}
+      {modalName === 'bestiary' && (
+        <BestiaryModal onClose={closeModal} />
       )}
       {modalName === 'confirm' && modalProps && (
         <Modal title="Confirmer la vente" onClose={closeModal}>

@@ -62,4 +62,5 @@ export type EnemyTemplate = {
   dodge: number;
   crit: number;
   speed: number;
+  rarity?: Rarity;
 };
