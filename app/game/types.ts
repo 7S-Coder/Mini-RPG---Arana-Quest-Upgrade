@@ -12,6 +12,7 @@ export type Item = {
 
 export type Enemy = {
   id: string;
+  templateId?: string;
   name: string;
   x: number;
   y: number;

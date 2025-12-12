@@ -396,9 +396,15 @@ export function useGameState() {
 
   const spawnEnemy = (templateOverride?: string, levelOverride?: number) => {
     // pick a template (optionally by templateId)
-    const template =
-      (templateOverride && ENEMY_TEMPLATES.find((t) => t.templateId === templateOverride)) ||
-      ENEMY_TEMPLATES[Math.floor(Math.random() * ENEMY_TEMPLATES.length)];
+    let template = undefined as any;
+    if (templateOverride) {
+      template = ENEMY_TEMPLATES.find((t) => t.templateId === templateOverride);
+      try { console.log('[DEBUG] spawnEnemy - templateOverride provided', { templateOverride, resolved: template && template.templateId }); } catch (e) {}
+    }
+    if (!template) {
+      template = ENEMY_TEMPLATES[Math.floor(Math.random() * ENEMY_TEMPLATES.length)];
+      try { console.log('[DEBUG] spawnEnemy - fallback random template', { chosen: template.templateId }); } catch (e) {}
+    }
 
     // choose level near the player (dynamic delta) unless overridden
     const MAX_SPAWN_LEVEL = 120;
@@ -432,6 +438,7 @@ export function useGameState() {
 
     const inst: Enemy = {
       id: uid(),
+      templateId: template.templateId,
       name: template.name,
       level,
       rarity: rarity as any,

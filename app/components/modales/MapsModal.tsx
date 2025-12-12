@@ -26,9 +26,7 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
             {m.dungeons && m.dungeons.length > 0 && (
               <div style={{ marginTop: 8, paddingLeft: 6 }}>
                 <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6 }}>Donjons</div>
-                {dungeonProgress?.activeMapId === m.id && dungeonProgress?.activeDungeonIndex == null && (dungeonProgress?.fightsRemainingBeforeDungeon ?? 0) > 0 && (
-                  <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 6 }}>Combats restants avant donjon: {dungeonProgress?.fightsRemainingBeforeDungeon}</div>
-                )}
+                {/* dungeon farm countdown removed from modal */}
                 <ul style={{ paddingLeft: 14 }}>
                   {m.dungeons.map((d, idx) => {
                     const isActive = dungeonProgress?.activeMapId === m.id && dungeonProgress?.activeDungeonIndex === idx;

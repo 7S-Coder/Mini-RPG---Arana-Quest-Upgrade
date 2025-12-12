@@ -13,6 +13,7 @@ import EffectsLayer from "../components/EffectsLayer";
 import BestiaryModal from "../components/modales/BestiaryModal";
 import MapsModal from "../components/modales/MapsModal";
 import { getMaps, pickEnemyFromMap } from "./maps";
+import { ENEMY_TEMPLATES } from "./enemies";
 
 export default function Game() {
   const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup } = useGameState();
@@ -87,6 +88,8 @@ export default function Game() {
       pushLog("Vous êtes déjà en combat.");
       return;
     }
+    // clear any existing enemies from a previous session to avoid mixed spawns
+    try { setEnemies([]); } catch (e) {}
     console.log('[DEBUG] startEncounter - entering', { session: encounterSessionRef.current + 1, selectedMapId, dungeonProgress: dungeonProgressRef.current });
     // bump encounter session id so endEncounter can know which encounter finished
     encounterSessionRef.current = (encounterSessionRef.current || 0) + 1;
@@ -107,7 +110,7 @@ export default function Game() {
         count = 4;
       }
     }
-    encounterCountRef.current = count;
+    // we'll set actual spawned count after attempting to spawn available templates
     // initialize dungeon progress when entering a new dungeon map
     if (selectedMap?.dungeons && selectedMap.dungeons.length > 0) {
       if (dungeonProgressRef.current.activeMapId !== selectedMap.id) {
@@ -129,20 +132,51 @@ export default function Game() {
       dungeonProgressRef.current.fightsRemainingBeforeDungeon = 0;
     }
 
-    // spawn enemies according to count and dungeon rules
+    // spawn enemies according to count and dungeon rules, but only if templates explicitly belong to this map
+    let spawned = 0;
     for (let i = 0; i < count; i++) {
       if (isDungeonActive && (dungeonProgressRef.current.remaining || 0) === 1) {
         // boss floor: spawn boss once
         const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
         const bossId = (idx !== null && selectedMap?.dungeons && selectedMap.dungeons[idx]) ? selectedMap.dungeons[idx].bossTemplateId : undefined;
-        if (bossId) spawnEnemy(bossId);
+        if (bossId) {
+          // ensure boss template is listed in the map's enemyPool
+          const bossTpl = ENEMY_TEMPLATES.find((t) => t.templateId === bossId);
+          const bossBelongs = bossTpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(bossId);
+          if (bossBelongs) {
+            spawnEnemy(bossId);
+            spawned++;
+          } else {
+            console.log('[DEBUG] boss template not in map.enemyPool, skipping spawn', { bossId, selectedMapId, bossTpl, pool: selectedMap?.enemyPool });
+          }
+        }
       } else {
-        const tid = selectedMapId ? pickEnemyFromMap(selectedMapId) : undefined;
-        spawnEnemy(tid);
+          const tid = selectedMapId ? pickEnemyFromMap(selectedMapId) : undefined;
+          if (tid) {
+            // extra guard: ensure the resolved template is inside the map's enemyPool
+            const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid);
+            const tplBelongs = tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid);
+            if (tplBelongs) {
+              spawnEnemy(tid);
+              spawned++;
+            } else {
+              console.log('[DEBUG] resolved template not in selectedMap.enemyPool - skipping spawn', { selectedMapId, tid, tpl, pool: selectedMap?.enemyPool });
+            }
+          } else {
+            console.log('[DEBUG] no enemy templates belong to this map, skipping spawn', { selectedMapId });
+          }
       }
     }
-    pushLog(`Nouvelle rencontre: ${count} ennemi(s) apparu(s).`);
-    console.log('[DEBUG] spawned encounter', { session: encounterSessionRef.current, count, isDungeonActive, dungeonProgress: dungeonProgressRef.current });
+
+    encounterCountRef.current = spawned;
+    if (spawned === 0) {
+      pushLog(`Aucun ennemi disponible pour cette zone.`);
+      console.log('[DEBUG] spawned encounter - none', { session: encounterSessionRef.current, isDungeonActive, dungeonProgress: dungeonProgressRef.current });
+      return;
+    }
+
+    pushLog(`Nouvelle rencontre: ${spawned} ennemi(s) apparu(s).`);
+    console.log('[DEBUG] spawned encounter', { session: encounterSessionRef.current, requested: count, spawned, isDungeonActive, dungeonProgress: dungeonProgressRef.current });
     setInCombat(true);
   }, [spawnEnemy, pushLog, selectedMapId]);
 
@@ -213,7 +247,6 @@ export default function Game() {
             const remaining = after;
             syncDungeonUI();
               if (remaining > 0) {
-                pushLog(`Combats restants avant donjon: ${remaining}`);
               } else {
               // threshold reached -> activate a dungeon for this map and auto-enter
               const idx = Math.floor(Math.random() * (currentMap.dungeons?.length || 1));
@@ -351,12 +384,6 @@ export default function Game() {
             >
               {inCombat ? "En combat..." : (selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null ? "Prochaine salle" : "Aller à l'arène")}
             </button>
-            {/* dungeon farm countdown */}
-            {selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex == null && (dungeonUI.fightsRemainingBeforeDungeon ?? 0) > 0 && (
-              <div style={{ marginTop: 8, fontSize: 13, color: '#ffd' }}>
-                Combats restants avant donjon: <strong style={{ color: '#fff' }}>{dungeonUI.fightsRemainingBeforeDungeon}</strong>
-              </div>
-            )}
             {/* dungeon banner when active */}
             {selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && (dungeonUI.activeDungeonIndex != null) && (
               (() => {
@@ -426,7 +453,7 @@ export default function Game() {
         />
       )}
       {modalName === 'bestiary' && (
-        <BestiaryModal onClose={closeModal} enemies={enemies} />
+        <BestiaryModal onClose={closeModal} enemies={enemies} selectedMapId={selectedMapId} />
       )}
       {modalName === 'maps' && (
         <MapsModal onClose={closeModal} onSelect={(id?: string | null) => {
