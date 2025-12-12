@@ -7,6 +7,7 @@ import ArenaPanel from "../components/arena/ArenaPanel";
 import RightSidebar from "../components/RightSidebar";
 import InventoryModal from "../components/modales/InventoryModal";
 import Modal from "../components/modales/Modal";
+import StoreModal from "../components/modales/StoreModal";
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import useCombat from "./useCombat";
 import EffectsLayer from "../components/EffectsLayer";
@@ -16,7 +17,7 @@ import { getMaps, pickEnemyFromMap } from "./maps";
 import { ENEMY_TEMPLATES } from "./enemies";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, buyPotion, consumeItem } = useGameState();
 
   // modal system (generalized)
   const [modalName, setModalName] = useState<string | null>(null);
@@ -52,6 +53,7 @@ export default function Game() {
   const [inCombat, setInCombat] = useState(false);
   const inCombatRef = useRef<boolean>(false);
   const [logs, setLogs] = useState<React.ReactNode[]>([]);
+  const [toasts, setToasts] = useState<Array<{ id: string; text: string; type?: 'ok' | 'error' }>>([]);
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [effects, setEffects] = useState<Array<{ id: string; type: string; text?: string; kind?: string; target?: string; x?: number; y?: number }>>([]);
   const logClearRef = useRef<number | null>(null);
@@ -80,6 +82,12 @@ export default function Game() {
     setEffects((s) => [...s, obj]);
     // remove after animation
     window.setTimeout(() => setEffects((s) => s.filter((x) => x.id !== id)), 1800);
+  }, []);
+
+  const addToast = useCallback((text: string, type: 'ok' | 'error' = 'ok', ttl = 3000) => {
+    const id = uid();
+    setToasts((t) => [...t, { id, text, type }]);
+    window.setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), ttl);
   }, []);
 
   const startEncounter = useCallback(() => {
@@ -363,6 +371,27 @@ export default function Game() {
     } catch (e) {}
   }, [selectedMapId]);
 
+  // wrapper used by store modal so it returns a result message usable by the modal
+  const storeBuy = useCallback((type: 'small' | 'medium' | 'large') => {
+    try {
+      const ok = buyPotion(type);
+      if (ok) {
+        const label = type === 'small' ? 'petite potion' : (type === 'medium' ? 'potion moyenne' : 'grande potion');
+        const msg = `Achat effectué: ${label}.`;
+        pushLog(msg);
+        return { ok: true, msg };
+      } else {
+        const msg = "Pas assez d'or";
+        pushLog(msg);
+        return { ok: false, msg };
+      }
+    } catch (e) {
+      const msg = 'Erreur lors de l\'achat';
+      pushLog(msg);
+      return { ok: false, msg };
+    }
+  }, [buyPotion, pushLog]);
+
   return (
     <div className="app-shell">
       {/* debug badge: shows current modalName (temporary) */}
@@ -455,8 +484,20 @@ export default function Game() {
             if (ok) pushLog(`Vend: +${it.cost ?? 0} g`);
             else pushLog('Vente impossible.');
           }}
+          onUse={(itemId: string) => {
+            try { console.log('use requested', itemId); } catch (e) {}
+            const ok = consumeItem(itemId);
+            if (ok) pushLog('Potion utilisée. PV restaurés.');
+            else pushLog("Impossible d'utiliser cet objet.");
+            // also show a global toast so user always sees feedback
+            try { addToast(ok ? 'Potion utilisée. PV restaurés.' : "Impossible d'utiliser cet objet.", ok ? 'ok' : 'error'); } catch (e) {}
+            return ok;
+          }}
           onClose={closeModal}
         />
+      )}
+      {modalName === 'store' && (
+        <StoreModal onClose={closeModal} buyPotion={storeBuy} playerGold={player.gold} />
       )}
       {modalName === 'bestiary' && (
         <BestiaryModal onClose={closeModal} enemies={enemies} selectedMapId={selectedMapId} />
@@ -488,6 +529,14 @@ export default function Game() {
           </div>
         </Modal>
       )}
+      {/* Toast container */}
+      <div style={{ position: 'fixed', right: 16, top: 16, zIndex: 999999, display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {toasts.map((t) => (
+          <div key={t.id} style={{ minWidth: 220, maxWidth: 360, padding: '8px 12px', borderRadius: 8, background: t.type === 'ok' ? 'linear-gradient(90deg,#103218,#144a2a)' : 'linear-gradient(90deg,#3b0b0b,#521010)', color: '#fff', boxShadow: '0 6px 18px rgba(0,0,0,0.6)', fontWeight: 700 }}>
+            {t.text}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

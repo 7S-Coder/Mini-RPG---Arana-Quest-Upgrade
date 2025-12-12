@@ -9,6 +9,7 @@ type Props = {
   onEquip: (item: any) => void;
   onUnequip: (slot: string) => void;
   onSell: (itemId: string) => void;
+  onUse?: (itemId: string) => boolean | Promise<boolean> | void;
   onClose: () => void;
 };
 
@@ -30,7 +31,8 @@ const SLOT_POS: Record<string, React.CSSProperties> = {
   arme: { position: 'absolute', top: '45%', left: 12 },
 };
 
-export default function InventoryModal({ inventory, equipment, onEquip, onUnequip, onSell, onClose }: Props) {
+export default function InventoryModal({ inventory, equipment, onEquip, onUnequip, onSell, onUse, onClose }: Props) {
+  const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
   // Inline Tooltip component: shows formatted item details on hover (desktop)
   // compute a price heuristic (shared)
   const priceFor = (it: any) => {
@@ -124,6 +126,26 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
                     <div style={{ fontSize: 12, color: '#999' }}>{Object.entries(it.stats || {}).map(([k,v]) => `${k}: ${v}`).join(' • ')}</div>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
+                    {it.category === 'consumable' ? (
+                      <button type="button" onClick={(e) => {
+                          e.stopPropagation();
+                          try {
+                            if (!onUse) { return; }
+                            setTimeout(() => {
+                              try {
+                                const res = onUse(it.id);
+                                Promise.resolve(res).then((ok) => {
+                                  if (ok) setStatus({ ok: true, text: 'Potion utilisée. PV restaurés.' });
+                                  else setStatus({ ok: false, text: "Impossible d'utiliser cet objet." });
+                                  window.setTimeout(() => setStatus(null), 3000);
+                                }).catch((err) => {
+                                  console.error('onUse promise error', err);
+                                });
+                              } catch (err) { console.error('onUse error', err); }
+                            }, 0);
+                          } catch (err) { console.error(err); }
+                        }}>Utiliser</button>
+                    ) : (
                     <button type="button" onClick={(e) => {
                       e.stopPropagation();
                       try { console.log('InventoryModal equip click', it && it.id, it && it.slot); } catch (e) {}
@@ -133,6 +155,7 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
                         setTimeout(() => { try { onEquip(it); } catch (err) { console.error('onEquip error', err); } }, 0);
                       } catch (err) { console.error(err); }
                     }}>Équiper ({it.slot})</button>
+                    )}
                     <button type="button" onClick={(e) => {
                       e.stopPropagation();
                       try { console.log('InventoryModal sell click', it && it.id); } catch (e) {}

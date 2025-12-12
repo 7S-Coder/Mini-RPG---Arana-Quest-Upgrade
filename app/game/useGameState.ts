@@ -287,6 +287,44 @@ export function useGameState() {
     return item;
   };
 
+  // Buy a potion from the store. types: small(20), medium(50), large(100)
+  const buyPotion = (type: 'small' | 'medium' | 'large'): boolean => {
+    const costs: Record<string, number> = { small: 5, medium: 12, large: 25 };
+    const heals: Record<string, number> = { small: 20, medium: 50, large: 100 };
+    const cost = costs[type] ?? 5;
+    const heal = heals[type] ?? 20;
+    const currentGold = Number((player.gold ?? 0));
+    if (currentGold < cost) {
+      return false;
+    }
+    // deduct immediately based on snapshot
+    setPlayer((p) => ({ ...p, gold: +(((p.gold ?? 0) - cost).toFixed(2)) } as any));
+    // create consumable item and add to inventory
+    const itm: Item = {
+      id: uid(),
+      slot: 'consumable' as any,
+      name: `${type === 'small' ? 'Potion petite' : type === 'medium' ? 'Potion moyenne' : 'Potion grande'} (+${heal} PV)`,
+      rarity: 'common',
+      category: 'consumable' as any,
+      stats: { heal },
+      cost,
+    };
+    addToInventory(itm);
+    return true;
+  };
+
+  // consume a consumable item (by id) and apply its heal; returns true if applied
+  const consumeItem = (itemId: string): boolean => {
+    const it = inventory.find((i) => i.id === itemId);
+    if (!it) return false;
+    if ((it as any).category !== 'consumable') return false;
+    const heal = Number((it.stats && (it.stats as any).heal) || 0);
+    if (!heal) return false;
+    setInventory((prev) => prev.filter((i) => i.id !== itemId));
+    setPlayer((p) => ({ ...p, hp: Math.min((p.maxHp ?? p.hp), (p.hp ?? 0) + heal) }));
+    return true;
+  };
+
   // Create item from a template name or slot with a chosen rarity
   const createItemFromTemplate = (key: string, rarity?: Rarity, addToInv = true): Item | null => {
     const lower = key.toLowerCase();
@@ -482,6 +520,6 @@ export function useGameState() {
     });
   };
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, spawnGoldPickup } as const;
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, spawnGoldPickup, buyPotion, consumeItem } as const;
 }
 
