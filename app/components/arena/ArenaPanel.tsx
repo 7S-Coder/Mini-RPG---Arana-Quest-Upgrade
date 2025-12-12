@@ -9,11 +9,11 @@ type Props = {
   onAttack: () => void;
   onRun: () => void;
   pickups?: any[];
-  collectPickup?: (id: string) => void;
+  collectPickup?: (id: string) => boolean | void;
   pushLog?: (text: string) => void;
 };
 
-export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup }: Props) {
+export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, pushLog }: Props) {
   return (
     <section className="arena-panel">
       <div className="arena-log">
@@ -30,14 +30,14 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
               className={`pickup ${p.kind === 'gold' ? 'gold' : 'item'} spawn`}
               onClick={() => {
                 try {
-                  const ok = collectPickup && collectPickup(p.id);
+                  const ok = collectPickup ? collectPickup(p.id) : false;
                   if (ok) {
                     if (p.kind === 'gold') pushLog && pushLog(`Ramassé: +${Number(p.amount).toFixed(2)} g`);
                     else pushLog && pushLog(`Ramassé: ${p.item?.name ?? 'Objet'}`);
                   }
-                } catch (e) {}
+                } catch (e) { console.error(e); }
               }}
-              style={{ left: (p.x ?? 220), top: (p.y ?? 120), position: 'absolute' }}
+              style={{ left: (p.x ?? 220), top: (p.y ?? 120), position: 'absolute', pointerEvents: 'auto' }}
             >
               <div className="icon">{p.kind === 'gold' ? '💰' : '📦'}</div>
               <div className="label">{p.kind === 'gold' ? `${Number(p.amount).toFixed(2)} g` : (p.item?.name ?? 'Objet')}</div>

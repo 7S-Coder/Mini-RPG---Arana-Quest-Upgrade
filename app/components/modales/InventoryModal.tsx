@@ -88,7 +88,7 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
 
   return (
     <Modal title="Inventaire" onClose={onClose}>
-      <div style={{ display: 'flex', gap: 24 }}>
+      <div style={{ display: 'flex', gap: 24, minWidth: 760, minHeight: 480 }}>
         {/* Left: equipment silhouette */}
         <div style={{ width: 360, position: 'relative' }}>
           <h2 style={{ marginTop: 0 }}>Équipement</h2>
@@ -111,7 +111,7 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
         </div>
 
         {/* Right: inventory list */}
-        <div style={{ flex: 1 }}>
+        <div style={{ flex: 1, minWidth: 340, minHeight: 320 }}>
           <h2 style={{ marginTop: 0 }}>Inventaire</h2>
           <div style={{ display: 'grid', gap: 10 }}>
             {inventory.length === 0 ? (
