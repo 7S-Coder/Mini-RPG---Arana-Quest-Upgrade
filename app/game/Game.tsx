@@ -497,7 +497,7 @@ export default function Game() {
         />
       )}
       {modalName === 'store' && (
-        <StoreModal onClose={closeModal} buyPotion={storeBuy} playerGold={player.gold} />
+        <StoreModal onClose={closeModal} buyPotion={storeBuy} playerGold={player.gold ?? 0} />
       )}
       {modalName === 'bestiary' && (
         <BestiaryModal onClose={closeModal} enemies={enemies} selectedMapId={selectedMapId} />
