@@ -13,6 +13,7 @@ import useCombat from "./useCombat";
 import EffectsLayer from "../components/EffectsLayer";
 import BestiaryModal from "../components/modales/BestiaryModal";
 import MapsModal from "../components/modales/MapsModal";
+import CatalogModal from "../components/modales/CatalogModal";
 import { getMaps, pickEnemyFromMap } from "./maps";
 import { ENEMY_TEMPLATES } from "./enemies";
 
@@ -502,6 +503,9 @@ export default function Game() {
       )}
       {modalName === 'store' && (
         <StoreModal onClose={closeModal} buyPotion={storeBuy} playerGold={player.gold ?? 0} />
+      )}
+      {modalName === 'catalogue' && (
+        <CatalogModal onClose={closeModal} />
       )}
       {modalName === 'bestiary' && (
         <BestiaryModal onClose={closeModal} enemies={enemies} selectedMapId={selectedMapId} />
