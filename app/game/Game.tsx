@@ -207,6 +207,7 @@ export default function Game() {
     // if this endEncounter reports a death, restore player HP to max (respawn)
     if (opts?.type === 'death') {
       try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
+      try { addToast && addToast(msg ? String(msg) : 'Vous avez péri.', 'error', 4000); } catch (e) {}
     }
     if (msg) pushLog(msg);
     // Track farming progress: if player is on a map that has dungeons but the dungeon
@@ -229,8 +230,11 @@ export default function Game() {
             dungeonProgressRef.current.activeMapId = currentMap?.id || null;
             dungeonProgressRef.current.activeDungeonIndex = null;
             dungeonProgressRef.current.activeDungeonId = null;
-            dungeonProgressRef.current.remaining = 0;
-            dungeonProgressRef.current.fightsRemainingBeforeDungeon = threshold;
+              dungeonProgressRef.current.remaining = 0;
+              // reset the fightsRemainingBeforeDungeon to 0 after a death so the dungeon threshold is cleared
+              dungeonProgressRef.current.fightsRemainingBeforeDungeon = 0;
+              try { console.log('la porte du donjon s\'éloigne de vous..'); } catch (e) {}
+              try { addToast && addToast("La porte du donjon s'éloigne de vous..", 'error', 4000); } catch (e) {}
             // mark the current encounter session as processed so no residual endEncounter call will decrement counters
             const sess = encounterSessionRef.current || 0;
             dungeonProgressRef.current.lastProcessedSession = sess;
