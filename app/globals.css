@@ -1,0 +1,217 @@
+:root{
+	--bg:#0f0f10;
+	--panel:#121214;
+	--muted:#9aa0a6;
+	--accent:#c94b3b;
+	--accent-2:#2fb3ff;
+	--glass: rgba(255,255,255,0.03);
+	--radius:12px;
+	--mono: 'Geist Mono', monospace;
+}
+
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{
+	margin:0;
+	background:linear-gradient(180deg,#0b0b0c 0%, #121212 60%);
+	color:#d8d8d8;
+	font-family: var(--mono);
+}
+
+.app-header{
+	padding:18px 28px;
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	flex-direction:column;
+	background:transparent;
+}
+.app-header h1{color:var(--accent);margin:0;font-size:28px}
+.app-header .subtitle{color:var(--muted);font-size:12px;margin-top:6px}
+
+.main-grid{
+	display:grid;
+	grid-template-columns: 300px 1fr 260px;
+	gap:20px;
+	padding:20px 28px 60px 28px;
+}
+
+.sidebar-left, .sidebar-right{
+	background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+	padding:18px;
+	border-radius:var(--radius);
+	box-shadow: 0 6px 18px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+}
+
+.center-area{display:flex;flex-direction:column}
+.center-top{display:flex;justify-content:flex-start;margin-bottom:12px}
+
+.arena-panel{
+	background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.02));
+	border-radius:12px;
+	padding:18px;
+	min-height:360px;
+	position:relative;
+	box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+.arena-log{
+	background:linear-gradient(180deg, rgba(0,0,0,0.5), rgba(0,0,0,0.6));
+	border-radius:8px;
+	padding:12px;
+	display:flex;
+	flex-direction:column;
+	gap:12px;
+  height: 275px;
+}
+.enemies-row{min-height:60px}
+.log-messages{
+	height:220px;
+	overflow-y:auto;
+	padding:8px;
+	background:rgba(0,0,0,0.25);
+	border-radius:6px;
+	font-family: var(--mono);
+	font-size:14px;
+	color:#e8e8e8;
+}
+.log-line{padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.02)}
+.arena-actions{position:absolute;left:18px;bottom:18px;display:flex;gap:10px}
+
+.btn{background:var(--panel);color:#ddd;border:0;padding:8px 12px;border-radius:10px;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,0.6)}
+.btn.primary{background:linear-gradient(180deg,#2b2b2c,#141214);padding:8px 14px}
+.btn.danger{background:linear-gradient(180deg,#b84b3b,#8a2f2f);color:white}
+
+.player-card{padding:12px;display:flex;flex-direction:column;gap:12px}
+.player-header{display:flex;align-items:center;gap:12px}
+.player-header .avatar{width:44px;height:44px;border-radius:8px;background:linear-gradient(180deg,#593b8f,#2b1343)}
+.player-card h3{margin:0}
+.bars .hp-bar, .bars .xp-bar{height:10px;background:rgba(255,255,255,0.03);border-radius:10px;overflow:hidden}
+.bars .hp-bar .fill{height:100%;background:linear-gradient(90deg,#9ee6a6,#6bd07b)}
+.bars .xp-bar .fill{height:100%;background:linear-gradient(90deg,#ffd96b,#ffb84b)}
+.hp-bar{position:relative}
+/* smooth HP bar transition */
+.bars .hp-bar .fill{transition: width 480ms cubic-bezier(.2,.9,.2,1)}
+
+/* Floating damage number near the player avatar (MMO-style) */
+.damage-number{
+	position:absolute;
+	left:20px;
+	top:6px;
+	transform:translateY(0);
+	background:transparent;
+	color:rgba(255,80,80,0.98);
+	font-weight:800;
+	font-size:16px;
+	text-shadow:0 6px 18px rgba(0,0,0,0.6);
+	pointer-events:none;
+	animation: dmgFloat 0.9s ease forwards;
+	z-index:30;
+}
+.damage-number.crit{color:#ffd36b; text-shadow:0 6px 20px rgba(255,180,90,0.9); font-size:18px}
+@keyframes dmgFloat{
+	0%{opacity:1; transform:translateY(0) scale(1)}
+	40%{opacity:1; transform:translateY(-10px) scale(1.05)}
+	100%{opacity:0; transform:translateY(-28px) scale(0.95)}
+}
+
+/* low HP blinking */
+.hp-low{animation: hpBlink 1s steps(2, end) infinite}
+@keyframes hpBlink{
+	0%{filter:brightness(1)}
+	50%{filter:brightness(0.4)}
+	100%{filter:brightness(1)}
+}
+.player-stats{font-size:13px;color:var(--muted);line-height:1.4}
+.player-actions{display:flex}
+
+.right-buttons{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.tier-legend h4{margin:0 0 8px 0;color:var(--muted)}
+.tier-legend ul{list-style:none;padding:0;margin:0;font-size:13px;color:var(--muted)}
+.tier-legend li{display:flex;align-items:center;gap:8px;padding:6px 0}
+.dot{width:14px;height:14px;border-radius:6px;display:inline-block}
+.dot.common{background:#f2f2f2}
+.dot.rare{background:#4aa3ff}
+.dot.epic{background:#b46bff}
+.dot.legendary{background:#ffd36b}
+.dot.mythic{background:#ff6b6b}
+
+/* Enemy name rarity colors */
+.enemy-name.common{color:#ffffff}
+.enemy-name.rare{color:#4aa3ff}
+.enemy-name.epic{color:#b46bff}
+.enemy-name.legendary{color:#ffd36b}
+.enemy-name.mythic{color:#ff6b6b}
+
+/* pulse effect for mythic names */
+.enemy-name.mythic{
+	animation: pulse 1.2s infinite ease-in-out;
+}
+@keyframes pulse{
+	0%{text-shadow:0 0 6px rgba(255,107,107,0.6)}
+	50%{text-shadow:0 0 18px rgba(255,107,107,0.95)}
+	100%{text-shadow:0 0 6px rgba(255,107,107,0.6)}
+}
+
+/* Effects layer */
+.effects-layer{position:absolute;left:0;right:0;top:0;bottom:0;pointer-events:none}
+.damage-popup{
+	position:absolute;
+	transform:translate(-50%, -50%);
+	padding:6px 10px;
+	border-radius:8px;
+	background:rgba(0,0,0,0.6);
+	color:#fff;
+	font-weight:700;
+	font-family:var(--mono);
+	animation: popupUp 1.6s ease forwards;
+	text-shadow:0 2px 8px rgba(0,0,0,0.6);
+}
+.damage-popup.hit{background:rgba(80,80,80,0.9)}
+.damage-popup.crit{background:linear-gradient(90deg,#ffd36b,#ffb84b);color:#111}
+.damage-popup.dodge{background:rgba(70,140,255,0.95);}
+
+@keyframes popupUp{
+	0%{opacity:0; transform:translate(-50%, 0) scale(0.9)}
+	10%{opacity:1}
+	60%{transform:translate(-50%, -36px) scale(1)}
+	100%{opacity:0; transform:translate(-50%, -56px) scale(0.9)}
+}
+
+/* small shake for arena panel when crit */
+.shake{animation:shake 0.45s ease}
+@keyframes shake{
+	0%{transform:translateX(0)}
+	25%{transform:translateX(-6px)}
+	50%{transform:translateX(6px)}
+	75%{transform:translateX(-4px)}
+	100%{transform:translateX(0)}
+}
+
+@media(max-width:900px){
+	.main-grid{grid-template-columns:1fr;}
+	.sidebar-left,.sidebar-right{display:none}
+}
+
+/* Level-up badge animation */
+.level-up-badge{
+	position:absolute;
+	left:50%;
+	top:8px;
+	transform:translateX(-50%);
+	background:linear-gradient(90deg,#ffd36b,#ffb84b);
+	color:#111;
+	padding:8px 14px;
+	border-radius:18px;
+	font-weight:700;
+	box-shadow:0 8px 24px rgba(0,0,0,0.5);
+	animation: levelUp 1.8s ease forwards;
+	z-index:40;
+}
+@keyframes levelUp{
+	0%{opacity:0; transform:translate(-50%, -8px) scale(0.85)}
+	10%{opacity:1; transform:translate(-50%, 0) scale(1.08)}
+	40%{transform:translate(-50%, -6px) scale(1)}
+	70%{transform:translate(-50%, -2px) scale(1)}
+	100%{opacity:0; transform:translate(-50%, -10px) scale(0.9)}
+}
+
