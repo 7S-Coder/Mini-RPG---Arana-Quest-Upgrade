@@ -8,13 +8,14 @@ type Props = {
   logs: string[];
   onAttack: () => void;
   onRun: () => void;
+  disableRun?: boolean;
   pickups?: any[];
   collectPickup?: (id: string) => boolean | void;
   pushLog?: (text: string) => void;
   logColor?: string;
 };
 
-export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, pushLog, logColor }: Props) {
+export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, pushLog, logColor, disableRun = false }: Props) {
   // helper: convert hex to rgba for subtle background tint
   const hexToRgba = (hex?: string, alpha = 0.06) => {
     if (!hex) return undefined;
@@ -65,7 +66,7 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
         </div>
       )}
 
-      <ArenaActions onAttack={onAttack} onRun={onRun} />
+      <ArenaActions onAttack={onAttack} onRun={onRun} disableRun={disableRun} />
     </section>
   );
 }

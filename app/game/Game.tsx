@@ -49,12 +49,16 @@ export default function Game() {
   });
 
   const [inCombat, setInCombat] = useState(false);
+  const inCombatRef = useRef<boolean>(false);
   const [logs, setLogs] = useState<string[]>([]);
   const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [effects, setEffects] = useState<Array<{ id: string; type: string; text?: string; kind?: string; target?: string; x?: number; y?: number }>>([]);
   const logClearRef = useRef<number | null>(null);
   const encounterCountRef = useRef<number>(0);
-  const dungeonProgressRef = useRef<{ activeMapId?: string | null; remaining?: number }>({ activeMapId: null, remaining: 0 });
+  const encounterSessionRef = useRef<number>(0);
+  const dungeonProgressRef = useRef<{ activeMapId?: string | null; activeDungeonIndex?: number | null; activeDungeonId?: string | null; remaining?: number; fightsRemainingBeforeDungeon?: number; lastProcessedSession?: number; lastDungeonProcessedSession?: number; suppressUntilSession?: number }>({ activeMapId: null, activeDungeonIndex: null, activeDungeonId: null, remaining: 0, fightsRemainingBeforeDungeon: 0, lastProcessedSession: undefined, lastDungeonProcessedSession: undefined, suppressUntilSession: undefined });
+  const [dungeonUI, setDungeonUI] = useState(() => ({ ...dungeonProgressRef.current }));
+  const syncDungeonUI = () => setDungeonUI({ ...dungeonProgressRef.current });
 
   const pushLog = useCallback((text: string) => {
     setLogs((l) => {
@@ -62,6 +66,9 @@ export default function Game() {
       return next.slice(Math.max(0, next.length - 100));
     });
   }, []);
+
+  useEffect(() => { inCombatRef.current = inCombat; }, [inCombat]);
+
 
   const addEffect = useCallback((eff: { type: string; text?: string; kind?: string; target?: string; id?: string }) => {
     const id = eff.id ? `${eff.id}_${uid()}` : uid();
@@ -75,55 +82,72 @@ export default function Game() {
   }, []);
 
   const startEncounter = useCallback(() => {
-    // prevent spawning if already in combat
-    if (inCombat) {
+    // prevent spawning if already in combat (use ref to avoid stale closure)
+    if (inCombatRef.current) {
       pushLog("Vous êtes déjà en combat.");
       return;
     }
+    console.log('[DEBUG] startEncounter - entering', { session: encounterSessionRef.current + 1, selectedMapId, dungeonProgress: dungeonProgressRef.current });
+    // bump encounter session id so endEncounter can know which encounter finished
+    encounterSessionRef.current = (encounterSessionRef.current || 0) + 1;
     // spawn 1-3 enemies
     // clear pending log clear timeout if any
     if (logClearRef.current) {
       clearTimeout(logClearRef.current);
       logClearRef.current = null;
     }
-    const count = 1 + Math.floor(Math.random() * 3);
+    // determine count based on dungeon state: normal area random 1-3, dungeon rooms fixed 4, boss room single
+    let count = 1 + Math.floor(Math.random() * 3);
+    const isDungeonActive = dungeonProgressRef.current.activeMapId === selectedMap?.id && (dungeonProgressRef.current.remaining || 0) > 0;
+    if (isDungeonActive) {
+      // if this is the final floor, spawn boss only, otherwise spawn 4 mobs
+      if ((dungeonProgressRef.current.remaining || 0) === 1) {
+        count = 1; // boss only
+      } else {
+        count = 4;
+      }
+    }
     encounterCountRef.current = count;
     // initialize dungeon progress when entering a new dungeon map
-    if (selectedMap?.dungeon) {
+    if (selectedMap?.dungeons && selectedMap.dungeons.length > 0) {
       if (dungeonProgressRef.current.activeMapId !== selectedMap.id) {
+        // start farming phase for this map: require N combats before the dungeon appears
+        const threshold = (selectedMap as any).dungeonThreshold ?? 20;
         dungeonProgressRef.current.activeMapId = selectedMap.id;
-        dungeonProgressRef.current.remaining = selectedMap.dungeon?.floors ?? 0;
+        dungeonProgressRef.current.activeDungeonIndex = null; // not yet activated
+        dungeonProgressRef.current.activeDungeonId = null;
+        dungeonProgressRef.current.remaining = 0;
+        dungeonProgressRef.current.fightsRemainingBeforeDungeon = threshold;
+        pushLog(`Zone sélectionnée: farm ${threshold} combat(s) requis avant donjon.`);
       }
     } else {
-      // not a dungeon: reset progress
+      // not a dungeon-capable map: reset progress
       dungeonProgressRef.current.activeMapId = null;
+      dungeonProgressRef.current.activeDungeonIndex = null;
+      dungeonProgressRef.current.activeDungeonId = null;
       dungeonProgressRef.current.remaining = 0;
+      dungeonProgressRef.current.fightsRemainingBeforeDungeon = 0;
     }
 
-    const isDungeonActive = dungeonProgressRef.current.activeMapId === selectedMap?.id && (dungeonProgressRef.current.remaining || 0) > 0;
+    // spawn enemies according to count and dungeon rules
     for (let i = 0; i < count; i++) {
-      // if this is the last dungeon floor, spawn the boss instead
-      if (isDungeonActive && (dungeonProgressRef.current.remaining || 0) === 1 && selectedMap?.dungeon?.bossTemplateId) {
-        spawnEnemy(selectedMap.dungeon.bossTemplateId);
+      if (isDungeonActive && (dungeonProgressRef.current.remaining || 0) === 1) {
+        // boss floor: spawn boss once
+        const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
+        const bossId = (idx !== null && selectedMap?.dungeons && selectedMap.dungeons[idx]) ? selectedMap.dungeons[idx].bossTemplateId : undefined;
+        if (bossId) spawnEnemy(bossId);
       } else {
         const tid = selectedMapId ? pickEnemyFromMap(selectedMapId) : undefined;
         spawnEnemy(tid);
       }
     }
-    // after spawning, if in dungeon and we consumed a floor, decrement
-    if (isDungeonActive) {
-      dungeonProgressRef.current.remaining = Math.max(0, (dungeonProgressRef.current.remaining || 0) - 1);
-      if ((dungeonProgressRef.current.remaining || 0) === 0) {
-        // dungeon complete next encounter
-        dungeonProgressRef.current.activeMapId = null;
-      }
-    }
     pushLog(`Nouvelle rencontre: ${count} ennemi(s) apparu(s).`);
+    console.log('[DEBUG] spawned encounter', { session: encounterSessionRef.current, count, isDungeonActive, dungeonProgress: dungeonProgressRef.current });
     setInCombat(true);
-  }, [spawnEnemy, pushLog, inCombat, selectedMapId]);
+  }, [spawnEnemy, pushLog, selectedMapId]);
 
 
-  const endEncounter = useCallback((msg?: string) => {
+  const endEncounter = useCallback((msg?: string, opts?: { type?: 'clear' | 'flee' | 'death' }) => {
     // spawn a single gold pickup for the encounter (sum of per-enemy dust)
     const count = encounterCountRef.current || 0;
     let total = 0;
@@ -139,13 +163,113 @@ export default function Game() {
     setInCombat(false);
     setEnemies([]);
     if (msg) pushLog(msg);
+    // Track farming progress: if player is on a map that has dungeons but the dungeon
+    // hasn't been activated yet, count this completed encounter toward the threshold.
+      try {
+        const mapsListNow = getMaps();
+        const currentMap = mapsListNow.find((m) => m.id === selectedMapId) ?? null;
+        // capture whether we were already inside a dungeon at the start of this encounter
+        const wasDungeonActiveAtStart = (dungeonProgressRef.current.activeDungeonIndex != null && dungeonProgressRef.current.activeMapId === currentMap?.id);
+        const currentSession = encounterSessionRef.current || 0;
+        console.log('[DEBUG] endEncounter start', { msg, opts: (opts as any) ?? null, currentSession, dungeonProgress: dungeonProgressRef.current, wasDungeonActiveAtStart });
+        // determine encounter result type (default to 'clear' when not provided)
+        const resultType = opts?.type ?? (msg && String(msg).toLowerCase().includes("mort") ? 'death' : 'clear');
+
+        // If the player died while inside a dungeon, expel them and reset progression
+          if (resultType === 'death' && dungeonProgressRef.current.activeDungeonIndex != null && dungeonProgressRef.current.activeMapId === currentMap?.id) {
+          try {
+            const threshold = (currentMap as any)?.dungeonThreshold ?? 20;
+            // keep the map as active so the fights counter is visible, but clear the active dungeon
+            dungeonProgressRef.current.activeMapId = currentMap?.id || null;
+            dungeonProgressRef.current.activeDungeonIndex = null;
+            dungeonProgressRef.current.activeDungeonId = null;
+            dungeonProgressRef.current.remaining = 0;
+            dungeonProgressRef.current.fightsRemainingBeforeDungeon = threshold;
+            // mark the current encounter session as processed so no residual endEncounter call will decrement counters
+            const sess = encounterSessionRef.current || 0;
+            dungeonProgressRef.current.lastProcessedSession = sess;
+            dungeonProgressRef.current.lastDungeonProcessedSession = sess;
+            dungeonProgressRef.current.suppressUntilSession = sess + 1;
+            syncDungeonUI();
+            console.log('[DEBUG] reset dungeon progress on death', { map: currentMap.id, threshold, session: sess, dungeonProgress: dungeonProgressRef.current });
+            pushLog("Vous avez péri — expulsé du donjon. Le décompte est réinitialisé.");
+          } catch (e) { console.error('[DEBUG] error resetting dungeon on death', e); }
+          // stop further processing in this endEncounter to avoid immediately decrementing the farm counter
+          return;
+        }
+
+        if (currentMap?.dungeons && dungeonProgressRef.current.activeMapId === currentMap.id && (dungeonProgressRef.current.activeDungeonIndex == null) && resultType === 'clear') {
+        // only decrement once per encounter session
+        console.log('[DEBUG] endEncounter - session check', { currentSession, lastProcessed: dungeonProgressRef.current.lastProcessedSession, selectedMapId, currentMapId: currentMap.id, fightsRemainingBeforeDungeon: dungeonProgressRef.current.fightsRemainingBeforeDungeon, suppressUntil: dungeonProgressRef.current.suppressUntilSession });
+        if (dungeonProgressRef.current.suppressUntilSession && currentSession <= (dungeonProgressRef.current.suppressUntilSession || 0)) {
+          console.log('[DEBUG] skipping farm decrement due to suppressUntilSession', { currentSession, suppressUntil: dungeonProgressRef.current.suppressUntilSession });
+        } else if (dungeonProgressRef.current.lastProcessedSession !== currentSession) {
+            dungeonProgressRef.current.lastProcessedSession = currentSession;
+            // decrement fights remaining
+            const before = dungeonProgressRef.current.fightsRemainingBeforeDungeon || 0;
+            dungeonProgressRef.current.fightsRemainingBeforeDungeon = Math.max(0, before - 1);
+            const after = dungeonProgressRef.current.fightsRemainingBeforeDungeon || 0;
+            console.log('[DEBUG] decrement fightsRemainingBeforeDungeon', { before, after });
+            const remaining = after;
+            syncDungeonUI();
+              if (remaining > 0) {
+                pushLog(`Combats restants avant donjon: ${remaining}`);
+              } else {
+              // threshold reached -> activate a dungeon for this map and auto-enter
+              const idx = Math.floor(Math.random() * (currentMap.dungeons?.length || 1));
+              const d = currentMap.dungeons ? currentMap.dungeons[idx] : undefined;
+              dungeonProgressRef.current.activeDungeonIndex = idx;
+              dungeonProgressRef.current.activeDungeonId = d?.id ?? null;
+              dungeonProgressRef.current.remaining = d?.floors ?? 0;
+              // suppress decrements for the session that activated the dungeon
+              dungeonProgressRef.current.suppressUntilSession = (encounterSessionRef.current || 0) + 1;
+              const dungeonName = d?.name ?? d?.id ?? 'donjon';
+              console.log('[DEBUG] activating dungeon', { dungeonIndex: idx, dungeonId: dungeonProgressRef.current.activeDungeonId, dungeonName, currentMap: currentMap.id });
+              syncDungeonUI();
+              // start the dungeon encounter immediately, then notify the player
+                try { window.setTimeout(() => { try { startEncounter(); console.log('[DEBUG] scheduled startEncounter invoked'); } catch (e) { console.error('[DEBUG] scheduled startEncounter error', e); } }, 50); } catch (e) { console.error('[DEBUG] scheduling startEncounter error', e); }
+                pushLog(`Vous entrez dans le donjon « ${dungeonName} » sur ${currentMap.name} — bonne chance !`);
+                try { addEffect({ type: 'dungeon', text: `Entrée: ${dungeonName}`, target: 'player' }); } catch (e) {}
+                // stop further processing in this endEncounter to avoid immediately decrementing dungeon remaining
+                return;
+          }
+        }
+      }
+        // If we are inside a dungeon (active index set) and this endEncounter corresponds
+        // to a dungeon room (not farming), decrement the dungeon remaining floors once.
+        // only decrement dungeon remaining if the dungeon was already active when the encounter started
+        if (wasDungeonActiveAtStart && dungeonProgressRef.current.activeDungeonIndex != null && dungeonProgressRef.current.activeMapId === currentMap?.id && resultType === 'clear') {
+          console.log('[DEBUG] processing dungeon room completion', { currentSession, lastDungeonProcessed: dungeonProgressRef.current.lastDungeonProcessedSession, suppressUntil: dungeonProgressRef.current.suppressUntilSession });
+          if (dungeonProgressRef.current.suppressUntilSession && currentSession <= (dungeonProgressRef.current.suppressUntilSession || 0)) {
+            console.log('[DEBUG] skipping dungeon remaining decrement due to suppressUntilSession', { currentSession, suppressUntil: dungeonProgressRef.current.suppressUntilSession });
+          } else if (dungeonProgressRef.current.lastDungeonProcessedSession !== currentSession) {
+            dungeonProgressRef.current.lastDungeonProcessedSession = currentSession;
+            // decrement remaining floors
+            const beforeRem = dungeonProgressRef.current.remaining || 0;
+            dungeonProgressRef.current.remaining = Math.max(0, (dungeonProgressRef.current.remaining || 0) - 1);
+            const afterRem = dungeonProgressRef.current.remaining || 0;
+            console.log('[DEBUG] dungeon room completed - remaining floors', { beforeRem, afterRem });
+            syncDungeonUI();
+            if (afterRem === 0) {
+              pushLog(`Donjon terminé ! Bravo.`);
+              // clear dungeon progress
+              dungeonProgressRef.current.activeMapId = null;
+              dungeonProgressRef.current.activeDungeonIndex = null;
+              dungeonProgressRef.current.activeDungeonId = null;
+              syncDungeonUI();
+              } else {
+              pushLog(`Salle terminée — reste ${afterRem} étage(s)`);
+            }
+          }
+        }
+    } catch (e) { console.error('[DEBUG] endEncounter error', e); }
     // schedule clearing the logs after a short delay so player can read result
     if (logClearRef.current) clearTimeout(logClearRef.current);
     logClearRef.current = window.setTimeout(() => {
       setLogs([]);
       logClearRef.current = null;
     }, 1000);
-  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y]);
+  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter]);
 
   // clear timeout on unmount
   useEffect(() => {
@@ -174,6 +298,32 @@ export default function Game() {
   const mapsList = getMaps();
   const selectedMap = useMemo(() => mapsList.find((m) => m.id === selectedMapId) ?? null, [mapsList, selectedMapId]);
 
+  // Initialize dungeon farming progress when the player selects a map (ensure threshold set immediately)
+  useEffect(() => {
+    try {
+      const currentMap = getMaps().find((m) => m.id === selectedMapId) ?? null;
+      if (currentMap?.dungeons && dungeonProgressRef.current.activeMapId !== currentMap.id) {
+        const threshold = (currentMap as any).dungeonThreshold ?? 20;
+        dungeonProgressRef.current.activeMapId = currentMap.id;
+        dungeonProgressRef.current.activeDungeonIndex = null;
+        dungeonProgressRef.current.activeDungeonId = null;
+        dungeonProgressRef.current.remaining = 0;
+        dungeonProgressRef.current.fightsRemainingBeforeDungeon = threshold;
+        dungeonProgressRef.current.lastProcessedSession = undefined as any;
+        pushLog(`Zone sélectionnée: farm ${threshold} combat(s) requis avant donjon.`);
+        console.log('[DEBUG] map selected - init farming', { mapId: currentMap.id, threshold, dungeonProgress: dungeonProgressRef.current });
+        syncDungeonUI();
+      } else if (!currentMap) {
+        dungeonProgressRef.current.activeMapId = null;
+        dungeonProgressRef.current.activeDungeonIndex = null;
+        dungeonProgressRef.current.activeDungeonId = null;
+        dungeonProgressRef.current.remaining = 0;
+        dungeonProgressRef.current.fightsRemainingBeforeDungeon = 0;
+        syncDungeonUI();
+      }
+    } catch (e) {}
+  }, [selectedMapId]);
+
   return (
     <div className="app-shell">
       {/* debug badge: shows current modalName (temporary) */}
@@ -199,11 +349,37 @@ export default function Game() {
               onClick={startEncounter}
               disabled={inCombat}
             >
-              {inCombat ? "En combat..." : "Aller à l'arène"}
+              {inCombat ? "En combat..." : (selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null ? "Prochaine salle" : "Aller à l'arène")}
             </button>
+            {/* dungeon farm countdown */}
+            {selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex == null && (dungeonUI.fightsRemainingBeforeDungeon ?? 0) > 0 && (
+              <div style={{ marginTop: 8, fontSize: 13, color: '#ffd' }}>
+                Combats restants avant donjon: <strong style={{ color: '#fff' }}>{dungeonUI.fightsRemainingBeforeDungeon}</strong>
+              </div>
+            )}
+            {/* dungeon banner when active */}
+            {selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && (dungeonUI.activeDungeonIndex != null) && (
+              (() => {
+                const idx = dungeonUI.activeDungeonIndex as number;
+                const def = selectedMap.dungeons?.[idx];
+                const total = def?.floors ?? dungeonUI.remaining ?? 0;
+                const current = Math.min(total, (def ? (def.floors - (dungeonUI.remaining ?? 0) + 1) : 1));
+                return (
+                  <div style={{ marginTop: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(0,0,0,0.45)', color: '#fff', fontWeight: 700 }}>
+                    Donjon: {def?.name ?? def?.id} — Salle {current}/{total}
+                  </div>
+                );
+              })()
+            )}
           </div>
 
-          <div style={{ position: 'relative' }}><ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} pushLog={pushLog} logColor={selectedMap?.logColor} />
+          <div style={{ position: 'relative' }}>
+            {
+              (() => {
+                const inDungeonActive = selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null;
+                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} pushLog={pushLog} logColor={selectedMap?.logColor} disableRun={!!inDungeonActive} />;
+              })()
+            }
      
                    <EffectsLayer effects={effects} />
           </div>
@@ -263,7 +439,7 @@ export default function Game() {
               pushLog && pushLog('Carte désactivée');
             }
           } catch (e) {}
-        }} selectedId={selectedMapId} />
+        }} selectedId={selectedMapId} dungeonProgress={dungeonProgressRef.current} />
       )}
       {modalName === 'confirm' && modalProps && (
         <Modal title="Confirmer la vente" onClose={closeModal}>

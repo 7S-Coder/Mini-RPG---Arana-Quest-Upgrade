@@ -22,7 +22,7 @@ export default function useCombat({
   setEnemies: (updater: any) => void;
   addXp?: (n: number) => void;
   pushLog: (s: string) => void;
-  endEncounter: (msg?: string) => void;
+  endEncounter: (msg?: string, opts?: { type?: 'clear' | 'flee' | 'death' }) => void;
   onEffect?: (eff: { type: string; text?: string; kind?: string; target?: string; id?: string }) => void;
   onDrop?: (enemy: Enemy) => any;
 }) {
@@ -126,7 +126,7 @@ export default function useCombat({
     setEnemies((prev: Enemy[]) => {
       const alive = prev.filter((e: Enemy) => e.hp > 0);
       if (alive.length === 0) {
-        endEncounter("Tous les ennemis vaincus !");
+        endEncounter("Tous les ennemis vaincus !", { type: 'clear' });
       }
       return prev;
     });
@@ -135,7 +135,7 @@ export default function useCombat({
         setPlayer((p: Player) => {
           if (p.hp <= 0) {
             pushLog("Vous êtes mort...");
-            endEncounter("Vous êtes mort. Respawné à la taverne.");
+            endEncounter("Vous êtes mort. Respawné à la taverne.", { type: 'death' });
             return { ...p, hp: p.maxHp ?? p.hp };
           }
           return p;
@@ -155,7 +155,7 @@ export default function useCombat({
     lockedRef.current = true;
     const success = Math.random() < 0.6;
     if (success) {
-      endEncounter("Vous avez fui avec succès.");
+      endEncounter("Vous avez fuis avec succès.", { type: 'flee' });
       lockedRef.current = false;
     } else {
       pushLog("Fuite échouée ! Les ennemis attaquent.");
@@ -183,10 +183,10 @@ export default function useCombat({
       setTimeout(() => {
         setPlayer((p: Player) => {
           if (p.hp <= 0) {
-            pushLog("Vous êtes mort...");
-            endEncounter("Vous êtes mort. Respawné à la taverne.");
-            return { ...p, hp: p.maxHp ?? p.hp };
-          }
+              pushLog("Vous êtes mort...");
+              endEncounter("Vous êtes mort. Respawné à la taverne.", { type: 'death' });
+              return { ...p, hp: p.maxHp ?? p.hp };
+            }
           return p;
         });
         lockedRef.current = false;
