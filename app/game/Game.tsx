@@ -11,6 +11,8 @@ import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import useCombat from "./useCombat";
 import EffectsLayer from "../components/EffectsLayer";
 import BestiaryModal from "../components/modales/BestiaryModal";
+import MapsModal from "../components/modales/MapsModal";
+import { getMaps, pickEnemyFromMap } from "./maps";
 
 export default function Game() {
   const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup } = useGameState();
@@ -48,9 +50,11 @@ export default function Game() {
 
   const [inCombat, setInCombat] = useState(false);
   const [logs, setLogs] = useState<string[]>([]);
+  const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [effects, setEffects] = useState<Array<{ id: string; type: string; text?: string; kind?: string; target?: string; x?: number; y?: number }>>([]);
   const logClearRef = useRef<number | null>(null);
   const encounterCountRef = useRef<number>(0);
+  const dungeonProgressRef = useRef<{ activeMapId?: string | null; remaining?: number }>({ activeMapId: null, remaining: 0 });
 
   const pushLog = useCallback((text: string) => {
     setLogs((l) => {
@@ -84,10 +88,40 @@ export default function Game() {
     }
     const count = 1 + Math.floor(Math.random() * 3);
     encounterCountRef.current = count;
-    for (let i = 0; i < count; i++) spawnEnemy();
+    // initialize dungeon progress when entering a new dungeon map
+    if (selectedMap?.dungeon) {
+      if (dungeonProgressRef.current.activeMapId !== selectedMap.id) {
+        dungeonProgressRef.current.activeMapId = selectedMap.id;
+        dungeonProgressRef.current.remaining = selectedMap.dungeon?.floors ?? 0;
+      }
+    } else {
+      // not a dungeon: reset progress
+      dungeonProgressRef.current.activeMapId = null;
+      dungeonProgressRef.current.remaining = 0;
+    }
+
+    const isDungeonActive = dungeonProgressRef.current.activeMapId === selectedMap?.id && (dungeonProgressRef.current.remaining || 0) > 0;
+    for (let i = 0; i < count; i++) {
+      // if this is the last dungeon floor, spawn the boss instead
+      if (isDungeonActive && (dungeonProgressRef.current.remaining || 0) === 1 && selectedMap?.dungeon?.bossTemplateId) {
+        spawnEnemy(selectedMap.dungeon.bossTemplateId);
+      } else {
+        const tid = selectedMapId ? pickEnemyFromMap(selectedMapId) : undefined;
+        spawnEnemy(tid);
+      }
+    }
+    // after spawning, if in dungeon and we consumed a floor, decrement
+    if (isDungeonActive) {
+      dungeonProgressRef.current.remaining = Math.max(0, (dungeonProgressRef.current.remaining || 0) - 1);
+      if ((dungeonProgressRef.current.remaining || 0) === 0) {
+        // dungeon complete next encounter
+        dungeonProgressRef.current.activeMapId = null;
+      }
+    }
     pushLog(`Nouvelle rencontre: ${count} ennemi(s) apparu(s).`);
     setInCombat(true);
-  }, [spawnEnemy, pushLog, inCombat]);
+  }, [spawnEnemy, pushLog, inCombat, selectedMapId]);
+
 
   const endEncounter = useCallback((msg?: string) => {
     // spawn a single gold pickup for the encounter (sum of per-enemy dust)
@@ -137,6 +171,9 @@ export default function Game() {
 
   const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, onDrop: maybeDropFromEnemy });
 
+  const mapsList = getMaps();
+  const selectedMap = useMemo(() => mapsList.find((m) => m.id === selectedMapId) ?? null, [mapsList, selectedMapId]);
+
   return (
     <div className="app-shell">
       {/* debug badge: shows current modalName (temporary) */}
@@ -166,9 +203,9 @@ export default function Game() {
             </button>
           </div>
 
-          <div style={{ position: 'relative' }}>
-            <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} pushLog={pushLog} />
-            <EffectsLayer effects={effects} />
+          <div style={{ position: 'relative' }}><ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} pushLog={pushLog} logColor={selectedMap?.logColor} />
+     
+                   <EffectsLayer effects={effects} />
           </div>
         </main>
 
@@ -213,7 +250,20 @@ export default function Game() {
         />
       )}
       {modalName === 'bestiary' && (
-        <BestiaryModal onClose={closeModal} />
+        <BestiaryModal onClose={closeModal} enemies={enemies} />
+      )}
+      {modalName === 'maps' && (
+        <MapsModal onClose={closeModal} onSelect={(id?: string | null) => {
+          try {
+            setSelectedMapId(id ?? null);
+            if (id) {
+              const mm = mapsList.find((x) => x.id === id);
+              pushLog && pushLog(`Carte sélectionnée: ${mm?.name ?? id}`);
+            } else {
+              pushLog && pushLog('Carte désactivée');
+            }
+          } catch (e) {}
+        }} selectedId={selectedMapId} />
       )}
       {modalName === 'confirm' && modalProps && (
         <Modal title="Confirmer la vente" onClose={closeModal}>

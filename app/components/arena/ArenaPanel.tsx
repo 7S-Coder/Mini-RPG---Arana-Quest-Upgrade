@@ -11,14 +11,33 @@ type Props = {
   pickups?: any[];
   collectPickup?: (id: string) => boolean | void;
   pushLog?: (text: string) => void;
+  logColor?: string;
 };
 
-export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, pushLog }: Props) {
+export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, pushLog, logColor }: Props) {
+  // helper: convert hex to rgba for subtle background tint
+  const hexToRgba = (hex?: string, alpha = 0.06) => {
+    if (!hex) return undefined;
+    try {
+      const h = hex.replace('#', '');
+      const full = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+      const bigint = parseInt(full, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    } catch (e) {
+      return hex;
+    }
+  };
+
+  const arenaStyle = logColor ? { backgroundColor: hexToRgba(logColor, 0.08) } : undefined;
+
   return (
-    <section className="arena-panel">
+    <section className="arena-panel" style={arenaStyle}>
       <div className="arena-log">
         <EnemiesRow enemies={enemies} />
-        <LogMessages logs={logs} />
+        <LogMessages logs={logs} logColor={logColor} />
       </div>
 
       {/* pickups rendered as absolute positioned elements within the arena wrapper */}
