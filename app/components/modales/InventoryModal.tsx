@@ -31,6 +31,16 @@ const SLOT_POS: Record<string, React.CSSProperties> = {
   arme: { position: 'absolute', top: '45%', left: 12 },
 };
 
+const SLOT_LABELS: Record<string, string> = {
+  chapeau: 'Hat',
+  familier: 'Familiar',
+  bottes: 'Boots',
+  ceinture: 'Belt',
+  plastron: 'Chest',
+  anneau: 'Ring',
+  arme: 'Weapon',
+};
+
 export default function InventoryModal({ inventory, equipment, onEquip, onUnequip, onSell, onUse, onClose }: Props) {
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
   // Inline Tooltip component: shows formatted item details on hover (desktop)
@@ -74,11 +84,11 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
               ))}
               <div style={{ height: 6 }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', color: '#bbb', fontSize: 13 }}>
-                <div>Prix</div>
+                <div>Price</div>
                 <div>{priceFor(item)} g</div>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', color: '#bbb', fontSize: 13 }}>
-                <div>Rareté</div>
+                <div>Rarity</div>
                 <div style={{ textTransform: 'capitalize' }}>{item.rarity || ''}</div>
               </div>
             </div>
@@ -89,11 +99,11 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
   };
 
   return (
-    <Modal title="Inventaire" onClose={onClose}>
+    <Modal title="Inventory" onClose={onClose}>
       <div style={{ display: 'flex', gap: 24, minWidth: 760, minHeight: 480 }}>
         {/* Left: equipment silhouette */}
         <div style={{ width: 360, position: 'relative' }}>
-          <h2 style={{ marginTop: 0 }}>Équipement</h2>
+          <h2 style={{ marginTop: 0 }}>Equipment</h2>
           <div style={{ position: 'relative', width: '100%', height: 420, background: 'transparent' }}>
             {Object.keys(equipment).map((slot) => {
               const it = (equipment as any)[slot];
@@ -101,9 +111,9 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
                 <div key={slot} style={{ ...(SLOT_POS as any)[slot], minWidth: 100 }}>
                   <Tooltip item={it}>
                     <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.04)', padding: 8, borderRadius: 8, textAlign: 'center', minWidth: 120 }}>
-                      <div style={{ fontSize: 12, color: '#bbb' }}>{slot.charAt(0).toUpperCase() + slot.slice(1)}</div>
-                      <div style={{ minHeight: 36, color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 6 }}>{it ? it.name : 'vide'}</div>
-                      {it ? <button type="button" style={{ marginTop: 8 }} onClick={(e) => { e.stopPropagation(); try { console.log('InventoryModal unequip click', slot); } catch(e){}; onUnequip(slot); }}>Déséquiper</button> : null}
+                      <div style={{ fontSize: 12, color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
+                      <div style={{ minHeight: 36, color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 6 }}>{it ? it.name : 'empty'}</div>
+                      {it ? <button type="button" style={{ marginTop: 8 }} onClick={(e) => { e.stopPropagation(); try { console.log('InventoryModal unequip click', slot); } catch(e){}; onUnequip(slot); }}>Unequip</button> : null}
                     </div>
                   </Tooltip>
                 </div>
@@ -114,10 +124,10 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
 
         {/* Right: inventory list */}
         <div style={{ flex: 1, minWidth: 340, minHeight: 320 }}>
-          <h2 style={{ marginTop: 0 }}>Inventaire</h2>
+          <h2 style={{ marginTop: 0 }}>Inventory</h2>
           <div style={{ display: 'grid', gap: 10 }}>
             {inventory.length === 0 ? (
-              <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>Aucun objet.</div>
+              <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>No items.</div>
             ) : inventory.map((it) => (
               <Tooltip key={it.id} item={it}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10 }}>
@@ -135,8 +145,8 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
                               try {
                                 const res = onUse(it.id);
                                 Promise.resolve(res).then((ok) => {
-                                  if (ok) setStatus({ ok: true, text: 'Potion utilisée. PV restaurés.' });
-                                  else setStatus({ ok: false, text: "Impossible d'utiliser cet objet." });
+                                  if (ok) setStatus({ ok: true, text: 'Potion used. HP restored.' });
+                                  else setStatus({ ok: false, text: "Unable to use this item." });
                                   window.setTimeout(() => setStatus(null), 3000);
                                 }).catch((err) => {
                                   console.error('onUse promise error', err);
@@ -144,7 +154,7 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
                               } catch (err) { console.error('onUse error', err); }
                             }, 0);
                           } catch (err) { console.error(err); }
-                        }}>Utiliser</button>
+                        }}>Use</button>
                     ) : (
                     <button type="button" onClick={(e) => {
                       e.stopPropagation();
@@ -154,7 +164,7 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
                         // dispatch async to avoid any propagation edge-cases
                         setTimeout(() => { try { onEquip(it); } catch (err) { console.error('onEquip error', err); } }, 0);
                       } catch (err) { console.error(err); }
-                    }}>Équiper ({it.slot})</button>
+                    }}>Equip ({SLOT_LABELS[it.slot] ?? it.slot})</button>
                     )}
                     <button type="button" onClick={(e) => {
                       e.stopPropagation();
@@ -163,7 +173,7 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
                         if (!onSell) { console.warn('onSell not provided'); return; }
                         setTimeout(() => { try { onSell(it.id); } catch (err) { console.error('onSell error', err); } }, 0);
                       } catch (err) { console.error(err); }
-                    }}>Vendre ({priceFor(it)} g)</button>
+                    }}>Sell ({priceFor(it)} g)</button>
                   </div>
                 </div>
               </Tooltip>

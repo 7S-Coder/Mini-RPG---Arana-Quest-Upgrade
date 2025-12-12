@@ -16,13 +16,13 @@ export default function BestiaryModal({ onClose, enemies = [], selectedMapId }: 
   };
 
   return (
-    <Modal title="Bestiaire" onClose={onClose}>
+    <Modal title="Bestiary" onClose={onClose}>
       <div style={{ display: 'grid', gap: 12, maxHeight: '60vh', overflowY: 'auto', minWidth: 480 }}>
 
         {/* Active enemies (show real levels if present) */}
         {enemies && enemies.length > 0 && (
           <div>
-            <h4 style={{ margin: '6px 0' }}>Ennemis actifs</h4>
+            <h4 style={{ margin: '6px 0' }}>Active enemies</h4>
             <div style={{ display: 'grid', gap: 8 }}>
               {enemies.filter((a) => {
                 // if a map is selected, only show active enemies whose template is in the map's enemyPool
@@ -54,7 +54,7 @@ export default function BestiaryModal({ onClose, enemies = [], selectedMapId }: 
           const pool = map?.enemyPool ?? [];
           const templates = pool.map((id) => ENEMY_TEMPLATES.find((t) => t.templateId === id)).filter(Boolean) as typeof ENEMY_TEMPLATES;
           if (templates.length === 0) return (
-            <div style={{ color: 'var(--muted)' }}>Aucun ennemi défini pour cette carte.</div>
+            <div style={{ color: 'var(--muted)' }}>No enemies defined for this map.</div>
           );
           return templates.map((e) => (
             <div key={e.templateId} style={{ padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.02)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

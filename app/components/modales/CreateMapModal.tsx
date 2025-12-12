@@ -20,21 +20,21 @@ export default function CreateMapModal({ onClose, onCreated }: { onClose: () => 
 
   const submit = () => {
     const pool = Object.keys(selected).filter((k) => selected[k]);
-    const map = createMap({ name: name || `Carte ${Date.now()}`, theme: undefined, logColor, enemyPool: pool, dungeons: dungeon ? [{ floors: Math.max(1, floors), bossTemplateId: undefined }] : undefined });
+    const map = createMap({ name: name || `Map ${Date.now()}`, theme: undefined, logColor, enemyPool: pool, dungeons: dungeon ? [{ floors: Math.max(1, floors), bossTemplateId: undefined }] : undefined });
     onCreated && onCreated(map);
     onClose();
   };
 
   return (
-    <Modal title="Créer une carte" onClose={onClose}>
+    <Modal title="Create Map" onClose={onClose}>
       <div style={{ display: 'grid', gap: 10, minWidth: 420 }}>
-        <label>Nom de la carte</label>
+        <label>Map name</label>
         <input value={name} onChange={(e) => setName(e.target.value)} />
 
-        <label>Couleur du log</label>
+        <label>Log color</label>
         <input type="color" value={logColor} onChange={(e) => setLogColor(e.target.value)} />
 
-        <label>Ennemis autorisés</label>
+        <label>Allowed enemies</label>
         <div style={{ maxHeight: 220, overflowY: 'auto', display: 'grid', gap: 6 }}>
           {ENEMY_TEMPLATES.map((t) => (
             <label key={t.templateId} style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -46,17 +46,17 @@ export default function CreateMapModal({ onClose, onCreated }: { onClose: () => 
         </div>
 
         <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <input type="checkbox" checked={dungeon} onChange={() => setDungeon(!dungeon)} /> Donjon (boss à la fin)
+          <input type="checkbox" checked={dungeon} onChange={() => setDungeon(!dungeon)} /> Dungeon (boss at the end)
         </label>
         {dungeon && (
-          <label>Nombre d'étages
+          <label>Number of floors
             <input type="number" value={floors} onChange={(e) => setFloors(Number(e.target.value || 1))} style={{ width: 80, marginLeft: 8 }} />
           </label>
         )}
 
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn primary" onClick={submit}>Créer</button>
-          <button className="btn" onClick={onClose}>Annuler</button>
+          <button className="btn primary" onClick={submit}>Create</button>
+          <button className="btn" onClick={onClose}>Cancel</button>
         </div>
       </div>
     </Modal>

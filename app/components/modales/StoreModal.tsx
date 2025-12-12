@@ -17,53 +17,53 @@ export default function StoreModal({ onClose, buyPotion, playerGold }: Props) {
       const res = (buyPotion as any)(type);
       let msgObj: { ok: boolean; msg: string };
       if (typeof res === 'string') msgObj = { ok: true, msg: res };
-      else msgObj = res ?? { ok: false, msg: 'Erreur' };
+      else msgObj = res ?? { ok: false, msg: 'Error' };
       setStatus({ ok: !!msgObj.ok, text: msgObj.msg });
       // clear after 3s
       window.setTimeout(() => setStatus(null), 3000);
     } catch (e) {
-      setStatus({ ok: false, text: 'Erreur lors de l\'achat' });
+      setStatus({ ok: false, text: 'Error during purchase' });
       window.setTimeout(() => setStatus(null), 3000);
     }
   };
 
   return (
-    <Modal title="Magasin" onClose={onClose}>
+    <Modal title="Store" onClose={onClose}>
       <div style={{ minWidth: 480, minHeight: 260 }}>
         <div style={{ display: 'flex', gap: 16 }}>
           <div style={{ flex: 1, padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
-            <h3>Potions de soin</h3>
+            <h3>Healing Potions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 140 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
                 <div>
-                  <div style={{ fontWeight: 700 }}>Petite potion</div>
-                  <div style={{ fontSize: 12, color: '#bbb' }}>Restaure 20 PV</div>
+                  <div style={{ fontWeight: 700 }}>Small potion</div>
+                  <div style={{ fontSize: 12, color: '#bbb' }}>Restores 20 HP</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <div style={{ color: '#ffd96b', fontWeight: 800 }}>5 g</div>
-                  <button className="btn" onClick={() => handleBuy('small')}>Acheter</button>
+                  <button className="btn" onClick={() => handleBuy('small')}>Buy</button>
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
                 <div>
-                  <div style={{ fontWeight: 700 }}>Potion moyenne</div>
-                  <div style={{ fontSize: 12, color: '#bbb' }}>Restaure 50 PV</div>
+                  <div style={{ fontWeight: 700 }}>Medium potion</div>
+                  <div style={{ fontSize: 12, color: '#bbb' }}>Restores 50 HP</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <div style={{ color: '#ffd96b', fontWeight: 800 }}>12 g</div>
-                  <button className="btn" onClick={() => handleBuy('medium')}>Acheter</button>
+                  <button className="btn" onClick={() => handleBuy('medium')}>Buy</button>
                 </div>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
                 <div>
-                  <div style={{ fontWeight: 700 }}>Grande potion</div>
-                  <div style={{ fontSize: 12, color: '#bbb' }}>Restaure 100 PV</div>
+                  <div style={{ fontWeight: 700 }}>Large potion</div>
+                  <div style={{ fontSize: 12, color: '#bbb' }}>Restores 100 HP</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <div style={{ color: '#ffd96b', fontWeight: 800 }}>25 g</div>
-                  <button className="btn" onClick={() => handleBuy('large')}>Acheter</button>
+                  <button className="btn" onClick={() => handleBuy('large')}>Buy</button>
                 </div>
               </div>
               </div>
@@ -79,10 +79,10 @@ export default function StoreModal({ onClose, buyPotion, playerGold }: Props) {
               </div>
           </div>
           <div style={{ width: 220, padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
-            <h4 style={{ marginTop: 0 }}>Votre solde</h4>
+            <h4 style={{ marginTop: 0 }}>Your balance</h4>
             <div style={{ fontSize: 20, fontWeight: 800, color: '#ffd96b' }}>{(playerGold || 0).toFixed(2)} g</div>
             <div style={{ height: 12 }} />
-            <div style={{ fontSize: 12, color: '#bbb' }}>Les potions sont ajoutées à l'inventaire et peuvent être utilisées depuis l'inventaire.</div>
+            <div style={{ fontSize: 12, color: '#bbb' }}>Potions are added to your inventory and can be used from there.</div>
           </div>
         </div>
       </div>

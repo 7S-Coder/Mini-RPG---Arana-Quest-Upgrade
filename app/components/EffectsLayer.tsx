@@ -15,7 +15,7 @@ export default function EffectsLayer({ effects }: { effects: Effect[] }) {
     <div className="effects-layer" aria-hidden>
       {effects.map((e) => (
         <div key={e.id} className={`damage-popup ${e.kind ?? ""} ${e.type}`} style={{ left: e.x ?? "50%", top: e.y ?? "40%" }}>
-          {e.type === "dodge" ? "Esquive" : e.kind === "crit" ? `💥 ${e.text}` : e.text}
+          {e.type === "dodge" ? "Dodge" : e.kind === "crit" ? `💥 ${e.text}` : e.text}
         </div>
       ))}
     </div>

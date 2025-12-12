@@ -4,14 +4,14 @@ export default function RightSidebar({ onOpenModal }: { onOpenModal?: (name: str
   return (
     <aside>
       <div className="right-buttons">
-        <button className="btn" onClick={() => onOpenModal?.("store")}>Magasin</button>
-        <button className="btn" onClick={() => onOpenModal?.("catalogue")}>Catalogue</button>
-        <button className="btn" onClick={() => onOpenModal?.("bestiary")}>Bestiaire</button>
+        <button className="btn" onClick={() => onOpenModal?.("store")}>Store</button>
+        <button className="btn" onClick={() => onOpenModal?.("catalogue")}>Catalog</button>
+        <button className="btn" onClick={() => onOpenModal?.("bestiary")}>Bestiary</button>
         <button className="btn" onClick={() => onOpenModal?.("maps")}>Maps</button>
       </div>
 
       <div className="tier-legend" >
-        <h4>Palier ennemis</h4>
+        <h4>Enemy tiers</h4>
         <ul>
           <li>
             <span className="dot common"/>

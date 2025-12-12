@@ -48,19 +48,19 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
             <div
               key={p.id}
               className={`pickup ${p.kind === 'gold' ? 'gold' : 'item'} spawn`}
-              onClick={() => {
+                  onClick={() => {
                 try {
                   const ok = collectPickup ? collectPickup(p.id) : false;
                   if (ok) {
-                    if (p.kind === 'gold') pushLog && pushLog(`Ramassé: +${Number(p.amount).toFixed(2)} g`);
-                    else pushLog && pushLog(`Ramassé: ${p.item?.name ?? 'Objet'}`);
+                        if (p.kind === 'gold') pushLog && pushLog(`Picked up: +${Number(p.amount).toFixed(2)} g`);
+                        else pushLog && pushLog(`Picked up: ${p.item?.name ?? 'Item'}`);
                   }
                 } catch (e) { console.error(e); }
               }}
               style={{ left: (p.x ?? 220), top: (p.y ?? 120), position: 'absolute', pointerEvents: 'auto' }}
             >
               <div className="icon">{p.kind === 'gold' ? '💰' : '📦'}</div>
-              <div className="label">{p.kind === 'gold' ? `${Number(p.amount).toFixed(2)} g` : (p.item?.name ?? 'Objet')}</div>
+              <div className="label">{p.kind === 'gold' ? `${Number(p.amount).toFixed(2)} g` : (p.item?.name ?? 'Item')}</div>
             </div>
           ))}
         </div>

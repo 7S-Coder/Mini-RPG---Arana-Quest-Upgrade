@@ -121,7 +121,7 @@ export function useGameState() {
 
   const createItemForEnemy = (enemy: Enemy, rarity: Rarity): Item => {
     const slot = SLOTS[Math.floor(Math.random() * SLOTS.length)];
-    const baseName = enemy.name ?? "Objet";
+    const baseName = enemy.name ?? "Item";
     const name = `${baseName} ${slot.charAt(0).toUpperCase() + slot.slice(1)} (${rarity})`;
     const stats: Record<string, number> = {};
     // Specialized stat assignment depending on slot
@@ -303,7 +303,7 @@ export function useGameState() {
     const itm: Item = {
       id: uid(),
       slot: 'consumable' as any,
-      name: `${type === 'small' ? 'Potion petite' : type === 'medium' ? 'Potion moyenne' : 'Potion grande'} (+${heal} PV)`,
+      name: `${type === 'small' ? 'Small potion' : type === 'medium' ? 'Medium potion' : 'Large potion'} (+${heal} HP)`,
       rarity: 'common',
       category: 'consumable' as any,
       stats: { heal },

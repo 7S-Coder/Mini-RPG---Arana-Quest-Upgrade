@@ -62,13 +62,13 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 	return (
 		<div className="player-card" style={{ position: "relative" }}>
 			{showLevelUp && (
-				<div className="level-up-badge">Niveau +1 !</div>
+					<div className="level-up-badge">Level up!</div>
 			)}
 
 			<div className="player-header">
 				<div className="avatar" />
 				<div>
-					<h3>Joueur</h3>
+					<h3>Player</h3>
 					<div style={{ fontSize: 12, color: '#ffd700', fontWeight: 700, marginTop: 4 }}>{(typeof gold === 'number' ? gold.toFixed(2) : (gold ?? 0))} g</div>
 				</div>
 			</div>
@@ -90,13 +90,13 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 			</div>
 
 			<div className="player-stats">
-				<div>PV: {hp} / {maxHp}</div>
-				<div>Niveau: {level ?? 1} XP: {xp ?? 0}/{xpToNext(level ?? 1)}</div>
-				<div>Dégâts: {dmg ?? 0} Défense: {def ?? 0} ESQ: {dodge ?? 0}% CRIT: {crit ?? 0}%</div>
+				<div>HP: {hp} / {maxHp}</div>
+				<div>Level: {level ?? 1} XP: {xp ?? 0}/{xpToNext(level ?? 1)}</div>
+				<div>Damage: {dmg ?? 0} Defense: {def ?? 0} Dodge: {dodge ?? 0}% Crit: {crit ?? 0}%</div>
 			</div>
 
 			<div className="player-actions">
-				<button className="btn" onClick={() => onOpenModal?.("inventory")}>Inventaire & Équipement</button>
+				<button className="btn" onClick={() => onOpenModal?.("inventory")}>Inventory & Equipment</button>
 			</div>
 		</div>
 	);

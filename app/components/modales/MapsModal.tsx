@@ -38,7 +38,7 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
   };
 
   return (
-    <Modal title="Choisir une carte" onClose={onClose}>
+    <Modal title="Choose a map" onClose={onClose}>
       <div style={{ display: 'grid', gap: 10, minWidth: 320 }}>
         {maps.map((m) => {
           const accent = m.logColor ?? '#9aa0a6';
@@ -57,27 +57,27 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <div>
                   <div style={titleStyle}>{m.name}</div>
-                  <div style={{ fontSize: 12, color: accent }}>{m.theme ?? 'Thème générique'}</div>
+                  <div style={{ fontSize: 12, color: accent }}>{m.theme ?? 'Generic theme'}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <div style={{ width: 18, height: 18, borderRadius: 4, background: accent, border: '1px solid rgba(0,0,0,0.2)' }} />
-                  <button className="btn" style={btnStyle} onClick={() => { onSelect(m.id); onClose(); }}>{selected ? 'Active' : 'Choisir'}</button>
+                  <button className="btn" style={btnStyle} onClick={() => { onSelect(m.id); onClose(); }}>{selected ? 'Active' : 'Choose'}</button>
                 </div>
               </div>
 
               {m.dungeons && m.dungeons.length > 0 && (
                 <div style={{ marginTop: 8, paddingLeft: 6 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, color: accent }}>Donjons</div>
+                  <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, color: accent }}>Dungeons</div>
                   {/* dungeon farm countdown removed from modal */}
                   <ul style={{ paddingLeft: 14 }}>
                     {m.dungeons.map((d, idx) => {
                       const isActive = dungeonProgress?.activeMapId === m.id && dungeonProgress?.activeDungeonIndex === idx;
                       return (
                         <li key={d.id} style={{ marginBottom: 6 }}>
-                          <div style={{ fontWeight: 600, color: accent }}>{d.name ?? d.id} {isActive ? '(Actif)' : ''}</div>
-                          <div style={{ fontSize: 12, color: accent }}>Salles: {d.floors} — Boss: {d.bossTemplateId ?? '—'}</div>
+                          <div style={{ fontWeight: 600, color: accent }}>{d.name ?? d.id} {isActive ? '(Active)' : ''}</div>
+                          <div style={{ fontSize: 12, color: accent }}>Floors: {d.floors} — Boss: {d.bossTemplateId ?? '—'}</div>
                           {isActive && (
-                            <div style={{ fontSize: 12, marginTop: 4, color: accent }}>Étages restants: {dungeonProgress?.remaining ?? 0}</div>
+                            <div style={{ fontSize: 12, marginTop: 4, color: accent }}>Floors remaining: {dungeonProgress?.remaining ?? 0}</div>
                           )}
                         </li>
                       );
@@ -90,8 +90,8 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
         })}
 
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn" onClick={() => { onSelect(null); onClose(); }}>Désactiver la carte</button>
-          <button className="btn" onClick={onClose}>Fermer</button>
+          <button className="btn" onClick={() => { onSelect(null); onClose(); }}>Disable map</button>
+          <button className="btn" onClick={onClose}>Close</button>
         </div>
       </div>
     </Modal>

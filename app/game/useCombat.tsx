@@ -41,11 +41,11 @@ export default function useCombat({
   const onAttack = useCallback(() => {
     // prevent re-entrancy / repeated clicks while processing
     if (lockedRef.current) {
-      pushLog("Action en cours...");
+      pushLog("Action in progress...");
       return;
     }
     if (!enemies || enemies.length === 0) {
-      pushLog("Aucun ennemi à attaquer.");
+      pushLog("No enemies to attack.");
       return;
     }
     lockedRef.current = true;
@@ -70,18 +70,18 @@ export default function useCombat({
         if (e.hp <= 0) continue;
         const dodgePlayer = rollChance(snap.dodge ?? 0);
         if (dodgePlayer) {
-          pushLog(<>Esquive ! Vous évitez l'attaque de <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span>.</>);
-          if (onEffect) onEffect({ type: 'dodge', text: 'Esquive', target: 'player' });
+          pushLog(<>Dodge! You avoid the attack from <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span>.</>);
+          if (onEffect) onEffect({ type: 'dodge', text: 'Dodge', target: 'player' });
           continue;
         }
         const enemyCrit = rollChance(e.crit ?? 0);
         const edmg = calcDamage(Math.max(1, e.dmg ?? 1), snap.def ?? 0, enemyCrit);
         snap.hp = Math.max(0, snap.hp - edmg);
         if (enemyCrit) {
-          pushLog(<>💥 Coup critique ! <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> vous inflige {edmg} dégâts.</>);
+          pushLog(<>💥 Critical hit! <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> deals {edmg} damage to you.</>);
           if (onEffect) onEffect({ type: 'damage', text: String(edmg), kind: 'crit', target: 'player' });
         } else {
-          pushLog(<> <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> vous frappe pour {edmg} dégâts.</>);
+          pushLog(<> <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> hits you for {edmg} damage.</>);
           if (onEffect) onEffect({ type: 'damage', text: String(edmg), kind: 'hit', target: 'player' });
         }
       }
@@ -94,8 +94,8 @@ export default function useCombat({
       playerSnap = applyEnemyAttacksToPlayer(fastEnemies, playerSnap);
       setPlayer(() => playerSnap);
       if (playerSnap.hp <= 0) {
-        pushLog('Vous êtes mort...');
-        endEncounter('Vous êtes mort. Respawné à la taverne.', { type: 'death' });
+        pushLog('You are dead...');
+        endEncounter('You died. Respawned at the tavern.', { type: 'death' });
         lockedRef.current = false;
         return;
       }
@@ -113,15 +113,15 @@ export default function useCombat({
     const dodgeRoll = rollChance(target.dodge ?? 0);
     let postAttackEnemies = (enemies || []).slice();
     if (dodgeRoll) {
-      pushLog(<> <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span> esquive votre attaque&nbsp;!</>);
-      if (onEffect) onEffect({ type: 'dodge', text: 'Esquive', target: 'enemy', id: target.id });
+      pushLog(<> <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span> dodges your attack!</>);
+      if (onEffect) onEffect({ type: 'dodge', text: 'Dodge', target: 'enemy', id: target.id });
     } else {
       const baseAtk = Math.max(1, player.dmg ?? 1);
       const dmg = calcDamage(baseAtk, target.def ?? 0, critRoll);
       if (critRoll) {
-        pushLog(<>💥 Coup critique ! Vous infligez {dmg} dégâts à <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
+        pushLog(<>💥 Critical hit! You deal {dmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
       } else {
-        pushLog(<>Vous frappez <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span> pour {dmg} dégâts.</>);
+        pushLog(<>You hit <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span> for {dmg} damage.</>);
       }
       const updated = (enemies || []).map((e) => (e.id === target.id ? { ...e, hp: Math.max(0, e.hp - dmg) } : e));
       // update state and keep a local snapshot to avoid reading stale `enemies` later
@@ -131,7 +131,7 @@ export default function useCombat({
 
       const killed = updated.find((e) => e.id === target.id && e.hp === 0);
       if (killed) {
-        pushLog(<> <span className={`enemy-name ${killed.rarity ?? 'common'}`}>{killed.name ?? killed.id}</span> vaincu !</>);
+      pushLog(<> <span className={`enemy-name ${killed.rarity ?? 'common'}`}>{killed.name ?? killed.id}</span> defeated!</>);
         const baseXp = 6 + Math.floor(Math.random() * 11);
         const levelFactor = 1 + (killed.level ?? 1) / 10;
         const rarityMults: Record<string, number> = { common: 1, rare: 1.5, epic: 2, legendary: 3, mythic: 6 };
@@ -143,11 +143,11 @@ export default function useCombat({
         // try drop
         try {
           const dropped = typeof onDrop === 'function' ? onDrop(killed) : null;
-          if (dropped) {
+            if (dropped) {
             const statsText = dropped.stats && Object.keys(dropped.stats).length > 0
               ? Object.entries(dropped.stats).map(([k, v]) => `+${k} ${v}`).join(' • ')
               : '';
-            pushLog(`Loot obtenu: ${dropped.name} (${dropped.rarity})${statsText ? ' — ' + statsText : ''}`);
+            pushLog(`Loot obtained: ${dropped.name} (${dropped.rarity})${statsText ? ' — ' + statsText : ''}`);
             if (onEffect) onEffect({ type: 'item', text: dropped.name, target: 'player', id: dropped.id });
           }
         } catch (e) {
@@ -160,7 +160,7 @@ export default function useCombat({
     ((): void => {
       const alive = postAttackEnemies.filter((e: Enemy) => e.hp > 0);
       if (alive.length === 0) {
-        endEncounter('Tous les ennemis vaincus !', { type: 'clear' });
+        endEncounter('All enemies defeated!', { type: 'clear' });
       }
     })();
 
@@ -171,8 +171,8 @@ export default function useCombat({
       playerSnap = applyEnemyAttacksToPlayer(slowToAct, playerSnap);
       setPlayer(() => playerSnap);
       if (playerSnap.hp <= 0) {
-        pushLog('Vous êtes mort...');
-        endEncounter('Vous êtes mort. Respawné à la taverne.', { type: 'death' });
+        pushLog('You are dead...');
+        endEncounter('You died. Respawned at the tavern.', { type: 'death' });
         lockedRef.current = false;
         return;
       }
@@ -186,20 +186,20 @@ export default function useCombat({
 
   const onRun = useCallback(() => {
     if (lockedRef.current) {
-      pushLog("Action en cours...");
+      pushLog("Action in progress...");
       return;
     }
-    if (!enemies || enemies.length === 0) return pushLog("Vous n'êtes pas en combat.");
+    if (!enemies || enemies.length === 0) return pushLog("You're not in combat.");
     lockedRef.current = true;
     const success = Math.random() < 0.6;
     if (success) {
-      endEncounter('Vous avez fuis avec succès.', { type: 'flee' });
+      endEncounter('You successfully fled.', { type: 'flee' });
       lockedRef.current = false;
       return;
     }
 
     // failed run: only allow each enemy to attack once; fast enemies before player, slow after
-    pushLog('Fuite échouée ! Les ennemis attaquent.');
+    pushLog('Run failed! Enemies attack.');
     const aliveEnemies = (enemies || []).filter((e) => e.hp > 0);
     const pSpeed = player?.speed ?? 0;
     const fast = aliveEnemies.filter((e) => (e.speed ?? 0) > pSpeed);
@@ -211,19 +211,19 @@ export default function useCombat({
         if (e.hp <= 0) continue;
         const dodgePlayer = rollChance(playerSnap.dodge ?? 0);
         if (dodgePlayer) {
-          pushLog(<>Esquive ! Vous évitez l'attaque de <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span>.</>);
+          pushLog(<>Dodge! You avoid the attack from <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span>.</>);
           continue;
         }
         const enemyCrit = rollChance(e.crit ?? 0);
         const edmg = calcDamage(Math.max(1, e.dmg ?? 1), playerSnap.def ?? 0, enemyCrit);
         playerSnap.hp = Math.max(0, playerSnap.hp - edmg);
-        if (enemyCrit) pushLog(<>💥 Coup critique ! <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> vous inflige {edmg} dégâts.</>);
-        else pushLog(<> <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> vous frappe pour {edmg} dégâts.</>);
+        if (enemyCrit) pushLog(<>💥 Critical hit! <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> deals {edmg} damage to you.</>);
+        else pushLog(<> <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> hits you for {edmg} damage.</>);
       }
       setPlayer(() => playerSnap);
       if (playerSnap.hp <= 0) {
-        pushLog('Vous êtes mort...');
-        endEncounter('Vous êtes mort. Respawné à la taverne.', { type: 'death' });
+        pushLog('You are dead...');
+        endEncounter('You died. Respawned at the tavern.', { type: 'death' });
         lockedRef.current = false;
         return;
       }
@@ -234,20 +234,20 @@ export default function useCombat({
       for (const e of slow) {
         if (e.hp <= 0) continue;
         const dodgePlayer = rollChance(playerSnap.dodge ?? 0);
-        if (dodgePlayer) {
-          pushLog(<>Esquive ! Vous évitez l'attaque de <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span>.</>);
+          if (dodgePlayer) {
+            pushLog(<>Dodge! You avoid the attack from <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span>.</>);
           continue;
         }
         const enemyCrit = rollChance(e.crit ?? 0);
         const edmg = calcDamage(Math.max(1, e.dmg ?? 1), playerSnap.def ?? 0, enemyCrit);
         playerSnap.hp = Math.max(0, playerSnap.hp - edmg);
-        if (enemyCrit) pushLog(<>💥 Coup critique ! <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> vous inflige {edmg} dégâts.</>);
-        else pushLog(<> <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> vous frappe pour {edmg} dégâts.</>);
+        if (enemyCrit) pushLog(<>💥 Critical hit! <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> deals {edmg} damage to you.</>);
+        else pushLog(<> <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> hits you for {edmg} damage.</>);
       }
       setPlayer(() => playerSnap);
       if (playerSnap.hp <= 0) {
-        pushLog('Vous êtes mort...');
-        endEncounter('Vous êtes mort. Respawné à la taverne.', { type: 'death' });
+        pushLog('You are dead...');
+        endEncounter('You died. Respawned at the tavern.', { type: 'death' });
         lockedRef.current = false;
         return;
       }

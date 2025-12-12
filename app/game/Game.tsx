@@ -94,7 +94,7 @@ export default function Game() {
   const startEncounter = useCallback(() => {
     // prevent spawning if already in combat (use ref to avoid stale closure)
     if (inCombatRef.current) {
-      pushLog("Vous êtes déjà en combat.");
+      pushLog("You're already in combat.");
       return;
     }
     // clear any existing enemies from a previous session to avoid mixed spawns
@@ -130,7 +130,7 @@ export default function Game() {
         dungeonProgressRef.current.activeDungeonId = null;
         dungeonProgressRef.current.remaining = 0;
         dungeonProgressRef.current.fightsRemainingBeforeDungeon = threshold;
-        pushLog(`Zone sélectionnée: farm ${threshold} combat(s) requis avant donjon.`);
+        pushLog(`Selected map: farm ${threshold} fights required before dungeon.`);
       }
     } else {
       // not a dungeon-capable map: reset progress
@@ -179,12 +179,12 @@ export default function Game() {
 
     encounterCountRef.current = spawned;
     if (spawned === 0) {
-      pushLog(`Aucun ennemi disponible pour cette zone.`);
+      pushLog(`No enemies available for this area.`);
       console.log('[DEBUG] spawned encounter - none', { session: encounterSessionRef.current, isDungeonActive, dungeonProgress: dungeonProgressRef.current });
       return;
     }
 
-    pushLog(`Nouvelle rencontre: ${spawned} ennemi(s) apparu(s).`);
+    pushLog(`New encounter: ${spawned} enemy(s) appeared.`);
     console.log('[DEBUG] spawned encounter', { session: encounterSessionRef.current, requested: count, spawned, isDungeonActive, dungeonProgress: dungeonProgressRef.current });
     setInCombat(true);
   }, [spawnEnemy, pushLog, selectedMapId]);
@@ -196,10 +196,10 @@ export default function Game() {
     let total = 0;
     for (let i = 0; i < count; i++) total += (Math.random() * (2 - 0.8) + 0.8);
     total = Number(total.toFixed(2));
-    try {
+      try {
       spawnGoldPickup(total, player.x, player.y);
       // notify player via log and a short effect so drops are visible
-      pushLog(`Pièces tombées: +${total} g`);
+      pushLog(`Gold dropped: +${total} g`);
       try { addEffect({ type: 'pickup', text: `+${total} g`, target: 'player' }); } catch (e) {}
     } catch (e) {}
     encounterCountRef.current = 0;
@@ -208,7 +208,7 @@ export default function Game() {
     // if this endEncounter reports a death, restore player HP to max (respawn)
     if (opts?.type === 'death') {
       try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
-      try { addToast && addToast(msg ? String(msg) : 'Vous avez péri.', 'error', 4000); } catch (e) {}
+      try { addToast && addToast(msg ? String(msg) : 'You died.', 'error', 4000); } catch (e) {}
     }
     if (msg) pushLog(msg);
     // Track farming progress: if player is on a map that has dungeons but the dungeon
@@ -234,8 +234,8 @@ export default function Game() {
               dungeonProgressRef.current.remaining = 0;
               // reset the fightsRemainingBeforeDungeon to 0 after a death so the dungeon threshold is cleared
               dungeonProgressRef.current.fightsRemainingBeforeDungeon = 0;
-              try { console.log('la porte du donjon s\'éloigne de vous..'); } catch (e) {}
-              try { addToast && addToast("La porte du donjon s'éloigne de vous..", 'error', 4000); } catch (e) {}
+              try { console.log('the dungeon gate moves away from you..'); } catch (e) {}
+              try { addToast && addToast("The dungeon gate moves away from you..", 'error', 4000); } catch (e) {}
             // mark the current encounter session as processed so no residual endEncounter call will decrement counters
             const sess = encounterSessionRef.current || 0;
             dungeonProgressRef.current.lastProcessedSession = sess;
@@ -245,7 +245,7 @@ export default function Game() {
             console.log('[DEBUG] reset dungeon progress on death', { map: currentMap?.id, threshold, session: sess, dungeonProgress: dungeonProgressRef.current });
             // respawn player
             try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
-            pushLog("Vous avez péri — expulsé du donjon. Le décompte est réinitialisé.");
+            pushLog("You died — expelled from the dungeon. Progress has been reset.");
           } catch (e) { console.error('[DEBUG] error resetting dungeon on death', e); }
           // stop further processing in this endEncounter to avoid immediately decrementing the farm counter
           return;
@@ -275,13 +275,13 @@ export default function Game() {
               dungeonProgressRef.current.remaining = d?.floors ?? 0;
               // suppress decrements for the session that activated the dungeon
               dungeonProgressRef.current.suppressUntilSession = (encounterSessionRef.current || 0) + 1;
-              const dungeonName = d?.name ?? d?.id ?? 'donjon';
+                      const dungeonName = d?.name ?? d?.id ?? 'dungeon';
               console.log('[DEBUG] activating dungeon', { dungeonIndex: idx, dungeonId: dungeonProgressRef.current.activeDungeonId, dungeonName, currentMap: currentMap.id });
               syncDungeonUI();
               // start the dungeon encounter immediately, then notify the player
                 try { window.setTimeout(() => { try { startEncounter(); console.log('[DEBUG] scheduled startEncounter invoked'); } catch (e) { console.error('[DEBUG] scheduled startEncounter error', e); } }, 50); } catch (e) { console.error('[DEBUG] scheduling startEncounter error', e); }
-                pushLog(`Vous entrez dans le donjon « ${dungeonName} » sur ${currentMap.name} — bonne chance !`);
-                try { addEffect({ type: 'dungeon', text: `Entrée: ${dungeonName}`, target: 'player' }); } catch (e) {}
+                pushLog(`You enter the dungeon '${dungeonName}' on ${currentMap.name} — good luck!`);
+                  try { addEffect({ type: 'dungeon', text: `Entrance: ${dungeonName}`, target: 'player' }); } catch (e) {}
                 // stop further processing in this endEncounter to avoid immediately decrementing dungeon remaining
                 return;
           }
@@ -303,14 +303,14 @@ export default function Game() {
             console.log('[DEBUG] dungeon room completed - remaining floors', { beforeRem, afterRem });
             syncDungeonUI();
             if (afterRem === 0) {
-              pushLog(`Donjon terminé ! Bravo.`);
+              pushLog(`Dungeon complete! Well done.`);
               // clear dungeon progress
               dungeonProgressRef.current.activeMapId = null;
               dungeonProgressRef.current.activeDungeonIndex = null;
               dungeonProgressRef.current.activeDungeonId = null;
               syncDungeonUI();
               } else {
-              pushLog(`Salle terminée — reste ${afterRem} étage(s)`);
+              pushLog(`Room cleared — ${afterRem} floor(s) remaining`);
             }
           }
         }
@@ -362,7 +362,7 @@ export default function Game() {
         dungeonProgressRef.current.remaining = 0;
         dungeonProgressRef.current.fightsRemainingBeforeDungeon = threshold;
         dungeonProgressRef.current.lastProcessedSession = undefined as any;
-        pushLog(`Zone sélectionnée: farm ${threshold} combat(s) requis avant donjon.`);
+        pushLog(`Selected map: farm ${threshold} fights required before dungeon.`);
         console.log('[DEBUG] map selected - init farming', { mapId: currentMap.id, threshold, dungeonProgress: dungeonProgressRef.current });
         syncDungeonUI();
       } else if (!currentMap) {
@@ -381,17 +381,17 @@ export default function Game() {
     try {
       const ok = buyPotion(type);
       if (ok) {
-        const label = type === 'small' ? 'petite potion' : (type === 'medium' ? 'potion moyenne' : 'grande potion');
-        const msg = `Achat effectué: ${label}.`;
+        const label = type === 'small' ? 'small potion' : (type === 'medium' ? 'medium potion' : 'large potion');
+        const msg = `Purchase successful: ${label}.`;
         pushLog(msg);
         return { ok: true, msg };
       } else {
-        const msg = "Pas assez d'or";
+        const msg = "Not enough gold";
         pushLog(msg);
         return { ok: false, msg };
       }
     } catch (e) {
-      const msg = 'Erreur lors de l\'achat';
+      const msg = 'Error during purchase';
       pushLog(msg);
       return { ok: false, msg };
     }
@@ -407,7 +407,7 @@ export default function Game() {
       )}
       <header className="app-header">
         <h1>Arena Quest</h1>
-        <p className="subtitle">Adventure mmorp - mobile first</p>
+        <p className="subtitle">Adventure mmorp</p>
       </header>
 
       <div className="main-grid">
@@ -422,7 +422,7 @@ export default function Game() {
               onClick={startEncounter}
               disabled={inCombat}
             >
-              {inCombat ? "En combat..." : (selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null ? "Prochaine salle" : "Aller à l'arène")}
+              {inCombat ? "In combat..." : (selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null ? "Next room" : "Go to Arena")}
             </button>
             {/* dungeon banner when active */}
             {selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && (dungeonUI.activeDungeonIndex != null) && (
@@ -433,7 +433,7 @@ export default function Game() {
                 const current = Math.min(total, (def ? (def.floors - (dungeonUI.remaining ?? 0) + 1) : 1));
                 return (
                   <div style={{ marginTop: 8, padding: '6px 8px', borderRadius: 6, background: 'rgba(0,0,0,0.45)', color: '#fff', fontWeight: 700 }}>
-                    Donjon: {def?.name ?? def?.id} — Salle {current}/{total}
+                    Dungeon: {def?.name ?? def?.id} — Room {current}/{total}
                   </div>
                 );
               })()
@@ -464,8 +464,8 @@ export default function Game() {
             try { console.log('equip requested', item && item.id, item && item.slot); } catch (e) {}
             try {
               const ok = equipItem(item);
-              if (ok) pushLog(`Équipé: ${item.name} (${item.slot})`);
-              else pushLog(`Impossible d'équiper ${item.name} — introuvable dans l'inventaire.`);
+              if (ok) pushLog(`Equipped: ${item.name} (${item.slot})`);
+              else pushLog(`Unable to equip ${item.name} — not found in inventory.`);
             } catch (e) {
               try { console.error('equip error', e); } catch (e) {}
             }
@@ -477,7 +477,7 @@ export default function Game() {
           onSell={(itemId: string) => {
             try { console.log('sell requested', itemId); } catch (e) {}
             const it = inventory.find((i) => i.id === itemId);
-            if (!it) { pushLog('Vente impossible.'); return; }
+            if (!it) { pushLog('Unable to sell.'); return; }
             const high = ['epic', 'legendary', 'mythic'];
             if (high.includes(it.rarity)) {
               // open confirm modal
@@ -486,16 +486,16 @@ export default function Game() {
               return;
             }
             const ok = sellItem(itemId);
-            if (ok) pushLog(`Vend: +${it.cost ?? 0} g`);
-            else pushLog('Vente impossible.');
+            if (ok) pushLog(`Sold: +${it.cost ?? 0} g`);
+            else pushLog('Unable to sell.');
           }}
           onUse={(itemId: string) => {
             try { console.log('use requested', itemId); } catch (e) {}
             const ok = consumeItem(itemId);
-            if (ok) pushLog('Potion utilisée. PV restaurés.');
-            else pushLog("Impossible d'utiliser cet objet.");
+            if (ok) pushLog('Potion used. HP restored.');
+            else pushLog("Unable to use this item.");
             // also show a global toast so user always sees feedback
-            try { addToast(ok ? 'Potion utilisée. PV restaurés.' : "Impossible d'utiliser cet objet.", ok ? 'ok' : 'error'); } catch (e) {}
+            try { addToast(ok ? 'Potion used. HP restored.' : "Unable to use this item.", ok ? 'ok' : 'error'); } catch (e) {}
             return ok;
           }}
           onClose={closeModal}
@@ -512,13 +512,13 @@ export default function Game() {
       )}
       {modalName === 'maps' && (
         <MapsModal onClose={closeModal} onSelect={(id?: string | null) => {
-          try {
+              try {
             setSelectedMapId(id ?? null);
             if (id) {
               const mm = mapsList.find((x) => x.id === id);
-              pushLog && pushLog(`Carte sélectionnée: ${mm?.name ?? id}`);
+              pushLog && pushLog(`Map selected: ${mm?.name ?? id}`);
             } else {
-              pushLog && pushLog('Carte désactivée');
+              pushLog && pushLog('Map deselected');
             }
           } catch (e) {}
         }} selectedId={selectedMapId} dungeonProgress={dungeonProgressRef.current} />
@@ -526,13 +526,13 @@ export default function Game() {
       {modalName === 'confirm' && modalProps && (
         <Modal title="Confirmer la vente" onClose={closeModal}>
           <div style={{ display: 'grid', gap: 12 }}>
-            <div>Voulez-vous réellement vendre <strong>{modalProps.item.name}</strong> pour <strong>{modalProps.item.cost ?? 0} g</strong> ?</div>
+            <div>Do you really want to sell <strong>{modalProps.item.name}</strong> for <strong>{modalProps.item.cost ?? 0} g</strong>?</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn primary" onClick={() => {
-                try { const ok = sellItem(modalProps.item.id); if (ok) pushLog(`Vend: +${modalProps.item.cost ?? 0} g`); else pushLog('Vente impossible.'); } catch(e){ try{console.error(e)}catch(e){} }
+                try { const ok = sellItem(modalProps.item.id); if (ok) pushLog(`Sold: +${modalProps.item.cost ?? 0} g`); else pushLog('Unable to sell.'); } catch(e){ try{console.error(e)}catch(e){} }
                 closeModal();
-              }}>Vendre</button>
-              <button className="btn" onClick={closeModal}>Annuler</button>
+              }}>Sell</button>
+              <button className="btn" onClick={closeModal}>Cancel</button>
             </div>
           </div>
         </Modal>
