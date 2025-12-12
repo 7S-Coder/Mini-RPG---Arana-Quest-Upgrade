@@ -6,26 +6,24 @@ import Player from "../components/Player";
 import ArenaPanel from "../components/arena/ArenaPanel";
 import RightSidebar from "../components/RightSidebar";
 import InventoryModal from "../components/modales/InventoryModal";
+import Modal from "../components/modales/Modal";
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import useCombat from "./useCombat";
 import EffectsLayer from "../components/EffectsLayer";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup } = useGameState();
 
   // modal system (generalized)
   const [modalName, setModalName] = useState<string | null>(null);
   const [modalProps, setModalProps] = useState<any>(null);
   const openModal = (name: string, props?: any) => {
-    // debug log to help verify clicks
-    try { console.log("openModal ->", name, props); } catch (e) {}
+    // compute final props (apply defaults for inventory modal)
+    const resolved = name === "inventory" ? (props ?? { inventory, equipment }) : (props ?? null);
+    // debug log to help verify clicks and show resolved props
+    try { console.log("openModal ->", name, resolved); } catch (e) {}
     setModalName(name);
-    // if opening inventory, include current inventory/equipment when no props provided
-    if (name === "inventory") {
-      setModalProps(props ?? { inventory, equipment });
-    } else {
-      setModalProps(props ?? null);
-    }
+    setModalProps(resolved);
   };
   const closeModal = () => { setModalName(null); setModalProps(null); };
 
@@ -51,6 +49,7 @@ export default function Game() {
   const [logs, setLogs] = useState<string[]>([]);
   const [effects, setEffects] = useState<Array<{ id: string; type: string; text?: string; kind?: string; target?: string; x?: number; y?: number }>>([]);
   const logClearRef = useRef<number | null>(null);
+  const encounterCountRef = useRef<number>(0);
 
   const pushLog = useCallback((text: string) => {
     setLogs((l) => {
@@ -83,12 +82,25 @@ export default function Game() {
       logClearRef.current = null;
     }
     const count = 1 + Math.floor(Math.random() * 3);
+    encounterCountRef.current = count;
     for (let i = 0; i < count; i++) spawnEnemy();
     pushLog(`Nouvelle rencontre: ${count} ennemi(s) apparu(s).`);
     setInCombat(true);
-  }, [spawnEnemy, pushLog]);
+  }, [spawnEnemy, pushLog, inCombat]);
 
   const endEncounter = useCallback((msg?: string) => {
+    // spawn a single gold pickup for the encounter (sum of per-enemy dust)
+    const count = encounterCountRef.current || 0;
+    let total = 0;
+    for (let i = 0; i < count; i++) total += (Math.random() * (2 - 0.8) + 0.8);
+    total = Number(total.toFixed(2));
+    try {
+      spawnGoldPickup(total, player.x, player.y);
+      // notify player via log and a short effect so drops are visible
+      pushLog(`Pièces tombées: +${total} g`);
+      try { addEffect({ type: 'pickup', text: `+${total} g`, target: 'player' }); } catch (e) {}
+    } catch (e) {}
+    encounterCountRef.current = 0;
     setInCombat(false);
     setEnemies([]);
     if (msg) pushLog(msg);
@@ -98,7 +110,7 @@ export default function Game() {
       setLogs([]);
       logClearRef.current = null;
     }, 1000);
-  }, [setEnemies, pushLog]);
+  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y]);
 
   // clear timeout on unmount
   useEffect(() => {
@@ -126,6 +138,12 @@ export default function Game() {
 
   return (
     <div className="app-shell">
+      {/* debug badge: shows current modalName (temporary) */}
+      {modalName && (
+        <div style={{ position: 'fixed', right: 14, top: 14, background: 'rgba(0,0,0,0.6)', color: '#fff', padding: '6px 10px', borderRadius: 8, zIndex: 99999, fontSize: 12 }}>
+          modal: {modalName}
+        </div>
+      )}
       <header className="app-header">
         <h1>Arena Quest</h1>
         <p className="subtitle">Adventure mmorp - mobile first</p>
@@ -148,7 +166,7 @@ export default function Game() {
           </div>
 
           <div style={{ position: 'relative' }}>
-            <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} />
+            <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} pushLog={pushLog} />
             <EffectsLayer effects={effects} />
           </div>
         </main>
@@ -158,7 +176,7 @@ export default function Game() {
         </aside>
       </div>
       {modalName === "inventory" && (
-        <InventoryModal
+          <InventoryModal
           inventory={inventory}
           equipment={equipment}
           onEquip={(item: any) => {
@@ -175,8 +193,37 @@ export default function Game() {
             try { console.log('unequip requested', slot); } catch (e) {}
             unequipItem(slot as any);
           }}
+          onSell={(itemId: string) => {
+            try { console.log('sell requested', itemId); } catch (e) {}
+            const it = inventory.find((i) => i.id === itemId);
+            if (!it) { pushLog('Vente impossible.'); return; }
+            const high = ['epic', 'legendary', 'mythic'];
+            if (high.includes(it.rarity)) {
+              // open confirm modal
+              setModalName('confirm');
+              setModalProps({ item: it });
+              return;
+            }
+            const ok = sellItem(itemId);
+            if (ok) pushLog(`Vend: +${it.cost ?? 0} g`);
+            else pushLog('Vente impossible.');
+          }}
           onClose={closeModal}
         />
+      )}
+      {modalName === 'confirm' && modalProps && (
+        <Modal title="Confirmer la vente" onClose={closeModal}>
+          <div style={{ display: 'grid', gap: 12 }}>
+            <div>Voulez-vous réellement vendre <strong>{modalProps.item.name}</strong> pour <strong>{modalProps.item.cost ?? 0} g</strong> ?</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button className="btn primary" onClick={() => {
+                try { const ok = sellItem(modalProps.item.id); if (ok) pushLog(`Vend: +${modalProps.item.cost ?? 0} g`); else pushLog('Vente impossible.'); } catch(e){ try{console.error(e)}catch(e){} }
+                closeModal();
+              }}>Vendre</button>
+              <button className="btn" onClick={closeModal}>Annuler</button>
+            </div>
+          </div>
+        </Modal>
       )}
     </div>
   );

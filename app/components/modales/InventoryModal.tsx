@@ -8,6 +8,7 @@ type Props = {
   equipment: Record<string, any>;
   onEquip: (item: any) => void;
   onUnequip: (slot: string) => void;
+  onSell: (itemId: string) => void;
   onClose: () => void;
 };
 
@@ -29,17 +30,19 @@ const SLOT_POS: Record<string, React.CSSProperties> = {
   arme: { position: 'absolute', top: '45%', left: 12 },
 };
 
-export default function InventoryModal({ inventory, equipment, onEquip, onUnequip, onClose }: Props) {
+export default function InventoryModal({ inventory, equipment, onEquip, onUnequip, onSell, onClose }: Props) {
   // Inline Tooltip component: shows formatted item details on hover (desktop)
+  // compute a price heuristic (shared)
+  const priceFor = (it: any) => {
+    if (!it) return '';
+    if (typeof it.cost === 'number') return it.cost;
+    const rarityMult: Record<string, number> = { common: 1, rare: 1.6, epic: 2.6, legendary: 5, mythic: 12 };
+    const base = 10 + Object.values(it.stats || {}).reduce((s: number, v: any) => s + Number(v || 0), 0) * 5;
+    return Math.max(1, Math.round(base * (rarityMult[it.rarity] || 1)));
+  };
+
   const Tooltip = ({ item, children }: { item: any; children: React.ReactNode }) => {
     const [visible, setVisible] = React.useState(false);
-    // compute a price heuristic
-    const priceFor = (it: any) => {
-      if (!it) return '';
-      const rarityMult: Record<string, number> = { common: 1, rare: 1.6, epic: 2.6, legendary: 5, mythic: 12 };
-      const base = 10 + Object.values(it.stats || {}).reduce((s: number, v: any) => s + Number(v || 0), 0) * 5;
-      return Math.max(1, Math.round(base * (rarityMult[it.rarity] || 1)));
-    };
 
     return (
       <div style={{ position: 'relative', display: 'inline-block' }} onMouseEnter={() => setVisible(true)} onMouseLeave={() => setVisible(false)}>
@@ -121,8 +124,23 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
                     <div style={{ fontSize: 12, color: '#999' }}>{Object.entries(it.stats || {}).map(([k,v]) => `${k}: ${v}`).join(' • ')}</div>
                   </div>
                   <div style={{ display: 'flex', gap: 8 }}>
-                    <button type="button" onClick={(e) => { e.stopPropagation(); try { console.log('InventoryModal equip click', it && it.id, it && it.slot); } catch(e){}; onEquip(it); }}>Équiper ({it.slot})</button>
-                    <button type="button" onClick={(e) => { e.stopPropagation(); /* placeholder for sell */ }}>Vendre</button>
+                    <button type="button" onClick={(e) => {
+                      e.stopPropagation();
+                      try { console.log('InventoryModal equip click', it && it.id, it && it.slot); } catch (e) {}
+                      try {
+                        if (!onEquip) { console.warn('onEquip not provided'); return; }
+                        // dispatch async to avoid any propagation edge-cases
+                        setTimeout(() => { try { onEquip(it); } catch (err) { console.error('onEquip error', err); } }, 0);
+                      } catch (err) { console.error(err); }
+                    }}>Équiper ({it.slot})</button>
+                    <button type="button" onClick={(e) => {
+                      e.stopPropagation();
+                      try { console.log('InventoryModal sell click', it && it.id); } catch (e) {}
+                      try {
+                        if (!onSell) { console.warn('onSell not provided'); return; }
+                        setTimeout(() => { try { onSell(it.id); } catch (err) { console.error('onSell error', err); } }, 0);
+                      } catch (err) { console.error(err); }
+                    }}>Vendre ({priceFor(it)} g)</button>
                   </div>
                 </div>
               </Tooltip>

@@ -15,6 +15,7 @@ type Player = {
   def: number;
   speed: number; // px per second
   lastLevelUpAt?: number | null;
+  gold?: number;
 };
 
 type Rarity = "common" | "rare" | "epic" | "legendary" | "mythic";
@@ -24,6 +25,9 @@ type Item = {
   slot: "familier" | "bottes" | "ceinture" | "chapeau" | "plastron" | "anneau" | "arme";
   name: string;
   rarity: Rarity;
+  // category groups types of items (weapon, armor, accessory, pet)
+  category?: "weapon" | "armor" | "accessory" | "pet";
+  cost?: number;
   stats?: Record<string, number>;
 };
 
@@ -93,10 +97,11 @@ export function useGameState() {
     crit: 3,
     def: 2,
     speed: 120, // default 120 px/s
+    gold: 0,
   });
 
   // equipment slots and inventory
-  const [equipment, setEquipment] = useState<Record<string, Item | null>>({
+  const [equipment, setEquipment] = useState<Record<Item["slot"], Item | null>>({
     familier: null,
     bottes: null,
     ceinture: null,
@@ -106,6 +111,35 @@ export function useGameState() {
     arme: null,
   });
   const [inventory, setInventory] = useState<Item[]>([]);
+  type Pickup = {
+    id: string;
+    kind: "gold" | "item";
+    amount?: number; // for gold
+    item?: Item; // for item pickups
+    x?: number;
+    y?: number;
+    createdAt?: number;
+  };
+  const [pickups, setPickups] = useState<Pickup[]>([]);
+  const collectedRef = (typeof (globalThis as any) !== 'undefined' ? (globalThis as any).__collectedPickupIds : undefined) || { current: new Set<string>() } as React.MutableRefObject<Set<string>>;
+  if (!('current' in collectedRef)) (collectedRef as any) = { current: new Set<string>() };
+
+  // clamp coordinates to the visible viewport (avoid spawning pickups off-screen)
+  const clampToViewport = (x?: number, y?: number) => {
+    try {
+      if (typeof window === 'undefined') return { x: x ?? 200, y: y ?? 120 };
+      const padX = 48;
+      const padTop = 80;
+      const padBottom = 120;
+      const w = window.innerWidth || 800;
+      const h = window.innerHeight || 600;
+      const cx = Math.min(Math.max(typeof x === 'number' ? x : w / 2, padX), Math.max(w - padX, padX));
+      const cy = Math.min(Math.max(typeof y === 'number' ? y : h / 2, padTop), Math.max(h - padBottom, padTop));
+      return { x: Math.round(cx), y: Math.round(cy) };
+    } catch (e) {
+      return { x: x ?? 200, y: y ?? 120 };
+    }
+  };
 
   const xpToNextLevel = (lvl: number) => Math.max(20, 100 * lvl);
 
@@ -155,18 +189,62 @@ export function useGameState() {
 
   // Static pool of item templates to draw from when an enemy drops loot.
   // Templates do not include `id` or `rarity` so they can be cloned and assigned a unique id + rarity on drop.
-  type ItemTemplate = Omit<Item, "id" | "rarity"> & { weight?: number };
+  type ItemTemplate = Omit<Item, "id" | "rarity"> & { weight?: number; rarity?: Rarity };
   const ITEM_POOL: ItemTemplate[] = [
-    { slot: "chapeau", name: "Chapeau du novice", stats: { crit: 1 }, weight: 4 },
-    { slot: "bottes", name: "Bottes du coursier", stats: { dmg: 1 }, weight: 4 },
-    { slot: "anneau", name: "Anneau modeste", stats: { crit: 1, hp: 3 }, weight: 2 },
-    { slot: "plastron", name: "Plastron léger", stats: { hp: 8, def: 1 }, weight: 1 },
-    { slot: "ceinture", name: "Ceinture robuste", stats: { hp: 5, def: 1 }, weight: 2 },
-    { slot: "arme", name: "Epée émoussée", stats: { dmg: 2 }, weight: 3 },
-    { slot: "familier", name: "Compagnon fidèle", stats: { dmg: 1, hp: 4 }, weight: 2 },
+    // Chapeaux
+    { slot: "chapeau", name: "Chapeau de paille", category: "armor", stats: { hp: 1 }, weight: 4, rarity: "common" },
+    { slot: "chapeau", name: "Toque du cuisinier", category: "armor", stats: { hp: 1, dodge: 1 }, weight: 4, rarity: "common" },
+    { slot: "chapeau", name: "Bonnet en laine", category: "armor", stats: { hp: 4, dodge: 2 }, weight: 4, rarity: "rare" },
+    { slot: "chapeau", name: "Casque de fer", category: "armor", stats: { hp: 6, def: 1 }, weight: 2, rarity: "rare" },
+    { slot: "chapeau", name: "Heaume du guerrier", category: "armor", stats: { hp: 10, def: 2 }, weight: 1, rarity: "epic" },
+    // Bottes
+    { slot : "bottes", name: "Bottes en cuir", category: "armor", stats: { dodge: 1 }, weight: 4, rarity: "common" },
+    { slot: "bottes", name: "Bottes du coursier", category: "armor", stats: { dmg: 1 }, weight: 4, rarity: "common" },
+    { slot: "bottes", name: "Bottes agiles", category: "armor", stats: { dodge: 3, dmg: 1 }, weight: 2, rarity: "rare" },
+    { slot: "bottes", name: "Bottes de rapidité", category: "armor", stats: { dodge: 5, speed: 10 }, weight: 1, rarity: "epic" },
+    { slot: "bottes", name: "Bottes épiques", category: "armor", stats: { dodge: 7, speed: 12, dmg: 2 }, weight: 0.8, rarity: "epic" },
+    { slot: "bottes", name: "Bottes légendaires", category: "armor", stats: { dodge: 8, speed: 15, dmg: 2 }, weight: 0.5, rarity: "legendary" },
+    { slot: "bottes", name: "Bottes du Phoenix", category: "armor", stats: { dodge: 12, speed: 20, dmg: 3, crit: 6 }, weight: 0.2, rarity: "mythic" },
+    // Anneaux
+    { slot: "anneau", name: "Anneau en mousse", category: "accessory", stats: { hp: 1 }, weight: 3, rarity: "common" },
+    { slot: "anneau", name: "Anneau modeste", category: "accessory", stats: { crit: 1, hp: 3 }, weight: 2, rarity: "rare" },
+    { slot: "anneau", name: "Bague du coq", category: "accessory", stats: { dodge: 4, crit: 2 }, weight: 1.5, rarity: "rare" },
+    { slot: "anneau", name: "Anneau de précision", category: "accessory", stats: { crit: 3, dmg: 2 }, weight: 1, rarity: "epic" },
+    { slot: "anneau", name: "Anneau légendaire", category: "accessory", stats: { crit: 5, dmg: 3, hp: 8 }, weight: 0.5, rarity: "legendary" },
+    { slot: "anneau", name: "Anneau du Dragon", category: "accessory", stats: { crit: 8, dmg: 5, hp: 12 }, weight: 0.2, rarity: "mythic" },
+    // Plastrons
+    { slot: "plastron", name: "Tunique simple", category: "armor", stats: { hp: 4 }, weight: 3, rarity: "common" },
+    { slot: "plastron", name: "Cuirasse basique", category: "armor", stats: { hp: 6, def: 1 }, weight: 2, rarity: "common" },
+    { slot: "plastron", name: "Plastron léger", category: "armor", stats: { hp: 8, def: 1 }, weight: 1, rarity: "rare" },
+    { slot: "plastron", name: "Cuirasse solide", category: "armor", stats: { hp: 12, def: 3 }, weight: 0.8, rarity: "epic" },
+    { slot: "plastron", name: "Armure lourde", category: "armor", stats: { hp: 18, def: 5 }, weight: 0.5, rarity: "legendary" },
+    { slot: "plastron", name: "Armure titanesque", category: "armor", stats: { hp: 25, def: 8, crit: 4 }, weight: 0.3, rarity: "mythic" },
+    // Ceintures
+    { slot: "ceinture", name: "Ceinture en corde", category: "armor", stats: { hp: 2 }, weight: 4, rarity: "common" },
+    { slot: "ceinture", name: "Ceinture de cuir", category: "armor", stats: { hp: 3, def: 1 }, weight: 3, rarity: "common" },
+    { slot: "ceinture", name: "Ceinture renforcée", category: "armor", stats: { hp: 6, def: 2 }, weight: 2, rarity: "rare" },
+    { slot: "ceinture", name: "Ceinture du combattant", category: "armor", stats: { hp: 8, def: 3 }, weight: 1.5, rarity: "rare" },
+    { slot: "ceinture", name: "Ceinture de bataille", category: "armor", stats: { hp: 10, def: 5 }, weight: 1, rarity: "epic" },
+    { slot: "ceinture", name: "Ceinture légendaire", category: "armor", stats: { hp: 15, def: 8 }, weight: 0.5, rarity: "legendary" },
+    { slot: "ceinture", name: "Ceinture du Colosse", category: "armor", stats: { hp: 27, def: 10, dmg: 7 }, weight: 0.3, rarity: "mythic" },
+    // Armes
+    { slot: "arme", name: "Dague émoussée", category: "weapon", stats: { dmg: 2 }, weight: 4, rarity: "common" },
+    { slot: "arme", name: "Épée courte", category: "weapon", stats: { dmg: 4 }, weight: 3, rarity: "common" },
+    { slot: "arme", name: "Masse d'armes", category: "weapon", stats: { dmg: 6 }, weight: 2, rarity: "rare" },
+    { slot: "arme", name: "Épée longue", category: "weapon", stats: { dmg: 8, crit: 2 }, weight: 1.5, rarity: "rare" },
+    { slot: "arme", name: "Hache de bataille", category: "weapon", stats: { dmg: 12, crit: 3 }, weight: 1, rarity: "epic" },
+    { slot: "arme", name: "Lame légendaire", category: "weapon", stats: { dmg: 16, crit: 5 }, weight: 0.5, rarity: "legendary" },
+    { slot: "arme", name: "Excalibur", category: "weapon", stats: { dmg: 22, crit: 8, dodge: 4 }, weight: 0.2, rarity: "mythic" },
+    // Familiers
+    { slot: "familier", name: "Petit dragon", category: "pet", stats: { dmg: 3, hp: 5 }, weight: 1, rarity: "epic" },
+    { slot: "familier", name: "Fée lumineuse", category: "pet", stats: { hp: 6, dodge: 5 }, weight: 1, rarity: "legendary" },
+    { slot: "familier", name: "Phénix éternel", category: "pet", stats: { dmg: 12, hp: 20, crit: 8, dodge:1 }, weight: 0.5, rarity: "mythic" },
   ];
 
   const INVENTORY_MAX = 48;
+
+  // overall chance that an enemy will drop an item at all
+  const DROP_CHANCE = 0.10; // 10% chance by default
 
   const addToInventory = (item: Item) => {
     setInventory((prev) => {
@@ -175,6 +253,16 @@ export function useGameState() {
       if (next.length > INVENTORY_MAX) next.shift();
       return next;
     });
+  };
+
+  // sell an item from inventory, credit player's gold by its cost
+  const sellItem = (itemId: string): boolean => {
+    const it = inventory.find((i) => i.id === itemId);
+    if (!it) return false;
+    const price = it.cost ?? computeItemCost(it.stats, it.rarity);
+    setInventory((prev) => prev.filter((i) => i.id !== itemId));
+    setPlayer((p) => ({ ...p, gold: (p.gold || 0) + price }));
+    return true;
   };
 
   const rollRarity = (): Rarity | null => {
@@ -238,14 +326,25 @@ export function useGameState() {
         break;
     }
 
-    return { id: uid(), slot, name, rarity, stats };
+    const slotToCategory: Record<Item["slot"], Item["category"]> = {
+      arme: "weapon",
+      plastron: "armor",
+      chapeau: "armor",
+      bottes: "armor",
+      ceinture: "armor",
+      anneau: "accessory",
+      familier: "pet",
+    };
+
+    const scaled = scaleStats(stats, rarity);
+    return { id: uid(), slot, name, rarity, category: slotToCategory[slot], stats: scaled, cost: computeItemCost(scaled as Record<string, number> | undefined, rarity) };
   };
 
   const maybeDropFromEnemy = (enemy: Enemy): Item | null => {
-    // roll rarity as before; if none, no drop
-    const rarity = rollRarity();
-    if (!rarity) return null;
+    // overall roll: skip most item drops to keep loot rare
+    if (Math.random() > DROP_CHANCE) return null;
 
+    // pick template first (weighted) then determine rarity: template rarity wins, otherwise roll
     // weighted pick from ITEM_POOL (fall back to uniform if no weights)
     const totalWeight = ITEM_POOL.reduce((s, t) => s + (t.weight ?? 1), 0);
     let chosen: ItemTemplate;
@@ -263,15 +362,138 @@ export function useGameState() {
       }
     }
 
+    // determine rarity: use template rarity if present otherwise roll
+    let finalRarity = chosen.rarity ?? rollRarity();
+    // clamp to enemy rarity (do not allow higher-rarity drops than the enemy)
+    // but allow an extremely small chance to upgrade above enemy rarity
+    const RARITY_ORDER: Rarity[] = ["common", "rare", "epic", "legendary", "mythic"];
+    const UPGRADE_CHANCE = 0.00001; // 0.001%
+    if (finalRarity && enemy.rarity) {
+      const gotIdx = RARITY_ORDER.indexOf(finalRarity);
+      const enemyIdx = RARITY_ORDER.indexOf(enemy.rarity as Rarity);
+      if (gotIdx > enemyIdx) {
+        if (!(Math.random() < UPGRADE_CHANCE)) {
+          finalRarity = enemy.rarity as Rarity;
+        }
+      }
+    }
+    if (!finalRarity) return null;
+
+
     const item: Item = {
       id: uid(),
       slot: chosen.slot,
-      name: `${chosen.name} (${rarity})`,
-      rarity,
-      stats: { ...(chosen.stats || {}) },
+      name: `${chosen.name} (${finalRarity})`,
+      rarity: finalRarity,
+      category: (chosen as any).category,
+      stats: scaleStats(chosen.stats, finalRarity),
+      cost: computeItemCost(scaleStats(chosen.stats, finalRarity) as Record<string, number> | undefined, finalRarity),
     };
 
-    addToInventory(item);
+    // spawn the item as a pickup at the enemy location (player must collect)
+    const pos = clampToViewport(enemy.x, enemy.y);
+    const itemPickup: Pickup = { id: uid(), kind: 'item', item, x: pos.x, y: pos.y, createdAt: Date.now() };
+    setPickups((p) => [...p, itemPickup]);
+    return item;
+  };
+
+  // collect a pickup (gold or item). returns true if collected
+  const collectPickup = (pickupId: string): boolean => {
+    try {
+      if (collectedRef.current.has(pickupId)) return false;
+      const pk = pickups.find((p) => p.id === pickupId);
+      if (!pk) return false;
+      // mark as collected immediately to avoid double-processing from fast double-clicks
+      collectedRef.current.add(pickupId);
+      if (pk.kind === 'gold') {
+        const amount = pk.amount ?? 0;
+        setPlayer((p) => ({ ...p, gold: (p.gold ?? 0) + amount }));
+      } else if (pk.kind === 'item' && pk.item) {
+        addToInventory(pk.item);
+      }
+      setPickups((prev) => prev.filter((p) => p.id !== pickupId));
+      // cleanup collectedRef after short delay to avoid memory growth
+      window.setTimeout(() => collectedRef.current.delete(pickupId), 3000);
+      return true;
+    } catch (e) {
+      try { console.error('collectPickup error', e); } catch (e) {}
+      return false;
+    }
+  };
+
+  // spawn a gold or item pickup (used to create a single gold reward per encounter)
+  const spawnGoldPickup = (amount: number, x?: number, y?: number) => {
+    const safeAmount = Number((Math.round((amount || 0) * 100) / 100).toFixed(2));
+    if (!safeAmount || safeAmount <= 0) return null; // do not spawn empty pickups
+    const pos = clampToViewport(x, y);
+    const goldPickup: Pickup = { id: uid(), kind: 'gold', amount: safeAmount, x: pos.x, y: pos.y, createdAt: Date.now() };
+    setPickups((p) => [...p, goldPickup]);
+    return goldPickup.id;
+  };
+
+  // scale stats by rarity multipliers (simple uniform scaling)
+  const rarityMultiplier: Record<Rarity, number> = {
+    common: 1,
+    rare: 1.3,
+    epic: 1.6,
+    legendary: 2.2,
+    mythic: 3.8,
+  };
+
+  const priceMultiplier: Record<Rarity, number> = {
+    common: 1,
+    rare: 1.6,
+    epic: 2.6,
+    legendary: 5,
+    mythic: 12,
+  };
+
+  const computeItemCost = (stats: Record<string, number> | undefined, rarity: Rarity) => {
+    const base = 10 + Object.values(stats || {}).reduce((s, v) => s + Number(v || 0), 0) * 5;
+    const mult = priceMultiplier[rarity] ?? 1;
+    return Math.max(1, Math.round(base * mult));
+  };
+
+  const scaleStats = (stats: Record<string, number> | undefined, rarity: Rarity) => {
+    if (!stats) return undefined;
+    const m = rarityMultiplier[rarity] ?? 1;
+    const out: Record<string, number> = {};
+    for (const [k, v] of Object.entries(stats)) {
+      out[k] = Math.max(0, Math.round((v || 0) * m));
+    }
+    return out;
+  };
+
+  // Create an item from an arbitrary descriptor (useful for dev/testing or UI creation)
+  const createCustomItem = (
+    payload: Omit<Item, "id">,
+    addToInv = true
+  ): Item => {
+    const stats = scaleStats(payload.stats, payload.rarity);
+    const item: Item = { id: uid(), ...payload, stats, cost: computeItemCost(stats as Record<string, number> | undefined, payload.rarity) };
+    if (addToInv) addToInventory(item);
+    return item;
+  };
+
+  // Create item from a template name or slot with a chosen rarity
+  const createItemFromTemplate = (key: string, rarity?: Rarity, addToInv = true): Item | null => {
+    const lower = key.toLowerCase();
+    let tmpl = ITEM_POOL.find((t) => (t.name || "").toLowerCase() === lower || (t.slot || "").toLowerCase() === lower);
+    if (!tmpl) tmpl = ITEM_POOL.find((t) => (t.name || "").toLowerCase().includes(lower));
+    if (!tmpl) return null;
+    const finalRarity: Rarity | null = rarity ?? tmpl.rarity ?? rollRarity();
+    if (!finalRarity) return null;
+    const stats = scaleStats(tmpl.stats, finalRarity);
+    const item: Item = {
+      id: uid(),
+      slot: tmpl.slot,
+      name: `${tmpl.name} (${finalRarity})`,
+      rarity: finalRarity,
+      category: (tmpl as any).category,
+      stats,
+      cost: computeItemCost(stats as Record<string, number> | undefined, finalRarity),
+    };
+    if (addToInv) addToInventory(item);
     return item;
   };
 
@@ -312,6 +534,12 @@ export function useGameState() {
     setEquipment((prev) => ({ ...prev, [slot]: null }));
     // add the unequipped item back into inventory; stats are recomputed from `equipment`
     if (current) addToInventory(current);
+  };
+
+  // Helper to get the rarity of the currently equipped item in a slot
+  const getEquippedRarity = (slot: Item["slot"]): Rarity | null => {
+    const it = equipment[slot];
+    return it ? it.rarity : null;
   };
 
   // Recompute derived player stats from base values + equipment whenever equipment or level changes
@@ -435,6 +663,6 @@ export function useGameState() {
     });
   };
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, maybeDropFromEnemy, equipItem, unequipItem } as const;
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, spawnGoldPickup } as const;
 }
 
