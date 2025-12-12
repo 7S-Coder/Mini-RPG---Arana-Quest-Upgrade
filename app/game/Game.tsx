@@ -191,7 +191,7 @@ export default function Game() {
             dungeonProgressRef.current.lastDungeonProcessedSession = sess;
             dungeonProgressRef.current.suppressUntilSession = sess + 1;
             syncDungeonUI();
-            console.log('[DEBUG] reset dungeon progress on death', { map: currentMap.id, threshold, session: sess, dungeonProgress: dungeonProgressRef.current });
+            console.log('[DEBUG] reset dungeon progress on death', { map: currentMap?.id, threshold, session: sess, dungeonProgress: dungeonProgressRef.current });
             pushLog("Vous avez péri — expulsé du donjon. Le décompte est réinitialisé.");
           } catch (e) { console.error('[DEBUG] error resetting dungeon on death', e); }
           // stop further processing in this endEncounter to avoid immediately decrementing the farm counter
