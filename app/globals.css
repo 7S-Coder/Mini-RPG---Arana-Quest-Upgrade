@@ -126,8 +126,11 @@ body{
 
 .right-buttons{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
 .tier-legend h4{margin:0 0 8px 0;color:var(--muted)}
-.tier-legend ul{list-style:none;padding:0;margin:0;font-size:13px;color:var(--muted)}
-.tier-legend li{display:flex;align-items:center;gap:8px;padding:6px 0}
+.tier-legend ul{list-style:none;padding:0;margin:0;font-size:13px;color:var(--muted);display:grid;grid-template-columns:repeat(2, minmax(0,1fr));gap:6px 12px;align-items:start}
+.tier-legend li{display:flex;align-items:flex-start;gap:8px;padding:6px 0}
+.tier-legend .tier-text{display:flex;flex-direction:column;line-height:1}
+.tier-legend .tier-name{font-weight:700;color:inherit}
+.tier-legend .tier-range{font-size:12px;color:var(--muted)}
 .dot{width:14px;height:14px;border-radius:6px;display:inline-block}
 .dot.common{background:#f2f2f2}
 .dot.rare{background:#4aa3ff}

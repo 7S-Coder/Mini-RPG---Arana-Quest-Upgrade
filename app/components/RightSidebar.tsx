@@ -10,14 +10,29 @@ export default function RightSidebar({ onOpenModal }: { onOpenModal?: (name: str
         <button className="btn">Maps</button>
       </div>
 
-      <div className="tier-legend">
+      <div className="tier-legend" >
         <h4>Palier ennemis</h4>
         <ul>
-          <li><span className="dot common"/> common &nbsp; lvl 1-9</li>
-          <li><span className="dot rare"/> rare &nbsp; lvl 10-29</li>
-          <li><span className="dot epic"/> epic &nbsp; lvl 30-59</li>
-          <li><span className="dot legendary"/> legendary &nbsp; lvl 60-89</li>
-          <li><span className="dot mythic"/> mythic &nbsp; lvl 90-120</li>
+          <li>
+            <span className="dot common"/>
+            <div className="tier-text"><div className="tier-name">common</div><div className="tier-range">lvl 1-9</div></div>
+          </li>
+          <li>
+            <span className="dot rare"/>
+            <div className="tier-text"><div className="tier-name">rare</div><div className="tier-range">lvl 10-29</div></div>
+          </li>
+          <li>
+            <span className="dot epic"/>
+            <div className="tier-text"><div className="tier-name">epic</div><div className="tier-range">lvl 30-59</div></div>
+          </li>
+          <li>
+            <span className="dot legendary"/>
+            <div className="tier-text"><div className="tier-name">legendary</div><div className="tier-range">lvl 60-89</div></div>
+          </li>
+          <li>
+            <span className="dot mythic"/>
+            <div className="tier-text"><div className="tier-name">mythic</div><div className="tier-range">lvl 90-120</div></div>
+          </li>
         </ul>
       </div>
     </aside>
