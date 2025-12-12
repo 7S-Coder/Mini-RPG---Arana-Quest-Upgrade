@@ -123,13 +123,13 @@ export default function useCombat({
         return newP;
       });
 
-      setEnemies((prev) => {
-        const alive = prev.filter((e) => e.hp > 0);
-        if (alive.length === 0) {
-          endEncounter("Tous les ennemis vaincus !");
-        }
-        return prev;
-      });
+    setEnemies((prev: Enemy[]) => {
+      const alive = prev.filter((e: Enemy) => e.hp > 0);
+      if (alive.length === 0) {
+        endEncounter("Tous les ennemis vaincus !");
+      }
+      return prev;
+    });
 
       setTimeout(() => {
         setPlayer((p: Player) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type Player = {
   x: number;
@@ -153,6 +153,30 @@ export function useGameState() {
   // item generation / loot
   const SLOTS: Item["slot"][] = ["familier", "bottes", "ceinture", "chapeau", "plastron", "anneau", "arme"];
 
+  // Static pool of item templates to draw from when an enemy drops loot.
+  // Templates do not include `id` or `rarity` so they can be cloned and assigned a unique id + rarity on drop.
+  type ItemTemplate = Omit<Item, "id" | "rarity"> & { weight?: number };
+  const ITEM_POOL: ItemTemplate[] = [
+    { slot: "chapeau", name: "Chapeau du novice", stats: { crit: 1 }, weight: 4 },
+    { slot: "bottes", name: "Bottes du coursier", stats: { dmg: 1 }, weight: 4 },
+    { slot: "anneau", name: "Anneau modeste", stats: { crit: 1, hp: 3 }, weight: 2 },
+    { slot: "plastron", name: "Plastron léger", stats: { hp: 8, def: 1 }, weight: 1 },
+    { slot: "ceinture", name: "Ceinture robuste", stats: { hp: 5, def: 1 }, weight: 2 },
+    { slot: "arme", name: "Epée émoussée", stats: { dmg: 2 }, weight: 3 },
+    { slot: "familier", name: "Compagnon fidèle", stats: { dmg: 1, hp: 4 }, weight: 2 },
+  ];
+
+  const INVENTORY_MAX = 48;
+
+  const addToInventory = (item: Item) => {
+    setInventory((prev) => {
+      if (prev.find((i) => i.id === item.id)) return prev;
+      const next = [...prev, item];
+      if (next.length > INVENTORY_MAX) next.shift();
+      return next;
+    });
+  };
+
   const rollRarity = (): Rarity | null => {
     // probabilities (percent): mythic 0.1, legendary 1, epic 5, rare 10, common 30
     const r = Math.random() * 100;
@@ -218,14 +242,36 @@ export function useGameState() {
   };
 
   const maybeDropFromEnemy = (enemy: Enemy): Item | null => {
+    // roll rarity as before; if none, no drop
     const rarity = rollRarity();
     if (!rarity) return null;
-    const item = createItemForEnemy(enemy, rarity);
-    setInventory((inv) => {
-      // prevent accidental duplicate ids
-      if (inv.find((i) => i.id === item.id)) return inv;
-      return [...inv, item];
-    });
+
+    // weighted pick from ITEM_POOL (fall back to uniform if no weights)
+    const totalWeight = ITEM_POOL.reduce((s, t) => s + (t.weight ?? 1), 0);
+    let chosen: ItemTemplate;
+    if (totalWeight <= 0) {
+      chosen = ITEM_POOL[Math.floor(Math.random() * ITEM_POOL.length)];
+    } else {
+      let r = Math.random() * totalWeight;
+      chosen = ITEM_POOL[ITEM_POOL.length - 1];
+      for (const t of ITEM_POOL) {
+        r -= (t.weight ?? 1);
+        if (r <= 0) {
+          chosen = t;
+          break;
+        }
+      }
+    }
+
+    const item: Item = {
+      id: uid(),
+      slot: chosen.slot,
+      name: `${chosen.name} (${rarity})`,
+      rarity,
+      stats: { ...(chosen.stats || {}) },
+    };
+
+    addToInventory(item);
     return item;
   };
 
@@ -254,13 +300,7 @@ export function useGameState() {
       return without;
     });
 
-    // adjust player stats outside of state updater callbacks to avoid double-calls in StrictMode
-    try {
-      if (currentEquipped && currentEquipped.stats) applyItemStatsToPlayer(currentEquipped.stats, -1);
-      if (item && item.stats) applyItemStatsToPlayer(item.stats, 1);
-    } catch (e) {
-      try { console.error('applyItemStats error', e); } catch (e) {}
-    }
+    // stats are derived from `equipment` via effect; no incremental apply/remove here
     return true;
   };
 
@@ -270,15 +310,47 @@ export function useGameState() {
     const current = equipment[slot];
     // remove equipment entry
     setEquipment((prev) => ({ ...prev, [slot]: null }));
-    // remove stats and add to inventory if present
-    if (current) {
-      try { if (current.stats) applyItemStatsToPlayer(current.stats, -1); } catch (e) { try { console.error(e); } catch (e) {} }
-      setInventory((inv) => {
-        if (inv.find((i) => i.id === current.id)) return inv;
-        return [...inv, current];
-      });
-    }
+    // add the unequipped item back into inventory; stats are recomputed from `equipment`
+    if (current) addToInventory(current);
   };
+
+  // Recompute derived player stats from base values + equipment whenever equipment or level changes
+  useEffect(() => {
+    const lvl = player.level;
+    const baseMaxHp = BASE_HP + Math.floor((lvl - 1) * 4);
+    const baseDmg = BASE_DMG + Math.floor((lvl - 1) * 0.2);
+    const baseDef = BASE_DEF + Math.floor((lvl - 1) * 0.05);
+    const baseDodge = BASE_DODGE + Math.floor((lvl - 1) * 0.03);
+    const baseCrit = BASE_CRIT + Math.floor((lvl - 1) * 0.02);
+
+    const acc: Record<string, number> = { hp: 0, dmg: 0, def: 0, dodge: 0, crit: 0 };
+    for (const v of Object.values(equipment)) {
+      if (!v || !v.stats) continue;
+      for (const [k, val] of Object.entries(v.stats)) {
+        acc[k] = (acc[k] || 0) + Number(val || 0);
+      }
+    }
+
+    const newMaxHp = Math.max(1, Math.round(baseMaxHp + (acc.hp || 0)));
+
+    setPlayer((prev) => {
+      const prevMax = prev.maxHp ?? prev.hp ?? 0;
+      const hpDelta = newMaxHp - prevMax;
+      let newHp = prev.hp ?? prevMax;
+      if (hpDelta > 0) newHp = Math.min(newMaxHp, newHp + hpDelta);
+      else newHp = Math.max(0, Math.min(newMaxHp, newHp));
+
+      return {
+        ...prev,
+        maxHp: newMaxHp,
+        hp: newHp,
+        dmg: Math.max(0, Math.round(baseDmg + (acc.dmg || 0))),
+        def: Math.max(0, Math.round(baseDef + (acc.def || 0))),
+        dodge: Math.max(0, Math.round(baseDodge + (acc.dodge || 0))),
+        crit: Math.max(0, Math.round(baseCrit + (acc.crit || 0))),
+      } as Player;
+    });
+  }, [equipment, player.level]);
 
   const [enemies, setEnemies] = useState<Enemy[]>([]);
 

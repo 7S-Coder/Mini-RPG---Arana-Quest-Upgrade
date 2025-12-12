@@ -1,6 +1,6 @@
 import React from "react";
-import EnemiesRow from "./EnemiesRow";
-import LogMessages from "./LogMessages";
+import EnemiesRow from "../enemys/EnemiesRow";
+import LogMessages from "../LogMessages";
 import ArenaActions from "./ArenaActions";
 
 type Props = {

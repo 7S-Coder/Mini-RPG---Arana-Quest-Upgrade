@@ -3,7 +3,7 @@
 import { useGameState } from "./useGameState";
 import { useGameLoop } from "./useGameLoop";
 import Player from "../components/Player";
-import ArenaPanel from "../components/ArenaPanel";
+import ArenaPanel from "../components/arena/ArenaPanel";
 import RightSidebar from "../components/RightSidebar";
 import InventoryModal from "../components/modales/InventoryModal";
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
