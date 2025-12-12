@@ -18,7 +18,7 @@ import { getMaps, pickEnemyFromMap } from "./maps";
 import { ENEMY_TEMPLATES } from "./enemies";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, buyPotion, consumeItem } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, buyPotion, consumeItem, createCustomItem } = useGameState();
 
   // modal system (generalized)
   const [modalName, setModalName] = useState<string | null>(null);
@@ -303,12 +303,34 @@ export default function Game() {
             console.log('[DEBUG] dungeon room completed - remaining floors', { beforeRem, afterRem });
             syncDungeonUI();
             if (afterRem === 0) {
-              pushLog(`Dungeon complete! Well done.`);
-              // clear dungeon progress
-              dungeonProgressRef.current.activeMapId = null;
-              dungeonProgressRef.current.activeDungeonIndex = null;
-              dungeonProgressRef.current.activeDungeonId = null;
-              syncDungeonUI();
+                // Grant end-of-dungeon rewards: gold, XP, and a guaranteed item
+                try {
+                  const idx = dungeonProgressRef.current.activeDungeonIndex ?? 0;
+                  const d = currentMap?.dungeons ? currentMap.dungeons[idx] : undefined;
+                  const dungeonName = d?.name ?? d?.id ?? 'dungeon';
+                  const floors = d?.floors ?? 0;
+                  const goldReward = Math.round(100 + (player.level || 1) * 10 + floors * 25);
+                  const xpReward = Math.round(50 + (player.level || 1) * 5 + floors * 20);
+                  // credit gold immediately
+                  try { setPlayer((p) => ({ ...p, gold: +(((p.gold ?? 0) + goldReward).toFixed(2)) })); } catch (e) {}
+                  // credit XP (may level up)
+                  try { addXp && addXp(xpReward); } catch (e) {}
+                  // create a guaranteed reward item and add to inventory
+                  try {
+                    const rarity = Math.random() < 0.08 ? 'legendary' : Math.random() < 0.25 ? 'epic' : 'rare';
+                    const itemName = `${dungeonName} Reward ${rarity.charAt(0).toUpperCase() + rarity.slice(1)}`;
+                    createCustomItem && createCustomItem({ slot: 'arme' as any, name: itemName, rarity: rarity as any, category: 'weapon', stats: { dmg: Math.max(1, Math.round((player.dmg || 1) * (rarity === 'legendary' ? 1.6 : rarity === 'epic' ? 1.2 : 1))) } }, true);
+                  } catch (e) { console.error('create reward item error', e); }
+                  // notify player
+                  pushLog(`Dungeon complete! You earned +${goldReward} g and +${xpReward} XP.`);
+                  try { addToast && addToast(`Dungeon cleared! Reward: +${goldReward} g, +${xpReward} XP.`, 'ok', 6000); } catch (e) {}
+                  try { addEffect && addEffect({ type: 'pickup', text: `+${goldReward} g`, target: 'player' }); } catch (e) {}
+                } catch (e) { console.error('[DEBUG] dungeon reward error', e); }
+                // clear dungeon progress
+                dungeonProgressRef.current.activeMapId = null;
+                dungeonProgressRef.current.activeDungeonIndex = null;
+                dungeonProgressRef.current.activeDungeonId = null;
+                syncDungeonUI();
               } else {
               pushLog(`Room cleared — ${afterRem} floor(s) remaining`);
             }
@@ -321,7 +343,7 @@ export default function Game() {
       setLogs([]);
       logClearRef.current = null;
     }, 1000);
-  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter]);
+  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect]);
 
   // clear timeout on unmount
   useEffect(() => {
