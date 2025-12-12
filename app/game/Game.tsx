@@ -18,7 +18,7 @@ import { getMaps, pickEnemyFromMap } from "./maps";
 import { ENEMY_TEMPLATES } from "./enemies";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, buyPotion, consumeItem, createCustomItem } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical } = useGameState();
 
   // modal system (generalized)
   const [modalName, setModalName] = useState<string | null>(null);
@@ -519,6 +519,29 @@ export default function Game() {
             // also show a global toast so user always sees feedback
             try { addToast(ok ? 'Potion used. HP restored.' : "Unable to use this item.", ok ? 'ok' : 'error'); } catch (e) {}
             return ok;
+          }}
+          onForge={(itemId: string) => {
+            try {
+              const res = forgeThreeIdentical ? forgeThreeIdentical(itemId) : { ok: false, msg: 'Forge not available' };
+              if (res && typeof (res as any).then === 'function') {
+                return (res as unknown as Promise<any>).then((r) => {
+                  try { pushLog && pushLog(r.msg); } catch (e) {}
+                  try { addToast && addToast(r.msg, r.ok ? 'ok' : 'error'); } catch (e) {}
+                  return r;
+                }).catch((err) => {
+                  console.error('forge promise error', err);
+                  const r = { ok: false, msg: 'Forge failed' };
+                  try { pushLog && pushLog(r.msg); } catch (e) {}
+                  try { addToast && addToast(r.msg, 'error'); } catch (e) {}
+                  return r;
+                });
+              } else {
+                const r = res as { ok: boolean; msg: string };
+                try { pushLog && pushLog(r.msg); } catch (e) {}
+                try { addToast && addToast(r.msg, r.ok ? 'ok' : 'error'); } catch (e) {}
+                return r;
+              }
+            } catch (e) { console.error('onForge handler error', e); return { ok: false, msg: 'Forge error' }; }
           }}
           onClose={closeModal}
         />

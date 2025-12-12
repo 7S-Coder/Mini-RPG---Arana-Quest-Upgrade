@@ -347,6 +347,64 @@ export function useGameState() {
     return item;
   };
 
+  // Forge: combine three identical common items into one rare item with two stats boosted (+2)
+  const forgeThreeIdentical = (sampleItemId: string): { ok: boolean; msg: string } => {
+    try {
+      const sample = inventory.find((i) => i.id === sampleItemId);
+      if (!sample) return { ok: false, msg: 'Item not found in inventory' };
+      if (sample.rarity !== 'common') return { ok: false, msg: 'Only common items can be forged' };
+      // find identical items by name and slot and rarity
+      const matches = inventory.filter((i) => i.name === sample.name && i.slot === sample.slot && i.rarity === 'common');
+      if (matches.length < 3) return { ok: false, msg: 'Not enough identical common items (need 3)' };
+
+      // remove three matching items (first three occurrences)
+      const idsToRemove = matches.slice(0, 3).map((i) => i.id);
+      setInventory((prev) => prev.filter((i) => !idsToRemove.includes(i.id)));
+
+      // build forged item: base off sample, upgrade rarity to rare and boost two stats by +2
+      const baseStats = { ...(sample.stats || {}) } as Record<string, number>;
+      const statKeys = Object.keys(baseStats).filter((k) => typeof baseStats[k] === 'number');
+      const boosted: Record<string, number> = { ...baseStats };
+      // ensure we have at least two stats to boost
+      let chosen: string[] = [];
+      if (statKeys.length >= 2) {
+        // pick two distinct random keys
+        while (chosen.length < 2) {
+          const k = statKeys[Math.floor(Math.random() * statKeys.length)];
+          if (!chosen.includes(k)) chosen.push(k);
+        }
+      } else if (statKeys.length === 1) {
+        chosen = [statKeys[0], statKeys[0]];
+      } else {
+        // fallback: add hp and dmg
+        if (!('hp' in boosted)) boosted.hp = 0;
+        if (!('dmg' in boosted)) boosted.dmg = 0;
+        chosen = ['hp', 'dmg'];
+      }
+      // apply +2 to the chosen stats
+      for (const k of chosen) {
+        boosted[k] = (boosted[k] || 0) + 2;
+      }
+
+      const forgedName = `${sample.name} (Forged)`;
+      const forgedPayload: Omit<Item, 'id'> = {
+        slot: sample.slot,
+        name: forgedName,
+        rarity: 'rare',
+        category: sample.category,
+        stats: boosted,
+        cost: sample.cost ?? computeItemCost(boosted as Record<string, number> | undefined, 'rare'),
+      } as any;
+
+      // create and add to inventory
+      createCustomItem(forgedPayload, true);
+      return { ok: true, msg: `Forge successful: created ${forgedName}` };
+    } catch (e) {
+      console.error('forge error', e);
+      return { ok: false, msg: 'Forge failed due to error' };
+    }
+  };
+
   // Equip / Unequip helpers to keep logic centralized and avoid race conditions
   const equipItem = (item: Item): boolean => {
     try { console.log('equipItem called', item && item.id, item && item.slot); } catch (e) {}
@@ -520,6 +578,6 @@ export function useGameState() {
     });
   };
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, spawnGoldPickup, buyPotion, consumeItem } as const;
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical } as const;
 }
 

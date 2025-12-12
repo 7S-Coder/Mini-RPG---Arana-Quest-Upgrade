@@ -10,6 +10,7 @@ type Props = {
   onUnequip: (slot: string) => void;
   onSell: (itemId: string) => void;
   onUse?: (itemId: string) => boolean | Promise<boolean> | void;
+  onForge?: (itemId: string) => { ok: boolean; msg: string } | Promise<{ ok: boolean; msg: string }>;
   onClose: () => void;
 };
 
@@ -41,8 +42,9 @@ const SLOT_LABELS: Record<string, string> = {
   arme: 'Weapon',
 };
 
-export default function InventoryModal({ inventory, equipment, onEquip, onUnequip, onSell, onUse, onClose }: Props) {
+export default function InventoryModal({ inventory, equipment, onEquip, onUnequip, onSell, onUse, onForge, onClose }: Props) {
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
+  const [activeTab, setActiveTab] = React.useState<'inventory' | 'equipment' | 'forge'>('inventory');
   // Inline Tooltip component: shows formatted item details on hover (desktop)
   // compute a price heuristic (shared)
   const priceFor = (it: any) => {
@@ -99,85 +101,157 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
   };
 
   return (
-    <Modal title="Inventory" onClose={onClose}>
-      <div style={{ display: 'flex', gap: 24, minWidth: 760, minHeight: 480 }}>
-        {/* Left: equipment silhouette */}
-        <div style={{ width: 360, position: 'relative' }}>
-          <h2 style={{ marginTop: 0 }}>Equipment</h2>
-          <div style={{ position: 'relative', width: '100%', height: 420, background: 'transparent' }}>
-            {Object.keys(equipment).map((slot) => {
-              const it = (equipment as any)[slot];
-              return (
-                <div key={slot} style={{ ...(SLOT_POS as any)[slot], minWidth: 100 }}>
-                  <Tooltip item={it}>
-                    <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.04)', padding: 8, borderRadius: 8, textAlign: 'center', minWidth: 120 }}>
-                      <div style={{ fontSize: 12, color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
-                      <div style={{ minHeight: 36, color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 6 }}>{it ? it.name : 'empty'}</div>
-                      {it ? <button type="button" style={{ marginTop: 8 }} onClick={(e) => { e.stopPropagation(); try { console.log('InventoryModal unequip click', slot); } catch(e){}; onUnequip(slot); }}>Unequip</button> : null}
-                    </div>
-                  </Tooltip>
-                </div>
-              );
-            })}
+    <Modal onClose={onClose}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 760, minHeight: 480 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className={activeTab === 'inventory' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('inventory')}>Inventory</button>
+            {/* <button className={activeTab === 'equipment' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('equipment')}>Equipment</button> */}
+            <button className={activeTab === 'forge' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('forge')}>Forge</button>
+          </div>
+          <div>
+            {status ? (
+              <div style={{ padding: 8, background: status.ok ? '#123b1a' : '#3b1212', color: '#fff', borderRadius: 6 }}>{status.text}</div>
+            ) : null}
           </div>
         </div>
+        {/* Panels: left and right columns side-by-side (swapped) */}
+        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+          {/* Right column (now left): main content area that used to be on the right */}
+          <div style={{ flex: 1, minWidth: 340, minHeight: 320 }}>
+          {activeTab === 'forge' ? (
+            <>
+              <h2 style={{ marginTop: 0 }}>Forge</h2>
+              <div style={{ display: 'grid', gap: 10, maxHeight: 420, overflow: 'auto' }}>
+                {(() => {
+                  // group identical common items by name+slot
+                  const groups: Record<string, { name: string; slot: string; ids: string[]; rarity: string }> = {};
+                  for (const it of inventory) {
+                    const k = `${it.name}||${it.slot}`;
+                    if (!groups[k]) groups[k] = { name: it.name, slot: it.slot, ids: [], rarity: it.rarity };
+                    groups[k].ids.push(it.id);
+                  }
+                  const entries = Object.values(groups);
+                  if (entries.length === 0) return <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>No items to forge.</div>;
+                  return entries.map((g) => (
+                    <div key={g.name + '::' + g.slot} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10 }}>
+                      <div>
+                        <div style={{ color: RARITY_COLOR[g.rarity] || '#fff', fontWeight: 700 }}>{g.name} <small style={{ color: '#999' }}>({g.slot})</small></div>
+                        <div style={{ fontSize: 12, color: '#999' }}>{g.ids.length}x</div>
+                      </div>
+                      <div>
+                        {g.rarity === 'common' && g.ids.length >= 3 ? (
+                          <button onClick={async (e) => {
+                            e.stopPropagation();
+                            if (!onForge) { setStatus({ ok: false, text: 'Forge not available.' }); window.setTimeout(() => setStatus(null), 3000); return; }
+                            try {
+                              const res = await Promise.resolve(onForge(g.ids[0]));
+                              setStatus({ ok: res.ok, text: res.msg });
+                              window.setTimeout(() => setStatus(null), 4000);
+                            } catch (err) { console.error('onForge error', err); setStatus({ ok: false, text: 'Forge failed.' }); window.setTimeout(() => setStatus(null), 3000); }
+                          }}>Forge</button>
+                        ) : (
+                          <button disabled style={{ opacity: 0.5 }}>Need 3 common</button>
+                        )}
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+            </>
+          ) : (
+            <>
+              <h2 style={{ marginTop: 0 }}>Equipment</h2>
+              <div style={{ position: 'relative', width: '100%', height: 420, background: 'transparent' }}>
+                {Object.keys(equipment).map((slot) => {
+                  const it = (equipment as any)[slot];
+                  return (
+                    <div key={slot} style={{ ...(SLOT_POS as any)[slot], minWidth: 100 }}>
+                      <Tooltip item={it}>
+                        <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.04)', padding: 8, borderRadius: 8, textAlign: 'center', minWidth: 120 }}>
+                          <div style={{ fontSize: 12, color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
+                          <div style={{ minHeight: 36, color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 6 }}>{it ? it.name : 'empty'}</div>
+                          {it ? <button type="button" style={{ marginTop: 8 }} onClick={(e) => { e.stopPropagation(); try { console.log('InventoryModal unequip click', slot); } catch(e){}; onUnequip(slot); }}>Unequip</button> : null}
+                        </div>
+                      </Tooltip>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
+          </div>
 
-        {/* Right: inventory list */}
-        <div style={{ flex: 1, minWidth: 340, minHeight: 320 }}>
-          <h2 style={{ marginTop: 0 }}>Inventory</h2>
-          <div style={{ display: 'grid', gap: 10 }}>
-            {inventory.length === 0 ? (
-              <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>No items.</div>
-            ) : inventory.map((it) => (
-              <Tooltip key={it.id} item={it}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10 }}>
-                  <div>
-                    <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>{it.name}</div>
-                    <div style={{ fontSize: 12, color: '#999' }}>{Object.entries(it.stats || {}).map(([k,v]) => `${k}: ${v}`).join(' • ')}</div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {it.category === 'consumable' ? (
-                      <button type="button" onClick={(e) => {
-                          e.stopPropagation();
-                          try {
-                            if (!onUse) { return; }
-                            setTimeout(() => {
+          {/* Left column (now right): equipment silhouette on Inventory tab, inventory list on Forge tab */}
+          <div style={{ width: 360, position: 'relative' }}>
+          {(activeTab === 'inventory' || activeTab === 'forge') && (
+            <>
+              <h2 style={{ marginTop: 0 }}>Inventory</h2>
+              <div style={{ display: 'grid', gap: 10 }}>
+                {inventory.length === 0 ? (
+                  <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>No items.</div>
+                ) : inventory.map((it) => (
+                  <Tooltip key={it.id} item={it}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10 }}>
+                      <div>
+                        <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>{it.name}</div>
+                        <div style={{ fontSize: 12, color: '#999' }}>{Object.entries(it.stats || {}).map(([k,v]) => `${k}: ${v}`).join(' • ')}</div>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        {it.category === 'consumable' ? (
+                          <button type="button" onClick={(e) => {
+                              e.stopPropagation();
                               try {
-                                const res = onUse(it.id);
-                                Promise.resolve(res).then((ok) => {
-                                  if (ok) setStatus({ ok: true, text: 'Potion used. HP restored.' });
-                                  else setStatus({ ok: false, text: "Unable to use this item." });
-                                  window.setTimeout(() => setStatus(null), 3000);
-                                }).catch((err) => {
-                                  console.error('onUse promise error', err);
-                                });
-                              } catch (err) { console.error('onUse error', err); }
-                            }, 0);
+                                if (!onUse) { return; }
+                                setTimeout(() => {
+                                  try {
+                                    const res = onUse(it.id);
+                                    Promise.resolve(res).then((ok) => {
+                                      if (ok) setStatus({ ok: true, text: 'Potion used. HP restored.' });
+                                      else setStatus({ ok: false, text: "Unable to use this item." });
+                                      window.setTimeout(() => setStatus(null), 3000);
+                                    }).catch((err) => {
+                                      console.error('onUse promise error', err);
+                                    });
+                                  } catch (err) { console.error('onUse error', err); }
+                                }, 0);
+                              } catch (err) { console.error(err); }
+                            }}>Use</button>
+                        ) : (
+                        <button type="button" onClick={(e) => {
+                          e.stopPropagation();
+                          try { console.log('InventoryModal equip click', it && it.id, it && it.slot); } catch (e) {}
+                          try {
+                            if (!onEquip) { console.warn('onEquip not provided'); return; }
+                            // dispatch async to avoid any propagation edge-cases
+                            setTimeout(() => { try { onEquip(it); } catch (err) { console.error('onEquip error', err); } }, 0);
                           } catch (err) { console.error(err); }
-                        }}>Use</button>
-                    ) : (
-                    <button type="button" onClick={(e) => {
-                      e.stopPropagation();
-                      try { console.log('InventoryModal equip click', it && it.id, it && it.slot); } catch (e) {}
-                      try {
-                        if (!onEquip) { console.warn('onEquip not provided'); return; }
-                        // dispatch async to avoid any propagation edge-cases
-                        setTimeout(() => { try { onEquip(it); } catch (err) { console.error('onEquip error', err); } }, 0);
-                      } catch (err) { console.error(err); }
-                    }}>Equip ({SLOT_LABELS[it.slot] ?? it.slot})</button>
-                    )}
-                    <button type="button" onClick={(e) => {
-                      e.stopPropagation();
-                      try { console.log('InventoryModal sell click', it && it.id); } catch (e) {}
-                      try {
-                        if (!onSell) { console.warn('onSell not provided'); return; }
-                        setTimeout(() => { try { onSell(it.id); } catch (err) { console.error('onSell error', err); } }, 0);
-                      } catch (err) { console.error(err); }
-                    }}>Sell ({priceFor(it)} g)</button>
-                  </div>
-                </div>
-              </Tooltip>
-            ))}
+                        }}>Equip ({SLOT_LABELS[it.slot] ?? it.slot})</button>
+                        )}
+                        <button type="button" onClick={(e) => {
+                          e.stopPropagation();
+                          try { console.log('InventoryModal sell click', it && it.id); } catch (e) {}
+                          try {
+                            if (!onSell) { console.warn('onSell not provided'); return; }
+                            setTimeout(() => { try { onSell(it.id); } catch (err) { console.error('onSell error', err); } }, 0);
+                          } catch (err) { console.error(err); }
+                        }}>Sell ({priceFor(it)} g)</button>
+                      </div>
+                    </div>
+                  </Tooltip>
+                ))}
+              </div>
+            </>
+          )}
+
+          
+
+          {activeTab === 'equipment' && (
+            <>
+              <h2 style={{ marginTop: 0 }}>Equipment</h2>
+              <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>Use the left panel to manage equipment.</div>
+            </>
+          )}
           </div>
         </div>
       </div>
