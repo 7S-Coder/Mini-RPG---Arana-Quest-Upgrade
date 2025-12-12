@@ -64,7 +64,7 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
               {Object.entries(item.stats || {}).map(([k, v]) => (
                 <div key={k} style={{ display: 'flex', justifyContent: 'space-between', color: '#ddd' }}>
                   <div style={{ opacity: 0.9, textTransform: 'uppercase', fontSize: 12 }}>{k}</div>
-                  <div style={{ fontWeight: 700 }}>{v}</div>
+                  <div style={{ fontWeight: 700 }}>{String(v)}</div>
                 </div>
               ))}
               <div style={{ height: 6 }} />
