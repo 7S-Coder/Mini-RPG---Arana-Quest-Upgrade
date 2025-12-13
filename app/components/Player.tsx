@@ -96,7 +96,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 			</div>
 
 			<div className="player-actions">
-				<button className="btn" onClick={() => onOpenModal?.("inventory")}>Inventory & Equipment</button>
+				<button className="btn" onClick={() => onOpenModal?.("inventory")}>Inventory</button>
 			</div>
 		</div>
 	);

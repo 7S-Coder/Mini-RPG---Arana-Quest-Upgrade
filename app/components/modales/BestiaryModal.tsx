@@ -3,7 +3,7 @@
 import React from "react";
 import Modal from "./Modal";
 import { ENEMY_TEMPLATES } from "../../game/enemies";
-import { getMapById } from "../../game/maps";
+import { getMapById, getSpawnPool } from "../../game/maps";
 import type { Enemy } from "../../game/types";
 
 export default function BestiaryModal({ onClose, enemies = [], selectedMapId }: { onClose: () => void; enemies?: Enemy[]; selectedMapId?: string | null }) {
@@ -49,7 +49,29 @@ export default function BestiaryModal({ onClose, enemies = [], selectedMapId }: 
 
         {/* Templates from the map's enemyPool only (strict) */}
         {(() => {
-          if (!selectedMapId) return null;
+          // If no map selected, show the spawn pool as a Bestiary section
+          if (!selectedMapId) {
+            const spawnIds = getSpawnPool();
+            const templates = spawnIds.map((id) => ENEMY_TEMPLATES.find((t) => t.templateId === id)).filter(Boolean) as typeof ENEMY_TEMPLATES;
+            if (templates.length === 0) return <div style={{ color: 'var(--muted)' }}>No spawn enemies defined.</div>;
+            return templates.map((e) => (
+            <div key={e.templateId} style={{ padding: 10, borderRadius: 8, background: 'rgba(255,255,255,0.02)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <div style={{ fontWeight: 800, fontSize: 15 }}>
+                  <span className={`enemy-name ${e.rarity ?? ''}`}>{e.name}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--muted)', fontSize: 12, marginLeft: 8 }}>({e.templateId})</span>
+                </div>
+                <div style={{ fontSize: 13, color: 'var(--muted)' }}>
+                  HP {e.hp} • DMG {e.dmg} • DEF {e.def} • ESQ {e.dodge} • CRIT {e.crit} • SPD {e.speed}
+                </div>
+              </div>
+              <div style={{ textAlign: 'right', color: 'var(--muted)', fontSize: 13 }}>
+                <div style={{ textTransform: 'capitalize', fontWeight: 700 }} className={e.rarity ? `enemy-name ${e.rarity}` : ''}>{e.rarity ?? '—'}</div>
+                <div style={{ fontSize: 12, color: 'var(--muted)' }}>{e.rarity ? rarityToRange[e.rarity] : '—'}</div>
+              </div>
+            </div>
+            ));
+          }
           const map = getMapById(selectedMapId);
           const pool = map?.enemyPool ?? [];
           const templates = pool.map((id) => ENEMY_TEMPLATES.find((t) => t.templateId === id)).filter(Boolean) as typeof ENEMY_TEMPLATES;

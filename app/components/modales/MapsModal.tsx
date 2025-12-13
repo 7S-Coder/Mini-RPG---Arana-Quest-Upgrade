@@ -90,7 +90,10 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
         })}
 
         <div style={{ display: 'flex', gap: 8 }}>
-          <button className="btn" onClick={() => { onSelect(null); onClose(); }}>Disable map</button>
+          {(() => {
+            const label = selectedId ? 'Back to Spawn' : 'Spawn';
+            return <button className="btn" onClick={() => { onSelect(null); onClose(); }}>{label}</button>;
+          })()}
           <button className="btn" onClick={onClose}>Close</button>
         </div>
       </div>

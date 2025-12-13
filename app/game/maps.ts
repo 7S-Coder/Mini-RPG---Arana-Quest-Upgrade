@@ -70,6 +70,13 @@ const defaultMaps: MapTemplate[] = [
 
 let customMaps: MapTemplate[] = [];
 
+// Small default pool used when no map is selected (the 'spawn' area)
+const SPAWN_POOL: string[] = ['rat', 'gobelin', 'slime'];
+
+export function getSpawnPool() {
+  return [...SPAWN_POOL];
+}
+
 export function getMaps() {
   return [...defaultMaps, ...customMaps];
 }
@@ -88,8 +95,19 @@ export function createMap(payload: Omit<MapTemplate, 'id'>) {
 
 export function pickEnemyFromMap(mapId?: string) {
   const map = getMapById(mapId);
-  if (!map) return undefined;
-  // Strict: only choose from the map's `enemyPool`. No fallback allowed.
+  // If map is not provided, treat area as the global 'spawn' and pick from SPAWN_POOL
+  if (!map) {
+    const poolTemplates = ENEMY_TEMPLATES.filter((t) => SPAWN_POOL.includes(t.templateId));
+    if (poolTemplates.length === 0) {
+      try { console.log('[DEBUG] pickEnemyFromMap - spawn pool empty', { SPAWN_POOL }); } catch(e) {}
+      return undefined;
+    }
+    const chosen = poolTemplates[Math.floor(Math.random() * poolTemplates.length)].templateId;
+    try { console.log('[DEBUG] pickEnemyFromMap - chose from SPAWN_POOL', { chosen, SPAWN_POOL }); } catch(e) {}
+    return chosen;
+  }
+
+  // Strict: only choose from the map's `enemyPool`. No fallback allowed for map-specific pools.
   if (Array.isArray(map.enemyPool) && map.enemyPool.length > 0) {
     const poolTemplates = ENEMY_TEMPLATES.filter((t) => map.enemyPool.includes(t.templateId));
     if (poolTemplates.length > 0) {

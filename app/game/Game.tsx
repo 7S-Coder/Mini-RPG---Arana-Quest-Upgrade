@@ -160,11 +160,12 @@ export default function Game() {
           }
         }
       } else {
-          const tid = selectedMapId ? pickEnemyFromMap(selectedMapId) : undefined;
+          const tid = pickEnemyFromMap(selectedMapId ?? undefined);
           if (tid) {
             // extra guard: ensure the resolved template is inside the map's enemyPool
             const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid);
-            const tplBelongs = tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid);
+            const areaName = selectedMap?.name ?? 'Spawn';
+            const tplBelongs = selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid)) : !!tpl;
             if (tplBelongs) {
               spawnEnemy(tid);
               spawned++;
@@ -172,19 +173,22 @@ export default function Game() {
               console.log('[DEBUG] resolved template not in selectedMap.enemyPool - skipping spawn', { selectedMapId, tid, tpl, pool: selectedMap?.enemyPool });
             }
           } else {
-            console.log('[DEBUG] no enemy templates belong to this map, skipping spawn', { selectedMapId });
+            const areaName = selectedMap?.name ?? 'Spawn';
+            console.log('[DEBUG] no enemy templates belong to this area, skipping spawn', { selectedMapId, areaName });
           }
       }
     }
 
     encounterCountRef.current = spawned;
     if (spawned === 0) {
-      pushLog(`No enemies available for this area.`);
+      const areaName = selectedMap?.name ?? 'Spawn';
+      pushLog(`No enemies available for ${areaName}.`);
       console.log('[DEBUG] spawned encounter - none', { session: encounterSessionRef.current, isDungeonActive, dungeonProgress: dungeonProgressRef.current });
       return;
     }
 
-    pushLog(`New encounter: ${spawned} enemy(s) appeared.`);
+    const areaName = selectedMap?.name ?? 'Spawn';
+    pushLog(`New encounter in ${areaName}: ${spawned} enemy(s) appeared.`);
     console.log('[DEBUG] spawned encounter', { session: encounterSessionRef.current, requested: count, spawned, isDungeonActive, dungeonProgress: dungeonProgressRef.current });
     setInCombat(true);
   }, [spawnEnemy, pushLog, selectedMapId]);
@@ -563,7 +567,7 @@ export default function Game() {
               const mm = mapsList.find((x) => x.id === id);
               pushLog && pushLog(`Map selected: ${mm?.name ?? id}`);
             } else {
-              pushLog && pushLog('Map deselected');
+              pushLog && pushLog('Map deselected — Spawn active');
             }
           } catch (e) {}
         }} selectedId={selectedMapId} dungeonProgress={dungeonProgressRef.current} />
