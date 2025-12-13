@@ -38,7 +38,7 @@ export default function CatalogModal({ onClose }: { onClose: () => void }) {
                 {statsEntries.map(([k, v]) => (
                   <div key={k} style={{ display: 'flex', justifyContent: 'space-between', color: '#ddd' }}>
                     <div style={{ textTransform: 'uppercase', opacity: 0.9 }}>{k}</div>
-                    <div style={{ fontWeight: 700 }}>{String(v)}</div>
+                    <div style={{ fontWeight: 700 }}>{(['dodge','crit'].includes(String(k).toLowerCase()) ? `${v}%` : String(v))}</div>
                   </div>
                 ))}
               </div>
