@@ -69,16 +69,19 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
                 <div style={{ marginTop: 8, paddingLeft: 6 }}>
                   <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 6, color: accent }}>Dungeons</div>
                   {/* dungeon farm countdown removed from modal */}
-                  <ul style={{ paddingLeft: 14 }}>
+                  <ul style={{ paddingLeft: 0, margin: 0 }}>
                     {m.dungeons.map((d, idx) => {
                       const isActive = dungeonProgress?.activeMapId === m.id && dungeonProgress?.activeDungeonIndex === idx;
                       return (
-                        <li key={d.id} style={{ marginBottom: 6 }}>
-                          <div style={{ fontWeight: 600, color: accent }}>{d.name ?? d.id} {isActive ? '(Active)' : ''}</div>
-                          <div style={{ fontSize: 12, color: accent }}>Floors: {d.floors} — Boss: {d.bossTemplateId ?? '—'}</div>
-                          {isActive && (
-                            <div style={{ fontSize: 12, marginTop: 4, color: accent }}>Floors remaining: {dungeonProgress?.remaining ?? 0}</div>
-                          )}
+                        <li key={d.id} style={{ marginBottom: 6, listStyle: 'none', display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                          <div style={{ width: 10, height: 10, borderRadius: 10, background: accent, marginTop: 6, border: '1px solid rgba(0,0,0,0.2)' }} />
+                          <div>
+                            <div style={{ fontWeight: 600, color: accent }}>{d.name ?? d.id} {isActive ? '(Active)' : ''}</div>
+                            <div style={{ fontSize: 12, color: accent }}>Floors: {d.floors} — Boss: {d.bossTemplateId ?? '—'}</div>
+                            {isActive && (
+                              <div style={{ fontSize: 12, marginTop: 4, color: accent }}>Floors remaining: {dungeonProgress?.remaining ?? 0}</div>
+                            )}
+                          </div>
                         </li>
                       );
                     })}
