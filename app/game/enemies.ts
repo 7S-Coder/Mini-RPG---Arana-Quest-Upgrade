@@ -1,6 +1,8 @@
 import type { EnemyTemplate } from './types';
 
 export const ENEMY_TEMPLATES: EnemyTemplate[] = [
+  // Spawn area enemies
+  { templateId: "cockroach", name: "Cockroach", hp: 50, dmg: 3, def: 0, dodge: 1, crit: 80, speed: 200, rarity: 'common' },
     // Common
   { templateId: "gobelin", name: "Goblin", hp: 18, dmg: 6, def: 1, dodge: 5, crit: 2, speed: 30, rarity: 'common' },
   { templateId: "slime", name: "Slime", hp: 14, dmg: 4, def: 0, dodge: 2, crit: 0, speed: 20, rarity: 'common' },

@@ -71,7 +71,7 @@ const defaultMaps: MapTemplate[] = [
 let customMaps: MapTemplate[] = [];
 
 // Small default pool used when no map is selected (the 'spawn' area)
-const SPAWN_POOL: string[] = ['rat', 'gobelin', 'slime'];
+const SPAWN_POOL: string[] = ['cockroach'];
 
 export function getSpawnPool() {
   return [...SPAWN_POOL];
