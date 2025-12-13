@@ -22,14 +22,16 @@ const RARITY_COLOR: Record<string, string> = {
   mythic: '#ff7b7b',
 };
 
+// Fixed square style for each equipment slot; layout now handled by a 2-column grid
 const SLOT_POS: Record<string, React.CSSProperties> = {
-  hat: { position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)' },
-  familiar: { position: 'absolute', bottom: 12, left: 12 },
-  boots: { position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)' },
-  belt: { position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)' },
-  chestplate: { position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%, -50%)' },
-  ring: { position: 'absolute', top: '45%', right: 12 },
-  weapon: { position: 'absolute', top: '45%', left: 12 },
+  // let the grid control width; tiles should fill available cell
+  hat: { width: '100%', height: '100%' },
+  boots: { width: '100%', height: '100%' },
+  chestplate: { width: '100%', height: '100%' },
+  belt: { width: '100%', height: '100%' },
+  familiar: { width: '100%', height: '100%' },
+  ring: { width: '100%', height: '100%' },
+  weapon: { width: '100%', height: '100%' },
 };
 
 const SLOT_LABELS: Record<string, string> = {
@@ -41,6 +43,10 @@ const SLOT_LABELS: Record<string, string> = {
   ring: 'Ring',
   weapon: 'Weapon',
 };
+
+// Define explicit visual order for the equipment grid. Put `hat` first (top)
+// and boots/familiar last (bottom). This keeps layout deterministic.
+const SLOT_ORDER = ['hat', 'chestplate', 'belt', 'weapon', 'ring', 'familiar','boots' ];
 
 export default function InventoryModal({ inventory, equipment, onEquip, onUnequip, onSell, onUse, onForge, onClose }: Props) {
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
@@ -64,7 +70,7 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
         {visible && item ? (
           <div style={{
             position: 'absolute',
-            zIndex: 99999,
+            zIndex: 50,
             left: '100%',
             marginLeft: 12,
             top: 0,
@@ -106,7 +112,6 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: 8 }}>
             <button className={activeTab === 'inventory' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('inventory')}>Inventory</button>
-            {/* <button className={activeTab === 'equipment' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('equipment')}>Equipment</button> */}
             <button className={activeTab === 'forge' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('forge')}>Forge</button>
           </div>
           <div>
@@ -115,10 +120,10 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
             ) : null}
           </div>
         </div>
-        {/* Panels: left and right columns side-by-side (swapped) */}
-        <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start' }}>
+        {/* Panels: left and right columns side-by-side using CSS grid so columns match height */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 12, alignItems: 'stretch', minHeight: 320 }}>
           {/* Right column (now left): main content area that used to be on the right */}
-          <div style={{ flex: 1, minWidth: 340, minHeight: 320 }}>
+          <div style={{ minWidth: 340, height: '100%' }}>
           {activeTab === 'forge' ? (
             <>
               <h2 style={{ marginTop: 0 }}>Forge</h2>
@@ -162,28 +167,31 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
           ) : (
             <>
               <h2 style={{ marginTop: 0 }}>Equipment</h2>
-              <div style={{ position: 'relative', width: '100%', height: 420, background: 'transparent' }}>
-                {Object.keys(equipment).map((slot) => {
-                  const it = (equipment as any)[slot];
-                  return (
-                    <div key={slot} style={{ ...(SLOT_POS as any)[slot], minWidth: 100 }}>
-                      <Tooltip item={it}>
-                        <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.04)', padding: 8, borderRadius: 8, textAlign: 'center', minWidth: 120 }}>
-                          <div style={{ fontSize: 12, color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
-                          <div style={{ minHeight: 36, color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 6 }}>{it ? it.name : 'empty'}</div>
-                          {it ? <button type="button" style={{ marginTop: 8 }} onClick={(e) => { e.stopPropagation(); try { console.log('InventoryModal unequip click', slot); } catch(e){}; onUnequip(slot); }}>Unequip</button> : null}
-                        </div>
-                      </Tooltip>
-                    </div>
-                  );
-                })}
+              <div style={{ width: '100%' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, gridAutoRows: '140px', alignItems: 'stretch' }}>
+                  {SLOT_ORDER.map((slot) => {
+                    const it = (equipment as any)[slot];
+                    const extra: React.CSSProperties = slot === 'hat' ? { gridColumn: '1 / -1' } : {};
+                    return (
+                      <div key={slot} style={{ ...(SLOT_POS as any)[slot], boxSizing: 'border-box', ...extra }}>
+                        <Tooltip item={it}>
+                          <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.04)', padding: 8, borderRadius: 8, textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
+                            <div style={{ fontSize: 12, color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
+                            <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 8, overflowWrap: 'anywhere' }}>{it ? it.name : 'empty'}</div>
+                            {it ? <button type="button" style={{ marginTop: 8, alignSelf: 'center' }} onClick={(e) => { e.stopPropagation(); try { console.log('InventoryModal unequip click', slot); } catch(e){}; onUnequip(slot); }}>Unequip</button> : null}
+                          </div>
+                        </Tooltip>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </>
           )}
           </div>
 
           {/* Left column (now right): equipment silhouette on Inventory tab, inventory list on Forge tab */}
-          <div style={{ width: 360, position: 'relative' }}>
+          <div style={{ width: 360, position: 'relative', height: '100%' }}>
           {(activeTab === 'inventory' || activeTab === 'forge') && (
             <>
               <h2 style={{ marginTop: 0 }}>Inventory</h2>

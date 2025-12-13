@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Arena Quest",
   description: "Arena Quest - Adventure mmorp - mobile first",
+  icons: {
+    // use a public path to avoid importing assets on the server
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

@@ -20,7 +20,13 @@ export default function CreateMapModal({ onClose, onCreated }: { onClose: () => 
 
   const submit = () => {
     const pool = Object.keys(selected).filter((k) => selected[k]);
-    const map = createMap({ name: name || `Map ${Date.now()}`, theme: undefined, logColor, enemyPool: pool, dungeons: dungeon ? [{ floors: Math.max(1, floors), bossTemplateId: undefined }] : undefined });
+    const map = createMap({
+      name: name || `Map ${Date.now()}`,
+      theme: undefined,
+      logColor,
+      enemyPool: pool,
+      dungeons: dungeon ? [{ id: `dungeon_${Date.now()}`, floors: Math.max(1, floors), bossTemplateId: undefined }] : undefined,
+    });
     onCreated && onCreated(map);
     onClose();
   };
