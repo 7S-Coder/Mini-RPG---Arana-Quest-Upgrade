@@ -285,4 +285,44 @@ body{
 	100%{transform:translate(-50%,-50%) scale(1); opacity:1}
 }
 
+/* When a modal is open, disable pointer interactions for underlying floating layers
+	 so the modal always receives clicks (prevents overlays from stealing pointer). */
+.modal-open .pickup,
+.modal-open .effects-layer,
+.modal-open .damage-popup,
+.modal-open .level-up-badge {
+	pointer-events: none !important;
+}
+
+/* Strong isolation: when a modal is open, disable pointer events for everything
+   except the modal backdrop and its children. This helps identify/stop any
+   overlay that still steals clicks (debugging rule, safe to keep). */
+/* Disable pointer interactions for all top-level page children except the modal
+   when a modal is open. Using a complex `:not()` with a descendant selector
+   is not widely supported and caused modal descendants to be non-interactive.
+   This selector targets direct children of `body` and keeps `.app-modal-backdrop`
+   interactive. */
+body.modal-open > *:not(.app-modal-backdrop) {
+	pointer-events: none !important;
+	user-select: none !important;
+}
+
+/* Ensure modal classes sit on top */
+.app-modal-backdrop{z-index:1000000}
+.app-modal-panel{z-index:1000001}
+
+/* Ensure everything inside the modal remains interactive */
+.modal-open .app-modal-backdrop *, .modal-open .app-modal-panel * {
+	pointer-events: auto !important;
+	user-select: auto !important;
+}
+
+/* Additionally ensure modal-scoped overlays (if any) are disabled */
+.modal-open .app-modal-backdrop .pickup,
+.modal-open .app-modal-backdrop .effects-layer,
+.modal-open .app-modal-backdrop .damage-popup,
+.modal-open .app-modal-backdrop .level-up-badge {
+	pointer-events: none !important;
+}
+
 
