@@ -26,18 +26,29 @@ export function useGameState() {
 
   // equipment slots and inventory
   const [equipment, setEquipment] = useState<Record<Item["slot"], Item | null>>({
-    familier: null,
-    bottes: null,
-    ceinture: null,
-    chapeau: null,
-    plastron: null,
-    anneau: null,
-    arme: null,
+    familiar: null,
+    boots: null,
+    belt: null,
+    hat: null,
+    chestplate: null,
+    ring: null,
+    weapon: null,
   });
   const [inventory, setInventory] = useState<Item[]>([]);
   const [pickups, setPickups] = useState<Pickup[]>([]);
-  const collectedRef = (typeof (globalThis as any) !== 'undefined' ? (globalThis as any).__collectedPickupIds : undefined) || { current: new Set<string>() } as React.MutableRefObject<Set<string>>;
-  if (!('current' in collectedRef)) (collectedRef as any) = { current: new Set<string>() };
+  // create or reuse a shared collected-pickup ref on the global (prevents double-collect on fast clicks)
+  let collectedRef: React.MutableRefObject<Set<string>>;
+  try {
+    const g = (globalThis as any) || {};
+    if (g.__collectedPickupIds && g.__collectedPickupIds.current instanceof Set) {
+      collectedRef = g.__collectedPickupIds as React.MutableRefObject<Set<string>>;
+    } else {
+      collectedRef = { current: new Set<string>() } as React.MutableRefObject<Set<string>>;
+      try { g.__collectedPickupIds = collectedRef; } catch (e) {}
+    }
+  } catch (e) {
+    collectedRef = { current: new Set<string>() } as React.MutableRefObject<Set<string>>;
+  }
 
   const xpToNextLevel = (lvl: number) => Math.max(20, 100 * lvl);
 
@@ -131,36 +142,36 @@ export function useGameState() {
     const critFactor: Record<Rarity, number> = { common: 0.5, rare: 0.9, epic: 1.4, legendary: 2.2, mythic: 3.5 };
 
     switch (slot) {
-      case "arme":
+      case "weapon":
         stats.dmg = Math.max(1, Math.round((enemy.dmg || 1) * dmgFactor[rarity]));
         stats.crit = Math.max(0, Math.round((enemy.crit || 0) * critFactor[rarity]));
         break;
-      case "bottes":
+      case "boots":
         // boots: increase damage and crit
         stats.dmg = Math.max(0, Math.round((enemy.dmg || 1) * (dmgFactor[rarity] * 0.6)));
         stats.crit = Math.max(0, Math.round((enemy.crit || 0) * (critFactor[rarity] * 0.7)));
         break;
-      case "ceinture":
+      case "belt":
         // belt: hp and def
         stats.hp = Math.max(1, Math.round((enemy.hp || 1) * hpFactor[rarity] * 1.2));
         stats.def = Math.max(0, Math.round((enemy.def || 0) * (defFactor[rarity] * 1.5)));
         break;
-      case "plastron":
+      case "chestplate":
         // chest: primarily HP (tank)
         stats.hp = Math.max(1, Math.round((enemy.hp || 1) * hpFactor[rarity]));
         stats.def = Math.max(0, Math.round((enemy.def || 0) * defFactor[rarity]));
         break;
-      case "chapeau":
+      case "hat":
         // hat: crit and dodge
         stats.crit = Math.max(0, Math.round((enemy.crit || 0) * (critFactor[rarity] * 0.8)));
         stats.dodge = Math.max(0, Math.round(((enemy.dodge || 0) * (rarity === "mythic" ? 1.5 : 0.6)))) ;
         break;
-      case "anneau":
+      case "ring":
         // ring: small mixed bonus (hp + crit)
         stats.hp = Math.max(0, Math.round((enemy.hp || 0) * (hpFactor[rarity] * 0.6)));
         stats.crit = Math.max(0, Math.round((enemy.crit || 0) * (critFactor[rarity] * 0.6)));
         break;
-      case "familier":
+      case "familiar":
         // familiars: small damage and HP
         stats.dmg = Math.max(0, Math.round((enemy.dmg || 1) * (dmgFactor[rarity] * 0.35)));
         stats.hp = Math.max(0, Math.round((enemy.hp || 1) * (hpFactor[rarity] * 0.6)));
@@ -170,13 +181,13 @@ export function useGameState() {
     }
 
     const slotToCategory: Record<Item["slot"], Item["category"]> = {
-      arme: "weapon",
-      plastron: "armor",
-      chapeau: "armor",
-      bottes: "armor",
-      ceinture: "armor",
-      anneau: "accessory",
-      familier: "pet",
+      weapon: "weapon",
+      chestplate: "armor",
+      hat: "armor",
+      boots: "armor",
+      belt: "armor",
+      ring: "accessory",
+      familiar: "pet",
     };
 
     const scaled = scaleStats(stats, rarity);

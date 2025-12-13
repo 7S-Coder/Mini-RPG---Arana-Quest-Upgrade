@@ -23,23 +23,23 @@ const RARITY_COLOR: Record<string, string> = {
 };
 
 const SLOT_POS: Record<string, React.CSSProperties> = {
-  chapeau: { position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)' },
-  familier: { position: 'absolute', bottom: 12, left: 12 },
-  bottes: { position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)' },
-  ceinture: { position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)' },
-  plastron: { position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%, -50%)' },
-  anneau: { position: 'absolute', top: '45%', right: 12 },
-  arme: { position: 'absolute', top: '45%', left: 12 },
+  hat: { position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)' },
+  familiar: { position: 'absolute', bottom: 12, left: 12 },
+  boots: { position: 'absolute', bottom: 12, left: '50%', transform: 'translateX(-50%)' },
+  belt: { position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)' },
+  chestplate: { position: 'absolute', top: '40%', left: '50%', transform: 'translate(-50%, -50%)' },
+  ring: { position: 'absolute', top: '45%', right: 12 },
+  weapon: { position: 'absolute', top: '45%', left: 12 },
 };
 
 const SLOT_LABELS: Record<string, string> = {
-  chapeau: 'Hat',
-  familier: 'Familiar',
-  bottes: 'Boots',
-  ceinture: 'Belt',
-  plastron: 'Chest',
-  anneau: 'Ring',
-  arme: 'Weapon',
+  hat: 'Hat',
+  familiar: 'Familiar',
+  boots: 'Boots',
+  belt: 'Belt',
+  chestplate: 'Chest',
+  ring: 'Ring',
+  weapon: 'Weapon',
 };
 
 export default function InventoryModal({ inventory, equipment, onEquip, onUnequip, onSell, onUse, onForge, onClose }: Props) {

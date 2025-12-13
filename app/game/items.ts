@@ -1,6 +1,6 @@
 import { ItemTemplate, Rarity } from './types';
 
-export const SLOTS = ["familier", "bottes", "ceinture", "chapeau", "plastron", "anneau", "arme"] as const;
+export const SLOTS = ["familiar", "boots", "belt", "hat", "chestplate", "ring", "weapon"] as const;
 
 export const ITEM_POOL: ItemTemplate[] = [
     //Chapeaux
