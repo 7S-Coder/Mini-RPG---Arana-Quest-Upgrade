@@ -492,7 +492,7 @@ export default function Game() {
               const ok = equipItem(item);
               if (ok) pushLog(`Equipped: ${item.name} (${item.slot})`);
               else {
-                const msg = `Unable to equip ${item.name} (${item.rarity ?? 'unknown'}) — not found in inventory.`;
+                const msg = `Unable to equip ${item.name} `;
                 pushLog(msg);
                 try { addToast && addToast(msg, 'error'); } catch (e) {}
               }
