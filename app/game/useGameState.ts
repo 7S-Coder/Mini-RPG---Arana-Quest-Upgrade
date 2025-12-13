@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { uid, clampToViewport } from "./utils";
 import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "./items";
 import { ENEMY_TEMPLATES } from "./enemies";
@@ -53,6 +53,9 @@ export function useGameState() {
   const xpToNextLevel = (lvl: number) => Math.max(20, 100 * lvl);
 
   const MAX_LEVEL = 80;
+
+  // track enemies via a ref so functions defined earlier can check combat state
+  const enemiesRef = useRef<Enemy[]>([]);
 
   // small, predictable growth per level derived from base stats
   const BASE_HP = 80;
@@ -113,6 +116,9 @@ export function useGameState() {
   const sellItem = (itemId: string): boolean => {
     const it = inventory.find((i) => i.id === itemId);
     if (!it) return false;
+    // prevent selling equipment during combat (allow consumables)
+    const inCombat = enemiesRef.current && enemiesRef.current.length > 0;
+    if (inCombat && (it.slot as any) !== 'consumable') return false;
     const price = it.cost ?? computeItemCost(it.stats, it.rarity);
     setInventory((prev) => prev.filter((i) => i.id !== itemId));
     setPlayer((p) => ({ ...p, gold: (p.gold || 0) + price }));
@@ -257,6 +263,12 @@ export function useGameState() {
       if (collectedRef.current.has(pickupId)) return false;
       const pk = pickups.find((p) => p.id === pickupId);
       if (!pk) return false;
+      // if we're in combat, disallow picking up equipment items (but allow gold and consumables)
+      const inCombat = enemiesRef.current && enemiesRef.current.length > 0;
+      if (inCombat && pk.kind === 'item' && pk.item && (pk.item.slot as any) !== 'consumable') {
+        // do not collect equipment while in combat
+        return false;
+      }
       // mark as collected immediately to avoid double-processing from fast double-clicks
       collectedRef.current.add(pickupId);
       if (pk.kind === 'gold') {
@@ -425,6 +437,11 @@ export function useGameState() {
       try { console.warn('equipItem: item not found in inventory', item && item.id); } catch (e) {}
       return false;
     }
+    // prevent equipping during combat
+    if (enemiesRef.current && enemiesRef.current.length > 0) {
+      try { console.warn('equipItem blocked during combat'); } catch (e) {}
+      return false;
+    }
     // read current equipped for this slot (synchronously from closure)
     const currentEquipped = equipment[item.slot];
 
@@ -500,6 +517,11 @@ export function useGameState() {
   }, [equipment, player.level]);
 
   const [enemies, setEnemies] = useState<Enemy[]>([]);
+
+  // keep enemiesRef in sync with state so other helpers can check combat state
+  useEffect(() => {
+    enemiesRef.current = enemies;
+  }, [enemies]);
 
   const spawnEnemy = (templateOverride?: string, levelOverride?: number) => {
     // pick a template (optionally by templateId)
@@ -589,6 +611,8 @@ export function useGameState() {
     });
   };
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical } as const;
+  const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);
+
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, isInCombat } as const;
 }
 
