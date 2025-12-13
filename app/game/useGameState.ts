@@ -459,6 +459,8 @@ export function useGameState() {
     });
 
     // stats are derived from `equipment` via effect; no incremental apply/remove here
+    // force-save shortly after to avoid race with state flush
+    try { window.setTimeout(() => { try { const fn = (window as any).__arenaquest_save_game; if (typeof fn === 'function') fn(); } catch (e) {} }, 50); } catch (e) {}
     return true;
   };
 
@@ -470,6 +472,8 @@ export function useGameState() {
     setEquipment((prev) => ({ ...prev, [slot]: null }));
     // add the unequipped item back into inventory; stats are recomputed from `equipment`
     if (current) addToInventory(current);
+    // ensure save occurs after state updates
+    try { window.setTimeout(() => { try { const fn = (window as any).__arenaquest_save_game; if (typeof fn === 'function') fn(); } catch (e) {} }, 50); } catch (e) {}
   };
 
   // Helper to get the rarity of the currently equipped item in a slot
@@ -611,8 +615,111 @@ export function useGameState() {
     });
   };
 
+  // --- Save / Load (localStorage persistence) ---------------------------------
+  const SAVE_KEY = "arenaquest_save";
+
+  const pickPlayerData = (p: Player) => ({
+    x: p.x,
+    y: p.y,
+    hp: p.hp,
+    maxHp: p.maxHp,
+    level: p.level,
+    xp: p.xp,
+    dmg: p.dmg,
+    dodge: p.dodge,
+    crit: p.crit,
+    def: p.def,
+    speed: p.speed,
+    gold: p.gold,
+  });
+
+  const saveGame = (extra: Record<string, any> | null = null) => {
+    try {
+      const save = {
+        version: 1,
+        player: pickPlayerData(player),
+        inventory: inventory || [],
+        equipment: equipment || {},
+        pickups: pickups || [],
+        timestamp: Date.now(),
+        ...(extra || {}),
+      };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+      return true;
+    } catch (e) {
+      try { console.error('saveGame error', e); } catch (e) {}
+      return false;
+    }
+  };
+
+  // expose save function to global so other local actions can force-save after state updates
+  try { (window as any).__arenaquest_save_game = saveGame; } catch (e) {}
+
+  const migrateSave = (save: any) => {
+    // placeholder for migration logic when save.version changes
+    // currently only version 1 exists so we do nothing
+    return save;
+  };
+
+  const loadGame = () => {
+    try {
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return null;
+      const save = JSON.parse(raw);
+      if (save.version !== 1) {
+        migrateSave(save);
+      }
+
+      if (save.player) {
+        setPlayer((p) => ({ ...p, ...save.player } as Player));
+      }
+      if (Array.isArray(save.inventory)) {
+        // when loading inventory, we'll apply it but remove any items that are currently equipped
+        const inv = save.inventory as any[];
+        // collect ids from equipment in the save
+        const equippedIds = new Set<string>();
+        if (save.equipment && typeof save.equipment === 'object') {
+          for (const k of Object.keys(save.equipment)) {
+            const it = (save.equipment as any)[k];
+            if (it && it.id) equippedIds.add(it.id);
+          }
+        }
+        // filter inventory to avoid duplicates of equipped items
+        setInventory(inv.filter((i) => !equippedIds.has(i.id)));
+      }
+      if (save.equipment && typeof save.equipment === 'object') {
+        // merge loaded equipment into the default shape to avoid losing empty slots
+        setEquipment((prev) => ({ ...prev, ...(save.equipment as any) }));
+      }
+      if (Array.isArray(save.pickups)) setPickups(save.pickups as any[]);
+      return save;
+    } catch (e) {
+      try { console.error('loadGame error', e); } catch (e) {}
+      return null;
+    }
+  };
+
+  // Auto-load once on mount
+  useEffect(() => {
+    try {
+      const s = loadGame();
+      if (s) {
+        try { console.log('[SAVE] loaded save from localStorage'); } catch (e) {}
+      }
+    } catch (e) {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Autosave on important state changes (debounced)
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      try { saveGame(); } catch (e) {}
+    }, 800);
+    return () => window.clearTimeout(t);
+  }, [player, inventory, equipment, pickups]);
+
   const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, isInCombat } as const;
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, saveGame, loadGame, isInCombat } as const;
 }
 
