@@ -28,7 +28,7 @@ export const ITEM_POOL: ItemTemplate[] = [
   { slot: "ring", name: "Modest Ring", category: "accessory", stats: { crit: 1, hp: 3 }, weight: 3, rarity: "rare" },
   { slot: "ring", name: "Rooster Ring", category: "accessory", stats: { dodge: 4, crit: 2, def: 2 }, weight: 3, rarity: "rare" },
   { slot: "ring", name: "Precision Ring", category: "accessory", stats: { crit: 3, dmg: 6, def: 4 }, weight: 3, rarity: "epic" },
-  { slot: "ring", name: "Legendary Ring", category: "accessory", stats: { crit: 5, dmg: 3, hp: 8 }, weight: 3, rarity: "legendary" },
+  { slot: "ring", name: "Legendary Ring", category: "accessory", stats: { crit: 5, dmg: 7, hp: 8 }, weight: 3, rarity: "legendary" },
   { slot: "ring", name: "Dragon Band", category: "accessory", stats: { crit: 8, dmg: 27, hp: 15, dodge: 5, def: 20 }, weight: 3, rarity: "mythic" },
     // Plastrons
   { slot: "chestplate", name: "Simple Tunic", category: "armor", stats: { hp: 1, def:2 }, weight: 6, rarity: "common" },

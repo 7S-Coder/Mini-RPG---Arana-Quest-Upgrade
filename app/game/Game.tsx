@@ -229,18 +229,21 @@ export default function Game() {
 
   const endEncounter = useCallback((msg?: string, opts?: { type?: 'clear' | 'flee' | 'death' }) => {
     // spawn a single gold pickup for the encounter (sum of per-enemy dust)
-    // Reduced drop rates: much smaller gold per enemy (drastic reduction)
-    const count = encounterCountRef.current || 0;
-    let total = 0;
-    // per enemy: 0.05 - 0.20 g
-    for (let i = 0; i < count; i++) total += (Math.random() * (0.20 - 0.05) + 0.05);
-    total = Number(total.toFixed(2));
+    // Do NOT award gold when the encounter ends due to fleeing.
+    if (opts?.type !== 'flee') {
+      // Reduced drop rates: much smaller gold per enemy (drastic reduction)
+      const count = encounterCountRef.current || 0;
+      let total = 0;
+      // per enemy: 0.05 - 0.20 g
+      for (let i = 0; i < count; i++) total += (Math.random() * (0.20 - 0.05) + 0.05);
+      total = Number(total.toFixed(2));
       try {
-      spawnGoldPickup(total, player.x, player.y);
-      // notify player via log and a short effect so drops are visible
-      pushLog(`Gold dropped: +${total} g`);
-      try { addEffect({ type: 'pickup', text: `+${total} g`, target: 'player' }); } catch (e) {}
-    } catch (e) {}
+        spawnGoldPickup(total, player.x, player.y);
+        // notify player via log and a short effect so drops are visible
+        pushLog(`Gold dropped: +${total} g`);
+        try { addEffect({ type: 'pickup', text: `+${total} g`, target: 'player' }); } catch (e) {}
+      } catch (e) {}
+    }
     encounterCountRef.current = 0;
     setInCombat(false);
     setEnemies([]);
