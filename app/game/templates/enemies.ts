@@ -1,4 +1,4 @@
-import type { EnemyTemplate } from './types';
+import type { EnemyTemplate } from '../types';
 
 export const ENEMY_TEMPLATES: EnemyTemplate[] = [
   // Spawn area enemies

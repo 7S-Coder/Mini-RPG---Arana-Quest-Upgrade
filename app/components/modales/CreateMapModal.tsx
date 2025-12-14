@@ -2,8 +2,8 @@
 
 import React, { useState } from "react";
 import Modal from "./Modal";
-import { ENEMY_TEMPLATES } from "../../game/enemies";
-import { createMap } from "../../game/maps";
+import { ENEMY_TEMPLATES } from "../../game/templates/enemies";
+import { createMap } from "../../game/templates/maps";
 
 export default function CreateMapModal({ onClose, onCreated }: { onClose: () => void; onCreated?: (m: any) => void }) {
   const [name, setName] = useState("");

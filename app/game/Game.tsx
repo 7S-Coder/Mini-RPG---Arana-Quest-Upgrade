@@ -1,7 +1,7 @@
 "use client";
 
-import { useGameState } from "./useGameState";
-import { useGameLoop } from "./useGameLoop";
+import { useGameState } from "./uses/useGameState";
+import { useGameLoop } from "./uses/useGameLoop";
 import Player from "../components/Player";
 import ArenaPanel from "../components/arena/ArenaPanel";
 import RightSidebar from "../components/RightSidebar";
@@ -9,13 +9,17 @@ import InventoryModal from "../components/modales/InventoryModal";
 import Modal from "../components/modales/Modal";
 import StoreModal from "../components/modales/StoreModal";
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
-import useCombat from "./useCombat";
+import useCombat from "./uses/useCombat";
 import EffectsLayer from "../components/EffectsLayer";
 import BestiaryModal from "../components/modales/BestiaryModal";
 import MapsModal from "../components/modales/MapsModal";
 import CatalogModal from "../components/modales/CatalogModal";
-import { getMaps, pickEnemyFromMap } from "./maps";
-import { ENEMY_TEMPLATES } from "./enemies";
+import { getMaps, pickEnemyFromMap } from "./templates/maps";
+import { ENEMY_TEMPLATES } from "./templates/enemies";
+import { calcDamage } from "./damage";
+import { useLogs } from "../hooks/useLogs";
+import { useToasts } from "../hooks/useToasts";
+import { useDungeon } from "../hooks/useDungeon";
 
 export default function Game() {
   const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical } = useGameState();
@@ -51,25 +55,18 @@ export default function Game() {
     setEnemies((prev) => prev.map((e) => ({ ...e, x: e.x - e.speed * seconds })));
   });
 
-  const [inCombat, setInCombat] = useState(false);
-  const inCombatRef = useRef<boolean>(false);
-  const [logs, setLogs] = useState<React.ReactNode[]>([]);
-  const [toasts, setToasts] = useState<Array<{ id: string; text: string; type?: 'ok' | 'error' }>>([]);
-  const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
+    const [inCombat, setInCombat] = useState(false);
+      const inCombatRef = useRef<boolean>(false);
+      const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [effects, setEffects] = useState<Array<{ id: string; type: string; text?: string; kind?: string; target?: string; x?: number; y?: number }>>([]);
   const logClearRef = useRef<number | null>(null);
   const encounterCountRef = useRef<number>(0);
   const encounterSessionRef = useRef<number>(0);
-  const dungeonProgressRef = useRef<{ activeMapId?: string | null; activeDungeonIndex?: number | null; activeDungeonId?: string | null; remaining?: number; fightsRemainingBeforeDungeon?: number; lastProcessedSession?: number; lastDungeonProcessedSession?: number; suppressUntilSession?: number }>({ activeMapId: null, activeDungeonIndex: null, activeDungeonId: null, remaining: 0, fightsRemainingBeforeDungeon: 0, lastProcessedSession: undefined, lastDungeonProcessedSession: undefined, suppressUntilSession: undefined });
-  const [dungeonUI, setDungeonUI] = useState(() => ({ ...dungeonProgressRef.current }));
-  const syncDungeonUI = () => setDungeonUI({ ...dungeonProgressRef.current });
+  const startEncounterRef = useRef<() => void>(() => {});
 
-  const pushLog = useCallback((node: React.ReactNode) => {
-    setLogs((l) => {
-      const next = [...l, node];
-      return next.slice(Math.max(0, next.length - 100));
-    });
-  }, []);
+  // useLogs hook will be used below (extracted)
+  const { logs, pushLog, clearLogs } = useLogs();
+  const { toasts, addToast } = useToasts();
 
   useEffect(() => { inCombatRef.current = inCombat; }, [inCombat]);
 
@@ -85,11 +82,8 @@ export default function Game() {
     window.setTimeout(() => setEffects((s) => s.filter((x) => x.id !== id)), 1800);
   }, []);
 
-  const addToast = useCallback((text: string, type: 'ok' | 'error' = 'ok', ttl = 3000) => {
-    const id = uid();
-    setToasts((t) => [...t, { id, text, type }]);
-    window.setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), ttl);
-  }, []);
+  const { dungeonProgressRef, dungeonUI, processEndEncounter } = useDungeon({ selectedMapId, pushLog, addEffect: addEffect, addToast: (text: string, type?: string, ttl?: number) => addToast(text, type as "ok" | "error" | undefined, ttl), createCustomItem, addXp, setPlayer, encounterSessionRef, startEncounterRef });
+  // toast/log hooks used instead of local state
 
   const startEncounter = useCallback(() => {
     // prevent spawning if already in combat (use ref to avoid stale closure)
@@ -120,26 +114,7 @@ export default function Game() {
       }
     }
     // we'll set actual spawned count after attempting to spawn available templates
-    // initialize dungeon progress when entering a new dungeon map
-    if (selectedMap?.dungeons && selectedMap.dungeons.length > 0) {
-      if (dungeonProgressRef.current.activeMapId !== selectedMap.id) {
-        // start farming phase for this map: require N combats before the dungeon appears
-        const threshold = (selectedMap as any).dungeonThreshold ?? 20;
-        dungeonProgressRef.current.activeMapId = selectedMap.id;
-        dungeonProgressRef.current.activeDungeonIndex = null; // not yet activated
-        dungeonProgressRef.current.activeDungeonId = null;
-        dungeonProgressRef.current.remaining = 0;
-        dungeonProgressRef.current.fightsRemainingBeforeDungeon = threshold;
-        pushLog(`Selected map: farm ${threshold} fights required before dungeon.`);
-      }
-    } else {
-      // not a dungeon-capable map: reset progress
-      dungeonProgressRef.current.activeMapId = null;
-      dungeonProgressRef.current.activeDungeonIndex = null;
-      dungeonProgressRef.current.activeDungeonId = null;
-      dungeonProgressRef.current.remaining = 0;
-      dungeonProgressRef.current.fightsRemainingBeforeDungeon = 0;
-    }
+    // dungeon initialization is handled by useDungeon
 
     // spawn enemies according to count and dungeon rules, but only if templates explicitly belong to this map
     let spawned = 0;
@@ -193,6 +168,11 @@ export default function Game() {
     setInCombat(true);
   }, [spawnEnemy, pushLog, selectedMapId]);
 
+  // expose the startEncounter function to the dungeon hook so it can schedule auto-enter
+  useEffect(() => {
+    try { startEncounterRef.current = startEncounter as any; } catch (e) {}
+  }, [startEncounter]);
+
 
   const endEncounter = useCallback((msg?: string, opts?: { type?: 'clear' | 'flee' | 'death' }) => {
     // spawn a single gold pickup for the encounter (sum of per-enemy dust)
@@ -212,7 +192,7 @@ export default function Game() {
     // if this endEncounter reports a death, restore player HP to max (respawn)
     if (opts?.type === 'death') {
       try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
-      try { addToast && addToast(msg ? String(msg) : 'You died.', 'error', 4000); } catch (e) {}
+      try { addToast(msg ? String(msg) : 'You died.', 'error', 4000); } catch (e) {}
     }
     if (msg) pushLog(msg);
     // Track farming progress: if player is on a map that has dungeons but the dungeon
@@ -220,131 +200,13 @@ export default function Game() {
       try {
         const mapsListNow = getMaps();
         const currentMap = mapsListNow.find((m) => m.id === selectedMapId) ?? null;
-        // capture whether we were already inside a dungeon at the start of this encounter
-        const wasDungeonActiveAtStart = (dungeonProgressRef.current.activeDungeonIndex != null && dungeonProgressRef.current.activeMapId === currentMap?.id);
-        const currentSession = encounterSessionRef.current || 0;
-        console.log('[DEBUG] endEncounter start', { msg, opts: (opts as any) ?? null, currentSession, dungeonProgress: dungeonProgressRef.current, wasDungeonActiveAtStart });
-        // determine encounter result type (default to 'clear' when not provided)
-        const resultType = opts?.type ?? (msg && String(msg).toLowerCase().includes("mort") ? 'death' : 'clear');
-
-        // If the player died while inside a dungeon, expel them and reset progression
-          if (resultType === 'death' && dungeonProgressRef.current.activeDungeonIndex != null && dungeonProgressRef.current.activeMapId === currentMap?.id) {
-          try {
-            const threshold = (currentMap as any)?.dungeonThreshold ?? 20;
-            // keep the map as active so the fights counter is visible, but clear the active dungeon
-            dungeonProgressRef.current.activeMapId = currentMap?.id || null;
-            dungeonProgressRef.current.activeDungeonIndex = null;
-            dungeonProgressRef.current.activeDungeonId = null;
-              dungeonProgressRef.current.remaining = 0;
-              // reset the fightsRemainingBeforeDungeon to 0 after a death so the dungeon threshold is cleared
-              dungeonProgressRef.current.fightsRemainingBeforeDungeon = 0;
-              try { console.log('the dungeon gate moves away from you..'); } catch (e) {}
-              try { addToast && addToast("The dungeon gate moves away from you..", 'error', 4000); } catch (e) {}
-            // mark the current encounter session as processed so no residual endEncounter call will decrement counters
-            const sess = encounterSessionRef.current || 0;
-            dungeonProgressRef.current.lastProcessedSession = sess;
-            dungeonProgressRef.current.lastDungeonProcessedSession = sess;
-            dungeonProgressRef.current.suppressUntilSession = sess + 1;
-            syncDungeonUI();
-            console.log('[DEBUG] reset dungeon progress on death', { map: currentMap?.id, threshold, session: sess, dungeonProgress: dungeonProgressRef.current });
-            // respawn player
-            try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
-            pushLog("You died — expelled from the dungeon. Progress has been reset.");
-          } catch (e) { console.error('[DEBUG] error resetting dungeon on death', e); }
-          // stop further processing in this endEncounter to avoid immediately decrementing the farm counter
-          return;
-        }
-
-        if (currentMap?.dungeons && dungeonProgressRef.current.activeMapId === currentMap.id && (dungeonProgressRef.current.activeDungeonIndex == null) && resultType === 'clear') {
-        // only decrement once per encounter session
-        console.log('[DEBUG] endEncounter - session check', { currentSession, lastProcessed: dungeonProgressRef.current.lastProcessedSession, selectedMapId, currentMapId: currentMap.id, fightsRemainingBeforeDungeon: dungeonProgressRef.current.fightsRemainingBeforeDungeon, suppressUntil: dungeonProgressRef.current.suppressUntilSession });
-        if (dungeonProgressRef.current.suppressUntilSession && currentSession <= (dungeonProgressRef.current.suppressUntilSession || 0)) {
-          console.log('[DEBUG] skipping farm decrement due to suppressUntilSession', { currentSession, suppressUntil: dungeonProgressRef.current.suppressUntilSession });
-        } else if (dungeonProgressRef.current.lastProcessedSession !== currentSession) {
-            dungeonProgressRef.current.lastProcessedSession = currentSession;
-            // decrement fights remaining
-            const before = dungeonProgressRef.current.fightsRemainingBeforeDungeon || 0;
-            dungeonProgressRef.current.fightsRemainingBeforeDungeon = Math.max(0, before - 1);
-            const after = dungeonProgressRef.current.fightsRemainingBeforeDungeon || 0;
-            console.log('[DEBUG] decrement fightsRemainingBeforeDungeon', { before, after });
-            const remaining = after;
-            syncDungeonUI();
-              if (remaining > 0) {
-              } else {
-              // threshold reached -> activate a dungeon for this map and auto-enter
-              const idx = Math.floor(Math.random() * (currentMap.dungeons?.length || 1));
-              const d = currentMap.dungeons ? currentMap.dungeons[idx] : undefined;
-              dungeonProgressRef.current.activeDungeonIndex = idx;
-              dungeonProgressRef.current.activeDungeonId = d?.id ?? null;
-              dungeonProgressRef.current.remaining = d?.floors ?? 0;
-              // suppress decrements for the session that activated the dungeon
-              dungeonProgressRef.current.suppressUntilSession = (encounterSessionRef.current || 0) + 1;
-                      const dungeonName = d?.name ?? d?.id ?? 'dungeon';
-              console.log('[DEBUG] activating dungeon', { dungeonIndex: idx, dungeonId: dungeonProgressRef.current.activeDungeonId, dungeonName, currentMap: currentMap.id });
-              syncDungeonUI();
-              // start the dungeon encounter immediately, then notify the player
-                try { window.setTimeout(() => { try { startEncounter(); console.log('[DEBUG] scheduled startEncounter invoked'); } catch (e) { console.error('[DEBUG] scheduled startEncounter error', e); } }, 50); } catch (e) { console.error('[DEBUG] scheduling startEncounter error', e); }
-                pushLog(`You enter the dungeon '${dungeonName}' on ${currentMap.name} — good luck!`);
-                  try { addEffect({ type: 'dungeon', text: `Entrance: ${dungeonName}`, target: 'player' }); } catch (e) {}
-                // stop further processing in this endEncounter to avoid immediately decrementing dungeon remaining
-                return;
-          }
-        }
-      }
-        // If we are inside a dungeon (active index set) and this endEncounter corresponds
-        // to a dungeon room (not farming), decrement the dungeon remaining floors once.
-        // only decrement dungeon remaining if the dungeon was already active when the encounter started
-        if (wasDungeonActiveAtStart && dungeonProgressRef.current.activeDungeonIndex != null && dungeonProgressRef.current.activeMapId === currentMap?.id && resultType === 'clear') {
-          console.log('[DEBUG] processing dungeon room completion', { currentSession, lastDungeonProcessed: dungeonProgressRef.current.lastDungeonProcessedSession, suppressUntil: dungeonProgressRef.current.suppressUntilSession });
-          if (dungeonProgressRef.current.suppressUntilSession && currentSession <= (dungeonProgressRef.current.suppressUntilSession || 0)) {
-            console.log('[DEBUG] skipping dungeon remaining decrement due to suppressUntilSession', { currentSession, suppressUntil: dungeonProgressRef.current.suppressUntilSession });
-          } else if (dungeonProgressRef.current.lastDungeonProcessedSession !== currentSession) {
-            dungeonProgressRef.current.lastDungeonProcessedSession = currentSession;
-            // decrement remaining floors
-            const beforeRem = dungeonProgressRef.current.remaining || 0;
-            dungeonProgressRef.current.remaining = Math.max(0, (dungeonProgressRef.current.remaining || 0) - 1);
-            const afterRem = dungeonProgressRef.current.remaining || 0;
-            console.log('[DEBUG] dungeon room completed - remaining floors', { beforeRem, afterRem });
-            syncDungeonUI();
-            if (afterRem === 0) {
-                // Grant end-of-dungeon rewards: gold, XP, and a guaranteed item
-                try {
-                  const idx = dungeonProgressRef.current.activeDungeonIndex ?? 0;
-                  const d = currentMap?.dungeons ? currentMap.dungeons[idx] : undefined;
-                  const dungeonName = d?.name ?? d?.id ?? 'dungeon';
-                  const floors = d?.floors ?? 0;
-                  const goldReward = Math.round(100 + (player.level || 1) * 10 + floors * 25);
-                  const xpReward = Math.round(50 + (player.level || 1) * 5 + floors * 20);
-                  // credit gold immediately
-                  try { setPlayer((p) => ({ ...p, gold: +(((p.gold ?? 0) + goldReward).toFixed(2)) })); } catch (e) {}
-                  // credit XP (may level up)
-                  try { addXp && addXp(xpReward); } catch (e) {}
-                  // create a guaranteed reward item and add to inventory
-                  try {
-                    const rarity = Math.random() < 0.08 ? 'legendary' : Math.random() < 0.25 ? 'epic' : 'rare';
-                    const itemName = `${dungeonName} Reward ${rarity.charAt(0).toUpperCase() + rarity.slice(1)}`;
-                    createCustomItem && createCustomItem({ slot: 'weapon' as any, name: itemName, rarity: rarity as any, category: 'weapon', stats: { dmg: Math.max(1, Math.round((player.dmg || 1) * (rarity === 'legendary' ? 1.6 : rarity === 'epic' ? 1.2 : 1))) } }, true);
-                  } catch (e) { console.error('create reward item error', e); }
-                  // notify player
-                  pushLog(`Dungeon complete! You earned +${goldReward} g and +${xpReward} XP.`);
-                  try { addToast && addToast(`Dungeon cleared! Reward: +${goldReward} g, +${xpReward} XP.`, 'ok', 6000); } catch (e) {}
-                  try { addEffect && addEffect({ type: 'pickup', text: `+${goldReward} g`, target: 'player' }); } catch (e) {}
-                } catch (e) { console.error('[DEBUG] dungeon reward error', e); }
-                // clear dungeon progress
-                dungeonProgressRef.current.activeMapId = null;
-                dungeonProgressRef.current.activeDungeonIndex = null;
-                dungeonProgressRef.current.activeDungeonId = null;
-                syncDungeonUI();
-              } else {
-              pushLog(`Room cleared — ${afterRem} floor(s) remaining`);
-            }
-          }
-        }
-    } catch (e) { console.error('[DEBUG] endEncounter error', e); }
+        const handled = processEndEncounter({ currentMap, player, opts, msg });
+        if (handled) return;
+      } catch (e) { console.error('[DEBUG] endEncounter error', e); }
     // schedule clearing the logs after a short delay so player can read result
     if (logClearRef.current) clearTimeout(logClearRef.current);
     logClearRef.current = window.setTimeout(() => {
-      setLogs([]);
+      clearLogs();
       logClearRef.current = null;
     }, 1000);
   }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect]);
@@ -358,49 +220,14 @@ export default function Game() {
 
   const rollChance = useCallback((percent = 0) => Math.random() * 100 < (percent ?? 0), []);
 
-  const calcDamage = useCallback((atk: number, def: number, isCrit = false) => {
-    // atk: raw attack value, def: raw defense value
-    // add small variance to attack
-    const variance = 0.85 + Math.random() * 0.3; // 0.85 .. 1.15
-    let base = Math.max(1, atk * variance);
-    // crit increases damage by 1.5..1.9
-    if (isCrit) base = base * (1.5 + Math.random() * 0.4);
-    // simple armor mitigation: 100 / (100 + def)
-    const mitigation = 100 / (100 + Math.max(0, def));
-    const dmg = Math.max(1, Math.round(base * mitigation));
-    return dmg;
-  }, []);
+  // damage calculation extracted to game/damage.ts (calcDamage)
 
   const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, onDrop: maybeDropFromEnemy });
 
   const mapsList = getMaps();
   const selectedMap = useMemo(() => mapsList.find((m) => m.id === selectedMapId) ?? null, [mapsList, selectedMapId]);
 
-  // Initialize dungeon farming progress when the player selects a map (ensure threshold set immediately)
-  useEffect(() => {
-    try {
-      const currentMap = getMaps().find((m) => m.id === selectedMapId) ?? null;
-      if (currentMap?.dungeons && dungeonProgressRef.current.activeMapId !== currentMap.id) {
-        const threshold = (currentMap as any).dungeonThreshold ?? 20;
-        dungeonProgressRef.current.activeMapId = currentMap.id;
-        dungeonProgressRef.current.activeDungeonIndex = null;
-        dungeonProgressRef.current.activeDungeonId = null;
-        dungeonProgressRef.current.remaining = 0;
-        dungeonProgressRef.current.fightsRemainingBeforeDungeon = threshold;
-        dungeonProgressRef.current.lastProcessedSession = undefined as any;
-        pushLog(`Selected map: farm ${threshold} fights required before dungeon.`);
-        console.log('[DEBUG] map selected - init farming', { mapId: currentMap.id, threshold, dungeonProgress: dungeonProgressRef.current });
-        syncDungeonUI();
-      } else if (!currentMap) {
-        dungeonProgressRef.current.activeMapId = null;
-        dungeonProgressRef.current.activeDungeonIndex = null;
-        dungeonProgressRef.current.activeDungeonId = null;
-        dungeonProgressRef.current.remaining = 0;
-        dungeonProgressRef.current.fightsRemainingBeforeDungeon = 0;
-        syncDungeonUI();
-      }
-    } catch (e) {}
-  }, [selectedMapId]);
+  // dungeon initialization is handled by useDungeon
 
   // wrapper used by store modal so it returns a result message usable by the modal
   const storeBuy = useCallback((type: 'small' | 'medium' | 'large') => {
@@ -533,20 +360,20 @@ export default function Game() {
               const res = forgeThreeIdentical ? forgeThreeIdentical(itemId) : { ok: false, msg: 'Forge not available' };
               if (res && typeof (res as any).then === 'function') {
                 return (res as unknown as Promise<any>).then((r) => {
-                  try { pushLog && pushLog(r.msg); } catch (e) {}
-                  try { addToast && addToast(r.msg, r.ok ? 'ok' : 'error'); } catch (e) {}
+                  try { pushLog(r.msg); } catch (e) {}
+                  try { addToast(r.msg, r.ok ? 'ok' : 'error'); } catch (e) {}
                   return r;
                 }).catch((err) => {
                   console.error('forge promise error', err);
                   const r = { ok: false, msg: 'Forge failed' };
-                  try { pushLog && pushLog(r.msg); } catch (e) {}
-                  try { addToast && addToast(r.msg, 'error'); } catch (e) {}
+                  try { pushLog(r.msg); } catch (e) {}
+                  try { addToast(r.msg, 'error'); } catch (e) {}
                   return r;
                 });
               } else {
                 const r = res as { ok: boolean; msg: string };
-                try { pushLog && pushLog(r.msg); } catch (e) {}
-                try { addToast && addToast(r.msg, r.ok ? 'ok' : 'error'); } catch (e) {}
+                try { pushLog(r.msg); } catch (e) {}
+                try { addToast(r.msg, r.ok ? 'ok' : 'error'); } catch (e) {}
                 return r;
               }
             } catch (e) { console.error('onForge handler error', e); return { ok: false, msg: 'Forge error' }; }

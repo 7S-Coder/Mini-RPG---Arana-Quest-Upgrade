@@ -1,4 +1,4 @@
-import { ItemTemplate, Rarity } from './types';
+import { ItemTemplate, Rarity } from '../types';
 
 export const SLOTS = ["familiar", "boots", "belt", "hat", "chestplate", "ring", "weapon"] as const;
 

@@ -2,7 +2,7 @@
 
 import React from "react";
 import Modal from "./Modal";
-import { getMaps } from "../../game/maps";
+import { getMaps } from "../../game/templates/maps";
 
 export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgress }: { onClose: () => void; onSelect: (id?: string | null) => void; selectedId?: string | null; dungeonProgress?: { activeMapId?: string | null; activeDungeonIndex?: number | null; activeDungeonId?: string | null; remaining?: number; fightsRemainingBeforeDungeon?: number } }) {
   const maps = getMaps();

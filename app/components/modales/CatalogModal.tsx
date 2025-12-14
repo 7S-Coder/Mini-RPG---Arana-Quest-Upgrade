@@ -2,7 +2,7 @@
 
 import React from "react";
 import Modal from "./Modal";
-import { ITEM_POOL, computeItemCost } from "../../game/items";
+import { ITEM_POOL, computeItemCost } from "../../game/templates/items";
 
 const RARITY_COLOR: Record<string, string> = {
   common: '#ddd',

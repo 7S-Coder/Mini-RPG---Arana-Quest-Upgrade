@@ -2,8 +2,8 @@
 
 import React from "react";
 import Modal from "./Modal";
-import { ENEMY_TEMPLATES } from "../../game/enemies";
-import { getMapById, getSpawnPool } from "../../game/maps";
+import { ENEMY_TEMPLATES } from "../../game/templates/enemies";
+import { getMapById, getSpawnPool } from "../../game/templates/maps";
 import type { Enemy } from "../../game/types";
 
 export default function BestiaryModal({ onClose, enemies = [], selectedMapId }: { onClose: () => void; enemies?: Enemy[]; selectedMapId?: string | null }) {

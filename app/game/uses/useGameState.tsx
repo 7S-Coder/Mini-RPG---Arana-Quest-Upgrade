@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { uid, clampToViewport } from "./utils";
-import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "./items";
-import { ENEMY_TEMPLATES } from "./enemies";
-import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity } from "./types";
+import { uid, clampToViewport } from "../utils";
+import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "../templates/items";
+import { ENEMY_TEMPLATES } from "../templates/enemies";
+import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity } from "../types";
 
 // ENEMY_TEMPLATES moved to ./enemies.ts
 
