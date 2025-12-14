@@ -464,7 +464,7 @@ export default function Game() {
               setSelectedMapId(id ?? null);
               if (id) {
                 const mm = mapsList.find((x) => x.id === id);
-                const tierInfo = mm?.allowedTiers && mm.allowedTiers.length > 0 ? `Allowed tiers: ${mm.allowedTiers.join(', ')}` : 'Allowed tiers: any';
+                const tierInfo = mm?.loot && mm.loot.length > 0 ? mm.loot : (mm?.allowedTiers && mm.allowedTiers.length > 0 ? `loot: ${mm.allowedTiers.join(' - ')}` : 'loot: any');
                 const levelInfo = mm?.minLevel ? `Required level: ${mm.minLevel}+` : '';
                 const msg = `Map selected: ${mm?.name ?? id}${levelInfo ? ' — ' + levelInfo : ''} — ${tierInfo}`;
                 try { pushLog(msg); } catch (e) {}

@@ -27,6 +27,8 @@ export type MapTemplate = {
   minLevel?: number;
   // allowed item tiers that may drop on this map (controls rarity visibility)
   allowedTiers?: string[];
+  // human-friendly loot label for UI (example: "loot epic - rare")
+  loot?: string;
   enemyPool: string[];
   // optional explicit rooms (fixed encounters) inside this map
   rooms?: RoomDef[];
@@ -41,6 +43,7 @@ const defaultMaps: MapTemplate[] = [
     dungeonThreshold: 15,
     minLevel: 10,
     allowedTiers: ['common'],
+    loot: 'loot: Common',
     logColor: '#2ecc71',
     enemyPool: ['gobelin','loup','slime', 'pebble', 'wyrm', 'wyrm_king', 'hydre'],
     dungeons: [
@@ -65,6 +68,7 @@ const defaultMaps: MapTemplate[] = [
     dungeonThreshold: 15,
     minLevel: 31,
     allowedTiers: ['common', 'rare'],
+    loot: 'loot: Common - Rare ',
     logColor: '#95a5a6',
     enemyPool: ['slime','brigand','spectre','bandit', 'ogre', 'magma', 'seigneur', 'dragon'],
     dungeons: [
@@ -79,6 +83,7 @@ const defaultMaps: MapTemplate[] = [
     dungeonThreshold: 15,
     minLevel: 51,
     allowedTiers: ['rare', 'epic'],
+    loot: 'loot: Rare - Epic',
     logColor: '#9b59b6',
     enemyPool: ['brigand','wyrm','ogre', 'spectre', 'golem', 'chimere', 'leviathan'],
     dungeons: [
@@ -93,6 +98,7 @@ const defaultMaps: MapTemplate[] = [
     dungeonThreshold: 15,
     minLevel: 71,
     allowedTiers: ['epic', 'legendary'],
+    loot: 'loot: Epic - Legendary',
     logColor: '#e74c3c',
     enemyPool: ['ogre','magma','wyrm','spectre', 'seigneur', 'troll_cavernes', 'phoenix'],
     dungeons: [

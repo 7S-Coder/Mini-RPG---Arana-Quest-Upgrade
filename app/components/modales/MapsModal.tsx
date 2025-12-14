@@ -61,9 +61,11 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
                   {m.minLevel ? (
                     <div style={{ fontSize: 12, color: accent, marginTop: 6 }}>Levels: {m.minLevel}+</div>
                   ) : null}
-                  {m.allowedTiers && m.allowedTiers.length > 0 ? (
-                    <div style={{ fontSize: 12, color: accent, marginTop: 6 }}>Allowed tiers: {m.allowedTiers.join(', ')}</div>
-                  ) : null}
+                  {(() => {
+                    if (m.loot && m.loot.length > 0) return <div style={{ fontSize: 12, color: accent, marginTop: 6 }}>{m.loot}</div>;
+                    if (m.allowedTiers && m.allowedTiers.length > 0) return <div style={{ fontSize: 12, color: accent, marginTop: 6 }}>{`loot: ${m.allowedTiers.join(' - ')}`}</div>;
+                    return null;
+                  })()}
                 </div>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <div style={{ width: 18, height: 18, borderRadius: 4, background: accent, border: '1px solid rgba(0,0,0,0.2)' }} />
