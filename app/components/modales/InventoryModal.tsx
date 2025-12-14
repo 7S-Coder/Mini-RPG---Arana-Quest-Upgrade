@@ -38,6 +38,18 @@ const SLOT_ORDER = ['hat', 'chestplate', 'belt', 'weapon', 'ring', 'familiar','b
 export default function InventoryModal({ inventory, equipment, player, onEquip, onUnequip, onSell, onUse, onForge, onClose }: Props) {
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
   const [activeTab, setActiveTab] = React.useState<'inventory' | 'equipment' | 'forge'>('inventory');
+  const [filterSlot, setFilterSlot] = React.useState<string>('all');
+
+  const MAX_CARRY_WEIGHT = 100;
+  const currentWeight = React.useMemo(() => {
+    let w = 0;
+    for (const it of inventory) w += Number((it && (it.weight ?? 1)) || 1);
+    for (const k of Object.keys(equipment || {})) {
+      const it = (equipment as any)[k];
+      if (it) w += Number((it && (it.weight ?? 1)) || 1);
+    }
+    return w;
+  }, [inventory, equipment]);
 
   const priceFor = (it: any) => {
     if (!it) return '';
@@ -144,43 +156,61 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
 
           {/* Right: Inventory / list */}
           <div style={{ width: 360, position: 'relative', minHeight: 320 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <label style={{ color: '#bbb', fontSize: 12 }}>Filter:</label>
+                <select value={filterSlot} onChange={(e) => setFilterSlot(e.target.value)}>
+                  <option value="all">All</option>
+                  <option value="consumable">Consumables</option>
+                  {SLOT_ORDER.map((s) => <option key={s} value={s}>{SLOT_LABELS[s] ?? s}</option>)}
+                </select>
+              </div>
+              <div style={{ color: '#ccc', fontSize: 12 }}>Weight: {currentWeight}/{MAX_CARRY_WEIGHT}</div>
+            </div>
             {(activeTab === 'inventory' || activeTab === 'forge') && (
               <>
                 <h2 style={{ marginTop: 0 }}>Inventory</h2>
                 <div style={{ display: 'grid', gap: 10 }}>
                   {inventory.length === 0 ? (
                     <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>No items.</div>
-                  ) : inventory.map((it) => (
-                    <div key={it.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10 }}>
-                        <div>
-                        <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>{it.name}</div>
-                        <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>
-                          {(() => {
-                            const entries = Object.entries(it.stats || {});
-                            const equipped: any = (equipment as any)[it.slot];
-                            return entries.map(([k, v], idx) => {
-                              const ev = equipped && equipped.stats ? Number((equipped.stats || {})[k] || 0) : 0;
-                              const nv = Number(v || 0);
-                              const color = nv > ev ? '#66ff66' : (nv < ev ? '#ff6666' : '#999');
-                              return (
-                                <span key={k} style={{ color, fontWeight: nv === ev ? 400 : 700, textShadow: '0 1px 0 rgba(0,0,0,0.6)' }}>
-                                  {`${k}: ${v}`}{idx < entries.length - 1 ? ' • ' : ''}
-                                </span>
-                              );
-                            });
-                          })()}
-                        </div>
-                      </div>
-                      <div style={{ display: 'flex', gap: 8 }}>
-                        {it.category === 'consumable' ? (
-                          <button type="button" onClick={(e) => { e.stopPropagation(); if (!onUse) return; setTimeout(() => { try { const res = onUse(it.id); Promise.resolve(res).then(() => {}); } catch {} }, 0); }}>Use</button>
-                        ) : (
-                          <button type="button" onClick={(e) => { e.stopPropagation(); if (!onEquip) return; setTimeout(() => { try { onEquip(it); } catch {} }, 0); }}>Equip ({SLOT_LABELS[it.slot] ?? it.slot})</button>
-                        )}
-                        <button type="button" onClick={(e) => { e.stopPropagation(); if (!onSell) return; setTimeout(() => { try { onSell(it.id); } catch {} }, 0); }}>Sell ({priceFor(it)} g)</button>
-                      </div>
+                  ) : (
+                    <div style={{ maxHeight: 380, overflow: 'auto', display: 'grid', gap: 10 }}>
+                      {inventory
+                        .filter((it) => (filterSlot === 'all' ? true : (filterSlot === 'consumable' ? (it.category === 'consumable') : it.slot === filterSlot)))
+                        .map((it) => (
+                          <div key={it.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10 }}>
+                            <div>
+                              <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>{it.name}</div>
+                                <div style={{ fontSize: 10, color: '#bbb', marginTop: 4 }}>W:{it.weight ?? 1}</div>
+                                <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>
+                                {(() => {
+                                  const entries = Object.entries(it.stats || {});
+                                  const equipped: any = (equipment as any)[it.slot];
+                                  return entries.map(([k, v], idx) => {
+                                    const ev = equipped && equipped.stats ? Number((equipped.stats || {})[k] || 0) : 0;
+                                    const nv = Number(v || 0);
+                                    const color = nv > ev ? '#66ff66' : (nv < ev ? '#ff6666' : '#999');
+                                    return (
+                                      <span key={k} style={{ color, fontWeight: nv === ev ? 400 : 700, textShadow: '0 1px 0 rgba(0,0,0,0.6)' }}>
+                                        {`${k}: ${v}`}{idx < entries.length - 1 ? ' • ' : ''}
+                                      </span>
+                                    );
+                                  });
+                                })()}
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: 8 }}>
+                              {it.category === 'consumable' ? (
+                                <button type="button" onClick={(e) => { e.stopPropagation(); if (!onUse) return; setTimeout(() => { try { const res = onUse(it.id); Promise.resolve(res).then(() => {}); } catch {} }, 0); }}>Use</button>
+                              ) : (
+                                <button type="button" onClick={(e) => { e.stopPropagation(); if (!onEquip) return; setTimeout(() => { try { onEquip(it); } catch {} }, 0); }}>Equip ({SLOT_LABELS[it.slot] ?? it.slot})</button>
+                              )}
+                              <button type="button" onClick={(e) => { e.stopPropagation(); if (!onSell) return; setTimeout(() => { try { onSell(it.id); } catch {} }, 0); }}>Sell ({priceFor(it)} g)</button>
+                            </div>
+                          </div>
+                        ))}
                     </div>
-                  ))}
+                  )}
                 </div>
               </>
             )}

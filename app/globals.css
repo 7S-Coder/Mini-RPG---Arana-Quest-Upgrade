@@ -168,7 +168,7 @@ body{
 .dot.rare{background:#4aa3ff}
 .dot.epic{background:#b46bff}
 .dot.legendary{background:#ffd36b}
-.dot.mythic{background:#ff6b6b}
+.dot.mythic{background:#ff6b6b;}
 
 /* Enemy name rarity colors */
 .enemy-name.common{color:#ffffff}

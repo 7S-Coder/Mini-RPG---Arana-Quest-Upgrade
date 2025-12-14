@@ -287,7 +287,20 @@ export function useGameState() {
   };
 
   // collect a pickup (gold or item). returns true if collected
-  const collectPickup = (pickupId: string): boolean => {
+  const MAX_CARRY_WEIGHT = 100;
+
+  const computeTotalWeight = (inv: any[], equip: Record<string, any>) => {
+    let w = 0;
+    for (const it of inv) w += Number((it && (it.weight ?? 1)) || 1);
+    for (const k of Object.keys(equip || {})) {
+      const it = (equip as any)[k];
+      if (it) w += Number((it && (it.weight ?? 1)) || 1);
+    }
+    return w;
+  };
+
+  // collect a pickup (gold or item). returns true if collected
+  const collectPickup = (pickupId: string, logger?: (msg: string) => void): boolean => {
     try {
       if (collectedRef.current.has(pickupId)) return false;
       const pk = pickups.find((p) => p.id === pickupId);
@@ -296,6 +309,7 @@ export function useGameState() {
       const inCombat = enemiesRef.current && enemiesRef.current.length > 0;
       if (inCombat && pk.kind === 'item' && pk.item && (pk.item.slot as any) !== 'consumable') {
         // do not collect equipment while in combat
+        logger && logger('Cannot pick up equipment while in combat.');
         return false;
       }
       // mark as collected immediately to avoid double-processing from fast double-clicks
@@ -306,7 +320,17 @@ export function useGameState() {
         setPlayer(nextPlayer);
         setPickups((prev) => prev.filter((p) => p.id !== pickupId));
         try { saveGame({ player: pickPlayerData(nextPlayer), inventory, equipment }); } catch (e) {}
+        logger && logger(`Picked up: +${Number(amount).toFixed(2)} g`);
       } else if (pk.kind === 'item' && pk.item) {
+        // check weight limit
+        const itemWeight = Number(pk.item.weight ?? 1);
+        const current = computeTotalWeight(inventory, equipment);
+        if (current + itemWeight > MAX_CARRY_WEIGHT) {
+          logger && logger(`Can't pick up: would exceed weight limit (${current + itemWeight} > ${MAX_CARRY_WEIGHT}).`);
+          // remove collected mark and do not pick
+          window.setTimeout(() => collectedRef.current.delete(pickupId), 3000);
+          return false;
+        }
         // add item if not already present
         if (!inventory.find((i) => i.id === pk.item.id)) {
           const next = [...inventory, pk.item];
@@ -314,9 +338,11 @@ export function useGameState() {
           setInventory(next);
           setPickups((prev) => prev.filter((p) => p.id !== pickupId));
           try { saveGame({ player: pickPlayerData(player), inventory: next, equipment }); } catch (e) {}
+          logger && logger(`Picked up: ${pk.item.name}`);
         } else {
           // item already in inventory; just remove pickup
           setPickups((prev) => prev.filter((p) => p.id !== pickupId));
+          logger && logger(`Already have: ${pk.item.name}`);
         }
       }
       // cleanup collectedRef after short delay to avoid memory growth
@@ -341,15 +367,25 @@ export function useGameState() {
         if (collectedRef.current.has(pk.id)) continue;
         // in combat, skip equipment items
         if (inCombat && pk.kind === 'item' && pk.item && (pk.item.slot as any) !== 'consumable') continue;
-        // mark and plan
-        collectedRef.current.add(pk.id);
-        toCollectIds.push(pk.id);
+        // in combat we already filtered equipment; for items, check weight before marking
         if (pk.kind === 'gold') {
+          // mark gold always
+          collectedRef.current.add(pk.id);
+          toCollectIds.push(pk.id);
           const amt = Number(pk.amount ?? 0);
           goldTotal += amt;
           try { logger && logger(`Picked up: +${amt.toFixed(2)} g`); } catch (e) {}
         } else if (pk.kind === 'item' && pk.item) {
+          // compute prospective weight and skip if it would exceed limit
+          const itemWeight = Number(pk.item.weight ?? 1);
+          const current = computeTotalWeight(inventory, equipment);
+          if (current + itemWeight > MAX_CARRY_WEIGHT) {
+            try { logger && logger(`Can't pick up ${pk.item.name}: would exceed weight (${current + itemWeight} > ${MAX_CARRY_WEIGHT})`); } catch (e) {}
+            continue;
+          }
           if (!inventory.find((i) => i.id === pk.item.id)) {
+            collectedRef.current.add(pk.id);
+            toCollectIds.push(pk.id);
             itemsToAdd.push(pk.item);
             try { logger && logger(`Picked up: ${pk.item.name}`); } catch (e) {}
           } else {

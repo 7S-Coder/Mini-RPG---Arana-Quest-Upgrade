@@ -10,7 +10,7 @@ type Props = {
   onRun: () => void;
   disableRun?: boolean;
   pickups?: any[];
-  collectPickup?: (id: string) => boolean | void;
+  collectPickup?: (id: string, logger?: (msg: React.ReactNode) => void) => boolean | void;
   collectAllPickups?: (logger?: (msg: React.ReactNode) => void) => number;
   pushLog?: (node: React.ReactNode) => void;
   logColor?: string;
@@ -67,11 +67,8 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
               className={`pickup ${p.kind === 'gold' ? 'gold' : 'item'} spawn`}
                   onClick={() => {
                 try {
-                  const ok = collectPickup ? collectPickup(p.id) : false;
-                  if (ok) {
-                        if (p.kind === 'gold') pushLog && pushLog(`Picked up: +${Number(p.amount).toFixed(2)} g`);
-                        else pushLog && pushLog(`Picked up: ${p.item?.name ?? 'Item'}`);
-                  }
+                  const ok = collectPickup ? collectPickup(p.id, (m) => { try { pushLog && pushLog(m); } catch (e) {} }) : false;
+                  // collectPickup will log via provided logger; keep existing behavior for success
                 } catch (e) { console.error(e); }
               }}
               style={{ left: (p.x ?? 220), top: (p.y ?? 120), position: 'absolute', pointerEvents: 'auto' }}

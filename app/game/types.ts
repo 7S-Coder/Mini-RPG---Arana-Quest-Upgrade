@@ -8,6 +8,7 @@ export type Item = {
   category?: "weapon" | "armor" | "accessory" | "pet";
   cost?: number;
   stats?: Record<string, number>;
+  weight?: number;
 };
 
 export type Enemy = {
