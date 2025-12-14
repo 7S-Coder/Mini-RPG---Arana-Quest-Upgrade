@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { uid, clampToViewport } from "../utils";
 import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "../templates/items";
-import { isTierAllowedOnMap } from "../templates/maps";
+import { isTierAllowedOnMap, getMapById } from "../templates/maps";
 import { ENEMY_TEMPLATES } from "../templates/enemies";
 import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity } from "../types";
 
@@ -207,14 +207,16 @@ export function useGameState() {
 
     // pick template first (weighted) then determine rarity: template rarity wins, otherwise roll
     // weighted pick from ITEM_POOL (fall back to uniform if no weights)
-    const totalWeight = ITEM_POOL.reduce((s, t) => s + (t.weight ?? 1), 0);
+    // If spawn area (no selectedMapId), restrict template pool to common-tier templates so names/stats match common rarity
+    const poolForPick = (!selectedMapId) ? ITEM_POOL.filter((t) => (t.rarity ?? 'common') === 'common') : ITEM_POOL;
+    const totalWeight = poolForPick.reduce((s, t) => s + (t.weight ?? 1), 0);
     let chosen: ItemTemplate;
     if (totalWeight <= 0) {
-      chosen = ITEM_POOL[Math.floor(Math.random() * ITEM_POOL.length)];
+      chosen = poolForPick[Math.floor(Math.random() * poolForPick.length)];
     } else {
       let r = Math.random() * totalWeight;
-      chosen = ITEM_POOL[ITEM_POOL.length - 1];
-      for (const t of ITEM_POOL) {
+      chosen = poolForPick[poolForPick.length - 1];
+      for (const t of poolForPick) {
         r -= (t.weight ?? 1);
         if (r <= 0) {
           chosen = t;
@@ -225,6 +227,7 @@ export function useGameState() {
 
     // determine rarity: use template rarity if present otherwise roll
     let finalRarity = chosen.rarity ?? rollRarity();
+    try { console.debug('[DROP] initial', { selectedMapId, enemy: enemy && enemy.templateId, enemyRarity: enemy && enemy.rarity, chosenRarity: (chosen as any).rarity, rolled: finalRarity }); } catch (e) {}
     // clamp to enemy rarity (do not allow higher-rarity drops than the enemy)
     // but allow an extremely small chance to upgrade above enemy rarity
     const RARITY_ORDER: Rarity[] = ["common", "rare", "epic", "legendary", "mythic"];
@@ -240,10 +243,12 @@ export function useGameState() {
     }
     if (!finalRarity) return null;
 
-    // If no map selected (spawn area), only allow common drops
+    // If no map selected (spawn area) or map is not found, defensively force only common drops
     try {
-      if (!selectedMapId) {
+      const mapObj = getMapById(selectedMapId ?? undefined);
+      if (!selectedMapId || !mapObj) {
         finalRarity = 'common';
+        try { console.debug('[DROP] spawn area or missing map - forcing common drop', { selectedMapId, mapObj, enemy: enemy && enemy.templateId, original: (chosen as any).rarity, interim: finalRarity }); } catch (e) {}
       }
     } catch (e) {}
 
@@ -252,10 +257,15 @@ export function useGameState() {
       const order = RARITY_ORDER;
       let idx = order.indexOf(finalRarity);
       while (idx >= 0 && !isTierAllowedOnMap(selectedMapId, order[idx])) {
+        try { console.debug('[DROP] stepping down rarity for map restrictions', { selectedMapId, tryTier: order[idx] }); } catch (e) {}
         idx -= 1; // step down rarity
       }
-      if (idx < 0) return null;
+      if (idx < 0) {
+        try { console.debug('[DROP] no allowed rarities for this map, cancelling drop', { selectedMapId, finalRarity }); } catch (e) {}
+        return null;
+      }
       finalRarity = order[idx];
+      try { console.debug('[DROP] final rarity after map clamp', { selectedMapId, finalRarity }); } catch (e) {}
     } catch (e) {}
 
 
@@ -292,11 +302,23 @@ export function useGameState() {
       collectedRef.current.add(pickupId);
       if (pk.kind === 'gold') {
         const amount = pk.amount ?? 0;
-        setPlayer((p) => ({ ...p, gold: (p.gold ?? 0) + amount }));
+        const nextPlayer = { ...player, gold: (player.gold ?? 0) + amount } as Player;
+        setPlayer(nextPlayer);
+        setPickups((prev) => prev.filter((p) => p.id !== pickupId));
+        try { saveGame({ player: pickPlayerData(nextPlayer), inventory, equipment }); } catch (e) {}
       } else if (pk.kind === 'item' && pk.item) {
-        addToInventory(pk.item);
+        // add item if not already present
+        if (!inventory.find((i) => i.id === pk.item.id)) {
+          const next = [...inventory, pk.item];
+          if (next.length > INVENTORY_MAX) next.shift();
+          setInventory(next);
+          setPickups((prev) => prev.filter((p) => p.id !== pickupId));
+          try { saveGame({ player: pickPlayerData(player), inventory: next, equipment }); } catch (e) {}
+        } else {
+          // item already in inventory; just remove pickup
+          setPickups((prev) => prev.filter((p) => p.id !== pickupId));
+        }
       }
-      setPickups((prev) => prev.filter((p) => p.id !== pickupId));
       // cleanup collectedRef after short delay to avoid memory growth
       window.setTimeout(() => collectedRef.current.delete(pickupId), 3000);
       return true;
