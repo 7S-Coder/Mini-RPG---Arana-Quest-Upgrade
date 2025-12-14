@@ -124,7 +124,14 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                           <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.04)', padding: 12, borderRadius: 8, textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
                             <div style={{ fontSize: 12, color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
                             <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 8, overflowWrap: 'anywhere' }}>{it ? it.name : 'empty'}</div>
-                            {it ? <button type="button" style={{ marginTop: 8, alignSelf: 'center' }} onClick={(e) => { e.stopPropagation(); onUnequip(slot); }}>Unequip</button> : null}
+                            {it ? (
+                              <>
+                                <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>{Object.entries(it.stats || {}).map(([k, v]) => `${k}: ${v}`).join(' • ')}</div>
+                                <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                  <button type="button" style={{ marginTop: 8 }} onClick={(e) => { e.stopPropagation(); onUnequip(slot); }}>Unequip</button>
+                                </div>
+                              </>
+                            ) : null}
                           </div>
                         </div>
                       );
@@ -145,9 +152,24 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                     <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>No items.</div>
                   ) : inventory.map((it) => (
                     <div key={it.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10 }}>
-                      <div>
+                        <div>
                         <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>{it.name}</div>
-                        <div style={{ fontSize: 12, color: '#999' }}>{Object.entries(it.stats || {}).map(([k,v]) => `${k}: ${v}`).join(' • ')}</div>
+                        <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>
+                          {(() => {
+                            const entries = Object.entries(it.stats || {});
+                            const equipped: any = (equipment as any)[it.slot];
+                            return entries.map(([k, v], idx) => {
+                              const ev = equipped && equipped.stats ? Number((equipped.stats || {})[k] || 0) : 0;
+                              const nv = Number(v || 0);
+                              const color = nv > ev ? '#66ff66' : (nv < ev ? '#ff6666' : '#999');
+                              return (
+                                <span key={k} style={{ color, fontWeight: nv === ev ? 400 : 700, textShadow: '0 1px 0 rgba(0,0,0,0.6)' }}>
+                                  {`${k}: ${v}`}{idx < entries.length - 1 ? ' • ' : ''}
+                                </span>
+                              );
+                            });
+                          })()}
+                        </div>
                       </div>
                       <div style={{ display: 'flex', gap: 8 }}>
                         {it.category === 'consumable' ? (

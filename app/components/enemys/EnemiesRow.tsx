@@ -11,7 +11,7 @@ export default function EnemiesRow({ enemies }: Props) {
         <div key={e.id} style={{ display: "inline-block", marginRight: 12 }}>
           <Enemy {...e} />
           <div style={{ color: "#ccc", fontSize: 12 }}>
-            <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name}</span> HP: {e.hp}
+            <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name} </span> LVL: {e.level ?? 1} HP: {e.hp} - 
           </div>
         </div>
       ))}

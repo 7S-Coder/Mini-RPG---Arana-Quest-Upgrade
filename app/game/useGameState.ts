@@ -312,7 +312,7 @@ export function useGameState() {
         setPickups((prev) => prev.filter((p) => p.id !== pickupId));
         try { saveGame({ player: pickPlayerData(nextPlayer), inventory, equipment }); } catch (e) {}
       } else if (pk.kind === 'item' && pk.item) {
-        if (!inventory.find((i) => i.id === pk.item.id)) {
+        if (!inventory.find((i) => i.id === pk.item!.id)) {
           const next = [...inventory, pk.item];
           if (next.length > INVENTORY_MAX) next.shift();
           setInventory(next);
