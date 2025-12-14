@@ -20,6 +20,8 @@ export const ENEMY_TEMPLATES: EnemyTemplate[] = [
     // Epics
   { templateId: "ogre", name: "Ogre", hp: 40, dmg: 14, def: 4, dodge: 1, crit: 3, speed: 18, rarity: 'epic' },
   { templateId: "wyrm", name: "Wyrm", hp: 45, dmg: 16, def: 5, dodge: 4, crit: 4, speed: 28, rarity: 'epic' },
+  // Forest dungeon boss (example)
+  { templateId: "wyrm_king", name: "Wyrm King", hp: 140, dmg: 26, def: 8, dodge: 6, crit: 8, speed: 22, rarity: 'mythic' },
   { templateId: "golem", name: "Golem", hp: 50, dmg: 15, def: 6, dodge: 0, crit: 2, speed: 14, rarity: 'epic' },
   // Legendaries
   { templateId: "magma", name: "Magma", hp: 60, dmg: 18, def: 8, dodge: 0, crit: 1, speed: 10, rarity: 'legendary' },

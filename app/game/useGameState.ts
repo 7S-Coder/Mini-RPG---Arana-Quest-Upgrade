@@ -630,7 +630,7 @@ export function useGameState() {
     enemiesRef.current = enemies;
   }, [enemies]);
 
-  const spawnEnemy = (templateOverride?: string, levelOverride?: number) => {
+  const spawnEnemy = (templateOverride?: string, levelOverride?: number, meta?: { isBoss?: boolean; roomId?: string }) => {
     // pick a template (optionally by templateId)
     let template = undefined as any;
     if (templateOverride) {
@@ -686,6 +686,8 @@ export function useGameState() {
       crit: Math.max(0, Math.round(Math.random() * 8 + level * 0.03)),
       def,
       speed: Math.max(8, Math.round(10 + Math.random() * 40 - level * 0.05)),
+      isBoss: meta?.isBoss,
+      roomId: meta?.roomId,
     };
 
     setEnemies((prev) => [...prev, inst]);

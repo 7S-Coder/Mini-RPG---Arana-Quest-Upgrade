@@ -328,6 +328,66 @@ export function useGameState() {
     }
   };
 
+  // Collect all eligible pickups currently present (respects combat rules).
+  const collectAllPickups = (logger?: (msg: string) => void): number => {
+    try {
+      const nowPickups = [...pickups];
+      if (!nowPickups || nowPickups.length === 0) return 0;
+      const inCombat = enemiesRef.current && enemiesRef.current.length > 0;
+      const toCollectIds: string[] = [];
+      const itemsToAdd: any[] = [];
+      let goldTotal = 0;
+      for (const pk of nowPickups) {
+        if (collectedRef.current.has(pk.id)) continue;
+        // in combat, skip equipment items
+        if (inCombat && pk.kind === 'item' && pk.item && (pk.item.slot as any) !== 'consumable') continue;
+        // mark and plan
+        collectedRef.current.add(pk.id);
+        toCollectIds.push(pk.id);
+        if (pk.kind === 'gold') {
+          const amt = Number(pk.amount ?? 0);
+          goldTotal += amt;
+          try { logger && logger(`Picked up: +${amt.toFixed(2)} g`); } catch (e) {}
+        } else if (pk.kind === 'item' && pk.item) {
+          if (!inventory.find((i) => i.id === pk.item.id)) {
+            itemsToAdd.push(pk.item);
+            try { logger && logger(`Picked up: ${pk.item.name}`); } catch (e) {}
+          } else {
+            // already owned
+            try { logger && logger(`Already have: ${pk.item.name}`); } catch (e) {}
+          }
+        }
+      }
+      // apply aggregated results
+      if (goldTotal > 0) {
+        const nextPlayer = { ...player, gold: +(((player.gold ?? 0) + goldTotal).toFixed(2)) } as any;
+        setPlayer(nextPlayer);
+      }
+      if (itemsToAdd.length > 0) {
+        const next = (() => {
+          const merged = [...inventory, ...itemsToAdd];
+          if (merged.length > INVENTORY_MAX) merged.splice(0, merged.length - INVENTORY_MAX);
+          return merged;
+        })();
+        setInventory(next);
+      }
+      if (toCollectIds.length > 0) {
+        setPickups((prev) => prev.filter((p) => !toCollectIds.includes(p.id)));
+        try { saveGame({ player: pickPlayerData({ ...player, gold: +(((player.gold ?? 0) + goldTotal).toFixed(2)) }), inventory: itemsToAdd.length > 0 ? (() => {
+          const merged = [...inventory, ...itemsToAdd]; if (merged.length > INVENTORY_MAX) merged.splice(0, merged.length - INVENTORY_MAX); return merged;
+        })() : inventory, equipment }); } catch (e) {}
+      }
+      // cleanup collectedRef after short delay
+      window.setTimeout(() => {
+        for (const id of toCollectIds) collectedRef.current.delete(id);
+      }, 3000);
+      return toCollectIds.length;
+    } catch (e) {
+      try { console.error('collectAllPickups error', e); } catch (e) {}
+      return 0;
+    }
+  };
+
   // spawn a gold or item pickup (used to create a single gold reward per encounter)
   const spawnGoldPickup = (amount: number, x?: number, y?: number) => {
     const safeAmount = Number((Math.round((amount || 0) * 100) / 100).toFixed(2));
@@ -585,7 +645,7 @@ export function useGameState() {
     enemiesRef.current = enemies;
   }, [enemies]);
 
-  const spawnEnemy = (templateOverride?: string, levelOverride?: number) => {
+  const spawnEnemy = (templateOverride?: string, levelOverride?: number, meta?: { isBoss?: boolean; roomId?: string }) => {
     // pick a template (optionally by templateId)
     let template = undefined as any;
     if (templateOverride) {
@@ -641,6 +701,8 @@ export function useGameState() {
       crit: Math.max(0, Math.round(Math.random() * 8 + level * 0.03)),
       def,
       speed: Math.max(8, Math.round(10 + Math.random() * 40 - level * 0.05)),
+      isBoss: meta?.isBoss,
+      roomId: meta?.roomId,
     };
 
     setEnemies((prev) => [...prev, inst]);
@@ -781,6 +843,6 @@ export function useGameState() {
 
   const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, saveGame, loadGame, isInCombat } as const;
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, saveGame, loadGame, isInCombat } as const;
 }
 

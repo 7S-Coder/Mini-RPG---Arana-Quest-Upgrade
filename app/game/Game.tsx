@@ -14,7 +14,7 @@ import EffectsLayer from "../components/EffectsLayer";
 import BestiaryModal from "../components/modales/BestiaryModal";
 import MapsModal from "../components/modales/MapsModal";
 import CatalogModal from "../components/modales/CatalogModal";
-import { getMaps, pickEnemyFromMap } from "./templates/maps";
+import { getMaps, pickEnemyFromMap, pickEnemyFromRoom } from "./templates/maps";
 import { ENEMY_TEMPLATES } from "./templates/enemies";
 import { calcDamage } from "./damage";
 import { useLogs } from "../hooks/useLogs";
@@ -22,7 +22,7 @@ import { useToasts } from "../hooks/useToasts";
 import { useDungeon } from "../hooks/useDungeon";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical } = useGameState();
 
   // modal system (generalized)
   const [modalName, setModalName] = useState<string | null>(null);
@@ -142,28 +142,67 @@ export default function Game() {
           const bossTpl = ENEMY_TEMPLATES.find((t) => t.templateId === bossId);
           const bossBelongs = bossTpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(bossId);
           if (bossBelongs) {
-            spawnEnemy(bossId);
+            const dungeonId = (selectedMap?.dungeons && typeof idx === 'number') ? selectedMap.dungeons[idx].id : undefined;
+            const roomId = dungeonId ? `${dungeonId}_floor_1` : undefined;
+            spawnEnemy(bossId, undefined, { isBoss: true, roomId });
             spawned++;
           } else {
             console.log('[DEBUG] boss template not in map.enemyPool, skipping spawn', { bossId, selectedMapId, bossTpl, pool: selectedMap?.enemyPool });
           }
         }
       } else {
-          const tid = pickEnemyFromMap(selectedMapId ?? undefined);
-          if (tid) {
-            // extra guard: ensure the resolved template is inside the map's enemyPool
-            const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid);
-            const areaName = selectedMap?.name ?? 'Spawn';
-            const tplBelongs = selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid)) : !!tpl;
-            if (tplBelongs) {
-              spawnEnemy(tid);
-              spawned++;
+          // If inside a dungeon (non-boss floor), prefer room-based deterministic spawns
+          if (isDungeonActive && dungeonProgressRef.current.activeDungeonId) {
+            const dungeonId = dungeonProgressRef.current.activeDungeonId;
+            const remaining = dungeonProgressRef.current.remaining || 0;
+            const roomId = `${dungeonId}_floor_${remaining}`;
+            const tid = pickEnemyFromRoom(selectedMapId ?? undefined, roomId);
+            if (tid) {
+              // If this room is defined, allow it even if not present in map.enemyPool
+              const roomObj = selectedMap?.rooms ? selectedMap.rooms.find((r) => r.id === roomId) : undefined;
+              const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid);
+              const tplBelongs = roomObj ? true : (selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid)) : !!tpl);
+              if (tplBelongs) {
+                spawnEnemy(tid, undefined, { isBoss: !!roomObj?.isBossRoom, roomId });
+                spawned++;
+              } else {
+                console.log('[DEBUG] resolved room template not allowed for map - skipping spawn', { selectedMapId, tid, tpl, pool: selectedMap?.enemyPool, roomId });
+              }
             } else {
-              console.log('[DEBUG] resolved template not in selectedMap.enemyPool - skipping spawn', { selectedMapId, tid, tpl, pool: selectedMap?.enemyPool });
+              // fallback to area pool
+              const tid2 = pickEnemyFromMap(selectedMapId ?? undefined);
+              if (tid2) {
+                const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid2);
+                const areaName = selectedMap?.name ?? 'Spawn';
+                const tplBelongs = selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid2)) : !!tpl;
+                if (tplBelongs) {
+                  spawnEnemy(tid2);
+                  spawned++;
+                } else {
+                  console.log('[DEBUG] resolved template not in selectedMap.enemyPool - skipping spawn', { selectedMapId, tid2, tpl, pool: selectedMap?.enemyPool });
+                }
+              } else {
+                const areaName = selectedMap?.name ?? 'Spawn';
+                console.log('[DEBUG] no enemy templates belong to this area, skipping spawn', { selectedMapId, areaName });
+              }
             }
           } else {
-            const areaName = selectedMap?.name ?? 'Spawn';
-            console.log('[DEBUG] no enemy templates belong to this area, skipping spawn', { selectedMapId, areaName });
+            const tid = pickEnemyFromMap(selectedMapId ?? undefined);
+            if (tid) {
+              // extra guard: ensure the resolved template is inside the map's enemyPool
+              const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid);
+              const areaName = selectedMap?.name ?? 'Spawn';
+              const tplBelongs = selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid)) : !!tpl;
+              if (tplBelongs) {
+                spawnEnemy(tid);
+                spawned++;
+              } else {
+                console.log('[DEBUG] resolved template not in selectedMap.enemyPool - skipping spawn', { selectedMapId, tid, tpl, pool: selectedMap?.enemyPool });
+              }
+            } else {
+              const areaName = selectedMap?.name ?? 'Spawn';
+              console.log('[DEBUG] no enemy templates belong to this area, skipping spawn', { selectedMapId, areaName });
+            }
           }
       }
     }
@@ -313,7 +352,7 @@ export default function Game() {
             {
               (() => {
                 const inDungeonActive = selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null;
-                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} pushLog={pushLog} logColor={selectedMap?.logColor} disableRun={!!inDungeonActive} />;
+                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} disableRun={!!inDungeonActive} />;
               })()
             }
      

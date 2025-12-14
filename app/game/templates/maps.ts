@@ -8,6 +8,15 @@ export type DungeonDef = {
   bossTemplateId?: string;
 };
 
+export type RoomDef = {
+  id: string;
+  name?: string;
+  // optional fixed enemy list for this room (deterministic encounters)
+  enemyPool?: string[];
+  // if true, this room is considered a boss room
+  isBossRoom?: boolean;
+};
+
 export type MapTemplate = {
   id: string;
   name: string;
@@ -19,6 +28,8 @@ export type MapTemplate = {
   // allowed item tiers that may drop on this map (controls rarity visibility)
   allowedTiers?: string[];
   enemyPool: string[];
+  // optional explicit rooms (fixed encounters) inside this map
+  rooms?: RoomDef[];
   dungeons?: DungeonDef[]; // maps may contain multiple dungeons
 };
 
@@ -31,11 +42,21 @@ const defaultMaps: MapTemplate[] = [
     minLevel: 10,
     allowedTiers: ['common'],
     logColor: '#2ecc71',
-    enemyPool: ['gobelin','loup','slime', 'pebble', 'wyrm', 'hydre'],
+    enemyPool: ['gobelin','loup','slime', 'pebble', 'wyrm', 'wyrm_king', 'hydre'],
     dungeons: [
       { id: 'forest_depths_1', name: 'Depths', floors: 5, bossTemplateId: 'wyrm' },
       { id: 'forest_cavern_1', name: 'Caverns', floors: 5, bossTemplateId: 'ogre' },
     ],
+      // Example fixed rooms for the `forest` map — each room id follows the pattern
+      // <dungeonId>_floor_<n>. When a dungeon is active, the game will attempt to
+      // pick an enemy from the corresponding room (deterministic encounters).
+      rooms: [
+        { id: 'forest_depths_1_floor_5', name: 'Shallow Thicket', enemyPool: ['gobelin','slime'] },
+        { id: 'forest_depths_1_floor_4', name: 'Old Clearing', enemyPool: ['gobelin','loup'] },
+        { id: 'forest_depths_1_floor_3', name: 'Moss Hall', enemyPool: ['slime','pebble'] },
+        { id: 'forest_depths_1_floor_2', name: 'Rooted Pass', enemyPool: ['loup','pebble'] },
+        { id: 'forest_depths_1_floor_1', name: 'Wyrm Lair', enemyPool: ['wyrm_king'], isBossRoom: true },
+      ],
   },
   {
     id: 'caves',
@@ -136,7 +157,46 @@ export function pickEnemyFromMap(mapId?: string) {
   return undefined;
 }
 
-export default { getMaps, getMapById, createMap, pickEnemyFromMap };
+// Return rooms for a given map (or empty array)
+export function getRoomsForMap(mapId?: string) {
+  const m = getMapById(mapId ?? undefined);
+  if (!m || !Array.isArray(m.rooms)) return [];
+  return [...m.rooms];
+}
+
+// Pick an enemy for a specific room if the map defines rooms with fixed enemy pools.
+// Falls back to the map's `enemyPool` or the global SPAWN_POOL when appropriate.
+export function pickEnemyFromRoom(mapId?: string, roomId?: string) {
+  const map = getMapById(mapId);
+  if (!map) {
+    // spawn area
+    const poolTemplates = ENEMY_TEMPLATES.filter((t) => SPAWN_POOL.includes(t.templateId));
+    if (poolTemplates.length === 0) return undefined;
+    return poolTemplates[Math.floor(Math.random() * poolTemplates.length)].templateId;
+  }
+
+  if (roomId && Array.isArray(map.rooms)) {
+    const room = map.rooms.find((r) => r.id === roomId);
+    if (room && Array.isArray(room.enemyPool) && room.enemyPool.length > 0) {
+      const poolTemplates = ENEMY_TEMPLATES.filter((t) => room.enemyPool!.includes(t.templateId));
+      if (poolTemplates.length > 0) {
+        return poolTemplates[Math.floor(Math.random() * poolTemplates.length)].templateId;
+      }
+    }
+  }
+
+  // fallback to map enemyPool (strict)
+  if (Array.isArray(map.enemyPool) && map.enemyPool.length > 0) {
+    const poolTemplates = ENEMY_TEMPLATES.filter((t) => map.enemyPool.includes(t.templateId));
+    if (poolTemplates.length > 0) {
+      return poolTemplates[Math.floor(Math.random() * poolTemplates.length)].templateId;
+    }
+  }
+
+  return undefined;
+}
+
+export default { getMaps, getMapById, createMap, pickEnemyFromMap, pickEnemyFromRoom, getRoomsForMap };
 
 export function isTierAllowedOnMap(mapId: string | undefined | null, tier: string) {
   if (!mapId) return tier === 'common';

@@ -24,6 +24,9 @@ export type Enemy = {
   crit: number;
   def: number;
   speed: number;
+  // optional flags for UI/logic
+  isBoss?: boolean;
+  roomId?: string;
 };
 
 export type Player = {
