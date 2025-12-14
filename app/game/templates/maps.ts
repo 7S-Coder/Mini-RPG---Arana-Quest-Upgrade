@@ -4,6 +4,7 @@ export type DungeonDef = {
   id: string;
   name?: string;
   floors: number;
+  requiredLevel?: number;
   bossTemplateId?: string;
 };
 
@@ -13,6 +14,10 @@ export type MapTemplate = {
   theme?: string;
   logColor?: string;
   dungeonThreshold?: number;
+  // minimum level allowed on this map (inclusive). If absent, map has no minimum.
+  minLevel?: number;
+  // allowed item tiers that may drop on this map (controls rarity visibility)
+  allowedTiers?: string[];
   enemyPool: string[];
   dungeons?: DungeonDef[]; // maps may contain multiple dungeons
 };
@@ -23,6 +28,8 @@ const defaultMaps: MapTemplate[] = [
     name: 'Forest',
     theme: 'forest',
     dungeonThreshold: 15,
+    minLevel: 10,
+    allowedTiers: ['common'],
     logColor: '#2ecc71',
     enemyPool: ['gobelin','loup','slime', 'pebble', 'wyrm', 'hydre'],
     dungeons: [
@@ -35,6 +42,8 @@ const defaultMaps: MapTemplate[] = [
     name: 'Caves',
     theme: 'cave',
     dungeonThreshold: 15,
+    minLevel: 31,
+    allowedTiers: ['common', 'rare'],
     logColor: '#95a5a6',
     enemyPool: ['slime','brigand','spectre','bandit', 'ogre', 'magma', 'seigneur', 'dragon'],
     dungeons: [
@@ -47,6 +56,8 @@ const defaultMaps: MapTemplate[] = [
     name: 'Ruins',
     theme: 'ruins',
     dungeonThreshold: 15,
+    minLevel: 51,
+    allowedTiers: ['rare', 'epic'],
     logColor: '#9b59b6',
     enemyPool: ['brigand','wyrm','ogre', 'spectre', 'golem', 'chimere', 'leviathan'],
     dungeons: [
@@ -59,11 +70,13 @@ const defaultMaps: MapTemplate[] = [
     name: 'Scourge Craters',
     theme: 'scars',
     dungeonThreshold: 15,
+    minLevel: 71,
+    allowedTiers: ['epic', 'legendary'],
     logColor: '#e74c3c',
     enemyPool: ['ogre','magma','wyrm','spectre', 'seigneur', 'troll_cavernes', 'phoenix'],
     dungeons: [
-      { id: 'scars_delve_1', name: 'Scourge Depths', floors: 5, bossTemplateId: 'seigneur' },
-      { id: 'scars_core_1', name: 'Core', floors: 5, bossTemplateId: 'seigneur' },
+      { id: 'scars_delve_1', name: 'Scourge Depths', floors: 5, bossTemplateId: 'seigneur', requiredLevel: 71 },
+      { id: 'scars_core_1', name: 'Core', floors: 5, bossTemplateId: 'seigneur', requiredLevel: 71 },
     ],
   },
 ];
@@ -124,3 +137,11 @@ export function pickEnemyFromMap(mapId?: string) {
 }
 
 export default { getMaps, getMapById, createMap, pickEnemyFromMap };
+
+export function isTierAllowedOnMap(mapId: string | undefined | null, tier: string) {
+  if (!mapId) return tier === 'common';
+  const m = getMapById(mapId);
+  if (!m) return tier === 'common';
+  if (!m.allowedTiers || m.allowedTiers.length === 0) return true;
+  return m.allowedTiers.includes(tier);
+}

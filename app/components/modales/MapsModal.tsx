@@ -4,7 +4,7 @@ import React from "react";
 import Modal from "./Modal";
 import { getMaps } from "../../game/templates/maps";
 
-export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgress }: { onClose: () => void; onSelect: (id?: string | null) => void; selectedId?: string | null; dungeonProgress?: { activeMapId?: string | null; activeDungeonIndex?: number | null; activeDungeonId?: string | null; remaining?: number; fightsRemainingBeforeDungeon?: number } }) {
+export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgress, playerLevel }: { onClose: () => void; onSelect: (id?: string | null) => void; selectedId?: string | null; dungeonProgress?: { activeMapId?: string | null; activeDungeonIndex?: number | null; activeDungeonId?: string | null; remaining?: number; fightsRemainingBeforeDungeon?: number }; playerLevel?: number }) {
   const maps = getMaps();
 
   const hexToRgba = (hex?: string, alpha = 1) => {
@@ -58,10 +58,28 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
                 <div>
                   <div style={titleStyle}>{m.name}</div>
                   <div style={{ fontSize: 12, color: accent }}>{m.theme ?? 'Generic theme'}</div>
+                  {m.minLevel ? (
+                    <div style={{ fontSize: 12, color: accent, marginTop: 6 }}>Levels: {m.minLevel}+</div>
+                  ) : null}
+                  {m.allowedTiers && m.allowedTiers.length > 0 ? (
+                    <div style={{ fontSize: 12, color: accent, marginTop: 6 }}>Allowed tiers: {m.allowedTiers.join(', ')}</div>
+                  ) : null}
                 </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <div style={{ width: 18, height: 18, borderRadius: 4, background: accent, border: '1px solid rgba(0,0,0,0.2)' }} />
-                  <button className="btn" style={btnStyle} onClick={() => { onSelect(m.id); onClose(); }}>{selected ? 'Active' : 'Choose'}</button>
+                  {(() => {
+                    const locked = (typeof m.minLevel === 'number' && typeof playerLevel === 'number' && playerLevel < m.minLevel);
+                    return (
+                      <button
+                        className="btn"
+                        style={{ ...btnStyle, opacity: locked ? 0.6 : 1 }}
+                        onClick={() => { if (!locked) { onSelect(m.id); onClose(); } }}
+                        disabled={locked}
+                      >
+                        {locked ? (m.minLevel && playerLevel < m.minLevel ? `Locked (lvl ${m.minLevel}+)` : 'Locked') : (selected ? 'Active' : 'Choose')}
+                      </button>
+                    );
+                  })()}
                 </div>
               </div>
 

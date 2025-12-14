@@ -104,6 +104,13 @@ export default function Game() {
     }
     // determine count based on dungeon state: normal area random 1-3, dungeon rooms fixed 4, boss room single
     let count = 1 + Math.floor(Math.random() * 3);
+    // prevent starting encounter on a locked map (min level only)
+    if (selectedMap?.minLevel && player.level < selectedMap.minLevel) {
+      try { pushLog(`Map locked: requires level ${selectedMap.minLevel}+`); } catch (e) {}
+      try { addToast && addToast(`Map locked: requires level ${selectedMap.minLevel}+`, 'error'); } catch (e) {}
+      return;
+    }
+
     const isDungeonActive = dungeonProgressRef.current.activeMapId === selectedMap?.id && (dungeonProgressRef.current.remaining || 0) > 0;
     if (isDungeonActive) {
       // if this is the final floor, spawn boss only, otherwise spawn 4 mobs
@@ -222,7 +229,7 @@ export default function Game() {
 
   // damage calculation extracted to game/damage.ts (calcDamage)
 
-  const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, onDrop: maybeDropFromEnemy });
+  const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, onDrop: (enemy: any) => maybeDropFromEnemy(enemy, selectedMapId) });
 
   const mapsList = getMaps();
   const selectedMap = useMemo(() => mapsList.find((m) => m.id === selectedMapId) ?? null, [mapsList, selectedMapId]);
@@ -391,14 +398,28 @@ export default function Game() {
         <BestiaryModal onClose={closeModal} enemies={enemies} selectedMapId={selectedMapId} />
       )}
       {modalName === 'maps' && (
-        <MapsModal onClose={closeModal} onSelect={(id?: string | null) => {
+        <MapsModal playerLevel={player.level} onClose={closeModal} onSelect={(id?: string | null) => {
               try {
-            setSelectedMapId(id ?? null);
-            if (id) {
-              const mm = mapsList.find((x) => x.id === id);
-              pushLog && pushLog(`Map selected: ${mm?.name ?? id}`);
-            } else {
-              pushLog && pushLog('Map deselected — Spawn active');
+              if (id) {
+                const mm = mapsList.find((x) => x.id === id);
+                if (mm?.minLevel && player.level < mm.minLevel) {
+                  const msg = `Map locked: requires level ${mm.minLevel}+`;
+                  try { pushLog(msg); } catch (e) {}
+                  try { addToast(msg, 'error'); } catch (e) {}
+                  return;
+                }
+              }
+              setSelectedMapId(id ?? null);
+              if (id) {
+                const mm = mapsList.find((x) => x.id === id);
+                const tierInfo = mm?.allowedTiers && mm.allowedTiers.length > 0 ? `Allowed tiers: ${mm.allowedTiers.join(', ')}` : 'Allowed tiers: any';
+                const levelInfo = mm?.minLevel ? `Required level: ${mm.minLevel}+` : '';
+                const msg = `Map selected: ${mm?.name ?? id}${levelInfo ? ' — ' + levelInfo : ''} — ${tierInfo}`;
+                try { pushLog(msg); } catch (e) {}
+                try { addToast(msg, 'ok'); } catch (e) {}
+              } else {
+              try { pushLog('Map deselected — Spawn active'); } catch (e) {}
+              try { addToast('Map deselected — Spawn active', 'ok'); } catch (e) {}
             }
           } catch (e) {}
         }} selectedId={selectedMapId} dungeonProgress={dungeonProgressRef.current} />

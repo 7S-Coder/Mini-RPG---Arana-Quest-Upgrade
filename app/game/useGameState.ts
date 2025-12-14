@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { uid, clampToViewport } from "../utils";
-import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "../templates/items";
-import { ENEMY_TEMPLATES } from "../templates/enemies";
-import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity } from "../types";
+import { uid, clampToViewport } from "./utils";
+import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "./templates/items";
+import { isTierAllowedOnMap } from "./templates/maps";
+import { ENEMY_TEMPLATES } from "./templates/enemies";
+import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity } from "./types";
 
 // ENEMY_TEMPLATES moved to ./enemies.ts
 
@@ -200,7 +201,7 @@ export function useGameState() {
     return { id: uid(), slot, name, rarity, category: slotToCategory[slot], stats: scaled, cost: computeItemCost(scaled as Record<string, number> | undefined, rarity) };
   };
 
-  const maybeDropFromEnemy = (enemy: Enemy, selectedMapId: string | null): Item | null => {
+  const maybeDropFromEnemy = (enemy: Enemy, mapId?: string | null): Item | null => {
     // overall roll: skip most item drops to keep loot rare
     if (Math.random() > DROP_CHANCE) return null;
 
@@ -238,6 +239,17 @@ export function useGameState() {
       }
     }
     if (!finalRarity) return null;
+
+    // Enforce map allowed tiers: if the map disallows this rarity, degrade to the highest allowed lower rarity
+    try {
+      const order = RARITY_ORDER;
+      let idx = order.indexOf(finalRarity);
+      while (idx >= 0 && !isTierAllowedOnMap(mapId, order[idx])) {
+        idx -= 1; // step down rarity
+      }
+      if (idx < 0) return null;
+      finalRarity = order[idx];
+    } catch (e) {}
 
 
     const item: Item = {
