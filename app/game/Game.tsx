@@ -70,6 +70,13 @@ export default function Game() {
 
   useEffect(() => { inCombatRef.current = inCombat; }, [inCombat]);
 
+  // show a welcome message once when the game component mounts (spawn)
+  useEffect(() => {
+    try { pushLog && pushLog('Welcome, adventurer — you have arrived in the arena.'); } catch (e) {}
+    // run only once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
 
   const addEffect = useCallback((eff: { type: string; text?: string; kind?: string; target?: string; id?: string }) => {
     const id = eff.id ? `${eff.id}_${uid()}` : uid();
@@ -320,6 +327,7 @@ export default function Game() {
           <InventoryModal
           inventory={inventory}
           equipment={equipment}
+          player={player}
           onEquip={(item: any) => {
             try { console.log('equip requested', item && item.id, item && item.slot); } catch (e) {}
             try {

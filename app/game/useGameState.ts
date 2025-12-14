@@ -23,6 +23,8 @@ export function useGameState() {
     def: 2,
     speed: 120, // default 120 px/s
     gold: 0,
+    // player starts with 'common' tier unlocked for drops/forge
+    unlockedTiers: ['common'],
   });
 
   // equipment slots and inventory
@@ -121,8 +123,11 @@ export function useGameState() {
     const inCombat = enemiesRef.current && enemiesRef.current.length > 0;
     if (inCombat && (it.slot as any) !== 'consumable') return false;
     const price = it.cost ?? computeItemCost(it.stats, it.rarity);
-    setInventory((prev) => prev.filter((i) => i.id !== itemId));
-    setPlayer((p) => ({ ...p, gold: (p.gold || 0) + price }));
+    const nextInventory = inventory.filter((i) => i.id !== itemId);
+    const nextPlayer = { ...player, gold: (player.gold || 0) + price } as Player;
+    setInventory(nextInventory);
+    setPlayer(nextPlayer);
+    try { saveGame({ player: pickPlayerData(nextPlayer), inventory: nextInventory, equipment }); } catch (e) {}
     return true;
   };
 
@@ -332,9 +337,8 @@ export function useGameState() {
     if (currentGold < cost) {
       return false;
     }
-    // deduct immediately based on snapshot
-    setPlayer((p) => ({ ...p, gold: +(((p.gold ?? 0) - cost).toFixed(2)) } as any));
-    // create consumable item and add to inventory
+    // snapshot next player and inventory to ensure save persists immediately
+    const nextPlayer = { ...player, gold: +((Number(player.gold ?? 0) - cost).toFixed(2)) } as Player;
     const itm: Item = {
       id: uid(),
       slot: 'consumable' as any,
@@ -344,9 +348,47 @@ export function useGameState() {
       stats: { heal },
       cost,
     };
-    addToInventory(itm);
+    const nextInventory = (() => {
+      const next = [...inventory, itm];
+      if (next.length > INVENTORY_MAX) next.shift();
+      return next;
+    })();
+    setPlayer(nextPlayer);
+    setInventory(nextInventory);
+    try { saveGame({ player: pickPlayerData(nextPlayer), inventory: nextInventory, equipment }); } catch (e) {}
     return true;
   };
+
+  // Tier unlock costs (purchaseable or granted by events)
+  const TIER_UNLOCK_COSTS: Record<Rarity, number> = {
+    rare: 100,
+    epic: 500,
+    legendary: 2000,
+    mythic: 10000,
+    common: 0
+  };
+
+  // Unlock a tier for the player (deducts gold). Returns a result object with message.
+  const unlockTier = (tier: Rarity): { ok: boolean; msg: string } => {
+    try {
+      if (tier === 'common') return { ok: false, msg: 'Common tier is always available' };
+      const already = player.unlockedTiers && player.unlockedTiers.includes(tier);
+      if (already) return { ok: false, msg: `${tier} already unlocked` };
+      const cost = TIER_UNLOCK_COSTS[tier] ?? 0;
+      const currentGold = Number(player.gold ?? 0);
+      if (currentGold < cost) return { ok: false, msg: `Not enough gold to unlock ${tier} (cost: ${cost} g)` };
+      setPlayer((p) => ({ ...p, gold: +(((p.gold ?? 0) - cost).toFixed(2)), unlockedTiers: [...(p.unlockedTiers ?? ['common']), tier] }));
+      return { ok: true, msg: `Unlocked tier: ${tier}` };
+    } catch (e) {
+      try { console.error('unlockTier error', e); } catch (e) {}
+      return { ok: false, msg: 'Unable to unlock tier due to error' };
+    }
+  };
+
+  // Convenience wrapper to attempt purchase/unlock (same behavior for now)
+  const purchaseUnlockTier = (tier: Rarity) => unlockTier(tier);
+
+
 
   // consume a consumable item (by id) and apply its heal; returns true if applied
   const consumeItem = (itemId: string): boolean => {
@@ -355,8 +397,11 @@ export function useGameState() {
     if ((it as any).category !== 'consumable') return false;
     const heal = Number((it.stats && (it.stats as any).heal) || 0);
     if (!heal) return false;
-    setInventory((prev) => prev.filter((i) => i.id !== itemId));
-    setPlayer((p) => ({ ...p, hp: Math.min((p.maxHp ?? p.hp), (p.hp ?? 0) + heal) }));
+    const nextInventory = inventory.filter((i) => i.id !== itemId);
+    const nextPlayer = { ...player, hp: Math.min((player.maxHp ?? player.hp), (player.hp ?? 0) + heal) } as Player;
+    setInventory(nextInventory);
+    setPlayer(nextPlayer);
+    try { saveGame({ player: pickPlayerData(nextPlayer), inventory: nextInventory, equipment }); } catch (e) {}
     return true;
   };
 
@@ -396,7 +441,18 @@ export function useGameState() {
       const idsToRemove = matches.slice(0, 3).map((i) => i.id);
       setInventory((prev) => prev.filter((i) => !idsToRemove.includes(i.id)));
 
-      // build forged item: base off sample, upgrade rarity to rare and boost two stats by +2
+      // Generalized forging: 3 of same rarity -> next higher rarity (common->rare->epic->legendary->mythic)
+      const RARITY_ORDER: Rarity[] = ["common", "rare", "epic", "legendary", "mythic"];
+      const curIdx = RARITY_ORDER.indexOf(sample.rarity as Rarity);
+      if (curIdx === -1) return { ok: false, msg: 'Invalid item rarity' };
+      if (curIdx >= RARITY_ORDER.length - 1) return { ok: false, msg: 'This item cannot be forged to a higher rarity' };
+      const targetRarity = RARITY_ORDER[curIdx + 1];
+      // gating: ensure player has unlocked the target tier
+      if (!(player.unlockedTiers && player.unlockedTiers.includes(targetRarity))) {
+        return { ok: false, msg: `Forge locked: unlock the ${targetRarity} tier before crafting.` };
+      }
+
+      // build forged item: base off sample, upgrade rarity to target and boost two stats by +2
       const baseStats = { ...(sample.stats || {}) } as Record<string, number>;
       const statKeys = Object.keys(baseStats).filter((k) => typeof baseStats[k] === 'number');
       const boosted: Record<string, number> = { ...baseStats };
@@ -425,14 +481,22 @@ export function useGameState() {
       const forgedPayload: Omit<Item, 'id'> = {
         slot: sample.slot,
         name: forgedName,
-        rarity: 'rare',
+        rarity: targetRarity,
         category: sample.category,
         stats: boosted,
-        cost: sample.cost ?? computeItemCost(boosted as Record<string, number> | undefined, 'rare'),
+        cost: sample.cost ?? computeItemCost(boosted as Record<string, number> | undefined, targetRarity),
       } as any;
 
-      // create and add to inventory
-      createCustomItem(forgedPayload, true);
+      // create forged item without auto-adding, then update inventory snapshot
+      const forgedItem = createCustomItem(forgedPayload, false);
+      const nextInventory = (() => {
+        const without = inventory.filter((i) => !idsToRemove.includes(i.id));
+        const next = [...without, forgedItem];
+        if (next.length > INVENTORY_MAX) next.shift();
+        return next;
+      })();
+      setInventory(nextInventory);
+      try { saveGame({ player: pickPlayerData(player), inventory: nextInventory, equipment }); } catch (e) {}
       return { ok: true, msg: `Forge successful: created ${forgedName}` };
     } catch (e) {
       console.error('forge error', e);
@@ -643,6 +707,7 @@ export function useGameState() {
     def: p.def,
     speed: p.speed,
     gold: p.gold,
+    unlockedTiers: p.unlockedTiers,
   });
 
   const saveGame = (extra: Record<string, any> | null = null) => {
@@ -656,6 +721,10 @@ export function useGameState() {
         timestamp: Date.now(),
         ...(extra || {}),
       };
+      try {
+        // log save payload for debugging persistence issues
+        try { console.debug('[SAVE] writing to localStorage', { key: SAVE_KEY, save }); } catch (e) {}
+      } catch (e) {}
       localStorage.setItem(SAVE_KEY, JSON.stringify(save));
       return true;
     } catch (e) {
@@ -676,8 +745,10 @@ export function useGameState() {
   const loadGame = () => {
     try {
       const raw = localStorage.getItem(SAVE_KEY);
+      try { console.debug('[LOAD] raw from localStorage', { key: SAVE_KEY, raw }); } catch (e) {}
       if (!raw) return null;
       const save = JSON.parse(raw);
+      try { console.debug('[LOAD] parsed save', save); } catch (e) {}
       if (save.version !== 1) {
         migrateSave(save);
       }
@@ -732,6 +803,6 @@ export function useGameState() {
 
   const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, saveGame, loadGame, isInCombat } as const;
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, unlockTier, purchaseUnlockTier, saveGame, loadGame, isInCombat } as const;
 }
 

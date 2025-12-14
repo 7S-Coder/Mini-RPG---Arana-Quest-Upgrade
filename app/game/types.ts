@@ -40,6 +40,8 @@ export type Player = {
   speed: number; // px per second
   lastLevelUpAt?: number | null;
   gold?: number;
+  // unlocked item tiers for crafting/forge and other gating (e.g. ['common','rare'])
+  unlockedTiers?: Rarity[];
 };
 
 export type ItemTemplate = Omit<Item, "id" | "rarity"> & { weight?: number; rarity?: Rarity };

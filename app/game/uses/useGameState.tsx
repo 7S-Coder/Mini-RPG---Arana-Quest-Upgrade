@@ -320,9 +320,8 @@ export function useGameState() {
     if (currentGold < cost) {
       return false;
     }
-    // deduct immediately based on snapshot
-    setPlayer((p) => ({ ...p, gold: +(((p.gold ?? 0) - cost).toFixed(2)) } as any));
-    // create consumable item and add to inventory
+    // snapshot next player and inventory to ensure save persists immediately
+    const nextPlayer = { ...player, gold: +((Number(player.gold ?? 0) - cost).toFixed(2)) } as Player;
     const itm: Item = {
       id: uid(),
       slot: 'consumable' as any,
@@ -332,7 +331,14 @@ export function useGameState() {
       stats: { heal },
       cost,
     };
-    addToInventory(itm);
+    const nextInventory = (() => {
+      const next = [...inventory, itm];
+      if (next.length > INVENTORY_MAX) next.shift();
+      return next;
+    })();
+    setPlayer(nextPlayer);
+    setInventory(nextInventory);
+    try { saveGame({ player: pickPlayerData(nextPlayer), inventory: nextInventory, equipment }); } catch (e) {}
     return true;
   };
 
@@ -343,8 +349,11 @@ export function useGameState() {
     if ((it as any).category !== 'consumable') return false;
     const heal = Number((it.stats && (it.stats as any).heal) || 0);
     if (!heal) return false;
-    setInventory((prev) => prev.filter((i) => i.id !== itemId));
-    setPlayer((p) => ({ ...p, hp: Math.min((p.maxHp ?? p.hp), (p.hp ?? 0) + heal) }));
+    const nextInventory = inventory.filter((i) => i.id !== itemId);
+    const nextPlayer = { ...player, hp: Math.min((player.maxHp ?? player.hp), (player.hp ?? 0) + heal) } as Player;
+    setInventory(nextInventory);
+    setPlayer(nextPlayer);
+    try { saveGame({ player: pickPlayerData(nextPlayer), inventory: nextInventory, equipment }); } catch (e) {}
     return true;
   };
 
@@ -419,8 +428,16 @@ export function useGameState() {
         cost: sample.cost ?? computeItemCost(boosted as Record<string, number> | undefined, 'rare'),
       } as any;
 
-      // create and add to inventory
-      createCustomItem(forgedPayload, true);
+      // create forged item without auto-adding, then update inventory snapshot and save
+      const forgedItem = createCustomItem(forgedPayload, false);
+      const nextInventory = (() => {
+        const without = inventory.filter((i) => !idsToRemove.includes(i.id));
+        const next = [...without, forgedItem];
+        if (next.length > INVENTORY_MAX) next.shift();
+        return next;
+      })();
+      setInventory(nextInventory);
+      try { saveGame({ player: pickPlayerData(player), inventory: nextInventory, equipment }); } catch (e) {}
       return { ok: true, msg: `Forge successful: created ${forgedName}` };
     } catch (e) {
       console.error('forge error', e);
@@ -644,6 +661,7 @@ export function useGameState() {
         timestamp: Date.now(),
         ...(extra || {}),
       };
+      try { console.debug('[SAVE] writing to localStorage', { key: SAVE_KEY, save }); } catch (e) {}
       localStorage.setItem(SAVE_KEY, JSON.stringify(save));
       return true;
     } catch (e) {
@@ -664,8 +682,10 @@ export function useGameState() {
   const loadGame = () => {
     try {
       const raw = localStorage.getItem(SAVE_KEY);
+      try { console.debug('[LOAD] raw from localStorage', { key: SAVE_KEY, raw }); } catch (e) {}
       if (!raw) return null;
       const save = JSON.parse(raw);
+      try { console.debug('[LOAD] parsed save', save); } catch (e) {}
       if (save.version !== 1) {
         migrateSave(save);
       }

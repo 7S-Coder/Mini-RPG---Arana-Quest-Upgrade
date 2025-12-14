@@ -6,6 +6,7 @@ import Modal from "./Modal";
 type Props = {
   inventory: any[];
   equipment: Record<string, any>;
+  player?: any;
   onEquip: (item: any) => void;
   onUnequip: (slot: string) => void;
   onSell: (itemId: string) => void;
@@ -34,7 +35,7 @@ const SLOT_LABELS: Record<string, string> = {
 
 const SLOT_ORDER = ['hat', 'chestplate', 'belt', 'weapon', 'ring', 'familiar','boots' ];
 
-export default function InventoryModal({ inventory, equipment, onEquip, onUnequip, onSell, onUse, onForge, onClose }: Props) {
+export default function InventoryModal({ inventory, equipment, player, onEquip, onUnequip, onSell, onUse, onForge, onClose }: Props) {
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
   const [activeTab, setActiveTab] = React.useState<'inventory' | 'equipment' | 'forge'>('inventory');
 
@@ -90,11 +91,20 @@ export default function InventoryModal({ inventory, equipment, onEquip, onUnequi
                           <div style={{ fontSize: 12, color: '#999' }}>{g.ids.length}x</div>
                         </div>
                         <div>
-                          {g.rarity === 'common' && g.ids.length >= 3 ? (
-                            <button onClick={(e) => { e.stopPropagation(); handleForge(g.ids); }}>Forge</button>
-                          ) : (
-                            <button disabled style={{ opacity: 0.5 }}>Need 3 common</button>
-                          )}
+                          {
+                            (() => {
+                              const RARITY_ORDER = ['common','rare','epic','legendary','mythic'];
+                              const idx = RARITY_ORDER.indexOf(g.rarity);
+                              if (idx === -1) return <button disabled style={{ opacity: 0.5 }}>Not forgeable</button>;
+                              if (idx >= RARITY_ORDER.length - 1) return <button disabled style={{ opacity: 0.5 }}>Max rarity</button>;
+                              const target = RARITY_ORDER[idx + 1];
+                              const unlocked = player && Array.isArray(player.unlockedTiers) && player.unlockedTiers.includes(target);
+                              if (g.ids.length < 3) return <button disabled style={{ opacity: 0.5 }}>{`Need ${3 - g.ids.length} more`}</button>;
+                              // have 3 or more
+                              if (!unlocked) return <button disabled style={{ opacity: 0.5 }}>{`Locked (unlock ${target})`}</button>;
+                              return <button onClick={(e) => { e.stopPropagation(); handleForge(g.ids); }}>Forge → {target}</button>;
+                            })()
+                          }
                         </div>
                       </div>
                     ));
