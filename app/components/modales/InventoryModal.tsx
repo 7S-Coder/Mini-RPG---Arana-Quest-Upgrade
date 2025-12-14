@@ -53,7 +53,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
   }
 
   return (
-    <Modal onClose={onClose}>
+    <Modal title="Inventory" onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 760, minHeight: 480 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ display: 'flex', gap: 8 }}>

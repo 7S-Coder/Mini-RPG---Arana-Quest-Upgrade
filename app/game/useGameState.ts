@@ -245,6 +245,13 @@ export function useGameState() {
     }
     if (!finalRarity) return null;
 
+    // If no map selected (spawn area), only allow common drops
+    try {
+      if (!mapId) {
+        finalRarity = 'common';
+      }
+    } catch (e) {}
+
     // Enforce map allowed tiers: if the map disallows this rarity, degrade to the highest allowed lower rarity
     try {
       const order = RARITY_ORDER;

@@ -190,9 +190,11 @@ export default function Game() {
 
   const endEncounter = useCallback((msg?: string, opts?: { type?: 'clear' | 'flee' | 'death' }) => {
     // spawn a single gold pickup for the encounter (sum of per-enemy dust)
+    // Reduced drop rates: much smaller gold per enemy (drastic reduction)
     const count = encounterCountRef.current || 0;
     let total = 0;
-    for (let i = 0; i < count; i++) total += (Math.random() * (2 - 0.8) + 0.8);
+    // per enemy: 0.05 - 0.20 g
+    for (let i = 0; i < count; i++) total += (Math.random() * (0.20 - 0.05) + 0.05);
     total = Number(total.toFixed(2));
       try {
       spawnGoldPickup(total, player.x, player.y);

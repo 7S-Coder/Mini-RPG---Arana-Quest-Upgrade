@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { uid, clampToViewport } from "../utils";
 import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "../templates/items";
+import { isTierAllowedOnMap } from "../templates/maps";
 import { ENEMY_TEMPLATES } from "../templates/enemies";
 import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity } from "../types";
 
@@ -238,6 +239,24 @@ export function useGameState() {
       }
     }
     if (!finalRarity) return null;
+
+    // If no map selected (spawn area), only allow common drops
+    try {
+      if (!selectedMapId) {
+        finalRarity = 'common';
+      }
+    } catch (e) {}
+
+    // Enforce map allowed tiers: if the map disallows this rarity, degrade to the highest allowed lower rarity
+    try {
+      const order = RARITY_ORDER;
+      let idx = order.indexOf(finalRarity);
+      while (idx >= 0 && !isTierAllowedOnMap(selectedMapId, order[idx])) {
+        idx -= 1; // step down rarity
+      }
+      if (idx < 0) return null;
+      finalRarity = order[idx];
+    } catch (e) {}
 
 
     const item: Item = {
