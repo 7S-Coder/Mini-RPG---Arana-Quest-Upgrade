@@ -24,6 +24,9 @@ export function useGameState() {
     speed: 120, // default 120 px/s
     gold: 0,
   });
+  // refs to hold latest state for synchronous access during save
+  const playerRef = useRef<Player>(player);
+  useEffect(() => { playerRef.current = player; }, [player]);
 
   // equipment slots and inventory
   const [equipment, setEquipment] = useState<Record<Item["slot"], Item | null>>({
@@ -35,8 +38,14 @@ export function useGameState() {
     ring: null,
     weapon: null,
   });
+  const equipmentRef = useRef<typeof equipment>(equipment);
+  useEffect(() => { equipmentRef.current = equipment; }, [equipment]);
   const [inventory, setInventory] = useState<Item[]>([]);
+  const inventoryRef = useRef<Item[]>(inventory);
+  useEffect(() => { inventoryRef.current = inventory; }, [inventory]);
   const [pickups, setPickups] = useState<Pickup[]>([]);
+  const pickupsRef = useRef<Pickup[]>(pickups);
+  useEffect(() => { pickupsRef.current = pickups; }, [pickups]);
   // create or reuse a shared collected-pickup ref on the global (prevents double-collect on fast clicks)
   let collectedRef: React.MutableRefObject<Set<string>>;
   try {
@@ -121,8 +130,11 @@ export function useGameState() {
     const inCombat = enemiesRef.current && enemiesRef.current.length > 0;
     if (inCombat && (it.slot as any) !== 'consumable') return false;
     const price = it.cost ?? computeItemCost(it.stats, it.rarity);
-    setInventory((prev) => prev.filter((i) => i.id !== itemId));
-    setPlayer((p) => ({ ...p, gold: (p.gold || 0) + price }));
+    const nextInventory = (inventoryRef.current || []).filter((i) => i.id !== itemId);
+    const nextPlayer = { ...(playerRef.current || {}), gold: +((((playerRef.current && playerRef.current.gold) || 0) + price).toFixed(2)) } as Player;
+    setInventory(nextInventory);
+    setPlayer(nextPlayer);
+    try { saveGame({ player: pickPlayerData(nextPlayer), inventory: nextInventory, equipment: equipmentRef.current || {}, pickups: pickupsRef.current || [] }); } catch (e) {}
     return true;
   };
 
@@ -318,8 +330,9 @@ export function useGameState() {
         const amount = pk.amount ?? 0;
         const nextPlayer = { ...player, gold: (player.gold ?? 0) + amount } as Player;
         setPlayer(nextPlayer);
-        setPickups((prev) => prev.filter((p) => p.id !== pickupId));
-        try { saveGame({ player: pickPlayerData(nextPlayer), inventory, equipment }); } catch (e) {}
+        const nextPickups = (pickupsRef.current || []).filter((p) => p.id !== pickupId);
+        setPickups(nextPickups);
+        try { saveGame({ player: pickPlayerData(nextPlayer), inventory: inventoryRef.current || [], equipment: equipmentRef.current || {}, pickups: nextPickups }); } catch (e) {}
         logger && logger(`Picked up: +${Number(amount).toFixed(2)} g`);
       } else if (pk.kind === 'item' && pk.item) {
         // check weight limit
@@ -408,10 +421,16 @@ export function useGameState() {
         setInventory(next);
       }
       if (toCollectIds.length > 0) {
-        setPickups((prev) => prev.filter((p) => !toCollectIds.includes(p.id)));
-        try { saveGame({ player: pickPlayerData({ ...player, gold: +(((player.gold ?? 0) + goldTotal).toFixed(2)) }), inventory: itemsToAdd.length > 0 ? (() => {
-          const merged = [...inventory, ...itemsToAdd]; if (merged.length > INVENTORY_MAX) merged.splice(0, merged.length - INVENTORY_MAX); return merged;
-        })() : inventory, equipment }); } catch (e) {}
+        const nextPickups = (pickupsRef.current || []).filter((p) => !toCollectIds.includes(p.id));
+        setPickups(nextPickups);
+        try {
+          saveGame({
+            player: pickPlayerData({ ...player, gold: +(((player.gold ?? 0) + goldTotal).toFixed(2)) }),
+            inventory: itemsToAdd.length > 0 ? (() => { const merged = [...(inventoryRef.current || []), ...itemsToAdd]; if (merged.length > INVENTORY_MAX) merged.splice(0, merged.length - INVENTORY_MAX); return merged; })() : (inventoryRef.current || []),
+            equipment: equipmentRef.current || {},
+            pickups: nextPickups,
+          });
+        } catch (e) {}
       }
       // cleanup collectedRef after short delay
       window.setTimeout(() => {
@@ -791,12 +810,19 @@ export function useGameState() {
 
   const saveGame = (extra: Record<string, any> | null = null) => {
     try {
+      // prefer explicit values from `extra`, otherwise read from refs to avoid
+      // capturing stale values from closures right after setState calls.
+      const srcPlayer = (extra && extra.player) ? extra.player : playerRef.current;
+      const srcInventory = (extra && Object.prototype.hasOwnProperty.call(extra, 'inventory')) ? extra.inventory : (inventoryRef.current || []);
+      const srcEquipment = (extra && Object.prototype.hasOwnProperty.call(extra, 'equipment')) ? extra.equipment : (equipmentRef.current || {});
+      const srcPickups = (extra && Object.prototype.hasOwnProperty.call(extra, 'pickups')) ? extra.pickups : (pickupsRef.current || []);
+
       const save = {
         version: 1,
-        player: pickPlayerData(player),
-        inventory: inventory || [],
-        equipment: equipment || {},
-        pickups: pickups || [],
+        player: pickPlayerData(srcPlayer),
+        inventory: srcInventory,
+        equipment: srcEquipment,
+        pickups: srcPickups,
         timestamp: Date.now(),
         ...(extra || {}),
       };
