@@ -136,6 +136,7 @@ export function useDungeon(opts: {
               const goldReward = Math.round(100 + (player.level || 1) * 10 + floors * 25);
               const xpReward = Math.round(50 + (player.level || 1) * 5 + floors * 20);
               try { setPlayer && setPlayer((p: any) => ({ ...p, gold: +(((p.gold ?? 0) + goldReward).toFixed(2)) })); } catch (e) {}
+              try { console.log('[useDungeon] awarding dungeon XP ->', xpReward); } catch (e) {}
               try { addXp && addXp(xpReward); } catch (e) {}
               try {
                 const rarity = Math.random() < 0.08 ? 'legendary' : Math.random() < 0.25 ? 'epic' : 'rare';

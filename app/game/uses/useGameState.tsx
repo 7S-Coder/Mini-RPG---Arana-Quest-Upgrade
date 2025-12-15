@@ -7,11 +7,13 @@ import { isTierAllowedOnMap, getMapById } from "../templates/maps";
 import { ENEMY_TEMPLATES } from "../templates/enemies";
 import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity } from "../types";
 import useStatistics from "../../hooks/useStatistics";
+import useProgression from "../../hooks/useProgression";
 
 // ENEMY_TEMPLATES moved to ./enemies.ts
 
 export function useGameState() {
   const { stats, record } = useStatistics();
+  const { progression, addPoints, allocate, deallocate, reset } = useProgression();
 
   const [player, setPlayer] = useState<Player>({
     x: 100,
@@ -30,6 +32,10 @@ export function useGameState() {
   // refs to hold latest state for synchronous access during save
   const playerRef = useRef<Player>(player);
   useEffect(() => { playerRef.current = player; }, [player]);
+
+  // refs used to batch rapid XP awards and avoid stale read/write races
+  const pendingXpRef = useRef<number>(0);
+  const processingRef = useRef<boolean>(false);
 
   // equipment slots and inventory
   const [equipment, setEquipment] = useState<Record<Item["slot"], Item | null>>({
@@ -78,35 +84,66 @@ export function useGameState() {
   const BASE_CRIT = 3;
 
   const addXp = (amount: number) => {
-    setPlayer((p) => {
-      if (p.level >= MAX_LEVEL) return p;
-      let xp = p.xp + amount;
-      let lvl = p.level;
-      while (lvl < MAX_LEVEL && xp >= xpToNextLevel(lvl)) {
-        xp = xp - xpToNextLevel(lvl);
-        lvl += 1;
-        // recalc stats from base and new level (small per-level increases)
-        const newMaxHp = BASE_HP + Math.floor((lvl - 1) * 4); // +4 HP per level
-        const newDmg = BASE_DMG + Math.floor((lvl - 1) * 0.2); // +1 DMG every ~5 levels
-        const newDef = BASE_DEF + Math.floor((lvl - 1) * 0.05); // +1 DEF every 20 levels
-        const newDodge = BASE_DODGE + Math.floor((lvl - 1) * 0.03);
-        const newCrit = BASE_CRIT + Math.floor((lvl - 1) * 0.02);
+    // accumulate rapid XP calls and process once per tick to avoid stale read/write races
+    pendingXpRef.current = (pendingXpRef.current || 0) + amount;
+    if (processingRef.current) return;
+    processingRef.current = true;
+    setTimeout(() => {
+      try {
+        const amt = pendingXpRef.current || 0;
+        pendingXpRef.current = 0;
+        processingRef.current = false;
+        const cur = playerRef.current || player;
+        try { console.log('[useGameState] addXp processed ->', amt, 'curLevel', cur.level, 'curXp', cur.xp, 'need', xpToNextLevel(cur.level)); } catch (e) {}
+        if (cur.level >= MAX_LEVEL) return;
 
-        p = {
-          ...p,
-          level: lvl,
-          maxHp: newMaxHp,
-          dmg: newDmg,
-          def: newDef,
-          dodge: newDodge,
-          crit: newCrit,
-          lastLevelUpAt: Date.now(),
-        } as Player;
-        // restore to max on level up
-        p.hp = p.maxHp;
+        let totalXp = (cur.xp || 0) + amt;
+        let lvl = cur.level || 1;
+        let gained = 0;
+
+        while (lvl < MAX_LEVEL && totalXp >= xpToNextLevel(lvl)) {
+          totalXp -= xpToNextLevel(lvl);
+          lvl += 1;
+          gained += 1;
+        }
+
+        if (gained > 0) {
+          // recalc stats from base and new level (small per-level increases)
+          const newMaxHp = BASE_HP + Math.floor((lvl - 1) * 4); // +4 HP per level
+          const newDmg = BASE_DMG + Math.floor((lvl - 1) * 0.2); // +1 DMG every ~5 levels
+          const newDef = BASE_DEF + Math.floor((lvl - 1) * 0.05); // +1 DEF every 20 levels
+          const newDodge = BASE_DODGE + Math.floor((lvl - 1) * 0.03);
+          const newCrit = BASE_CRIT + Math.floor((lvl - 1) * 0.02);
+
+          const nextPlayer: Player = {
+            ...cur,
+            xp: totalXp,
+            level: lvl,
+            maxHp: newMaxHp,
+            dmg: newDmg,
+            def: newDef,
+            dodge: newDodge,
+            crit: newCrit,
+            lastLevelUpAt: Date.now(),
+            hp: newMaxHp,
+          } as Player;
+
+          // update ref synchronously so other rapid addXp calls see the new state
+          try { playerRef.current = nextPlayer; } catch (e) {}
+          setPlayer(nextPlayer);
+          try { console.log('[useGameState] level gained ->', gained, 'awarding', gained * 5, 'points'); } catch (e) {}
+          try { addPoints && addPoints(gained * 5); } catch (e) {}
+          try { record && (record as any).levelUp && (record as any).levelUp(gained); } catch (e) {}
+        } else {
+          const next = { ...(cur || {}), xp: totalXp } as Player;
+          try { playerRef.current = next; } catch (e) {}
+          setPlayer((p) => ({ ...p, xp: totalXp }));
+        }
+      } catch (e) {
+        processingRef.current = false;
+        pendingXpRef.current = 0;
       }
-      return { ...p, xp, level: lvl };
-    });
+    }, 0);
   };
 
   // item generation / loot (ITEM_POOL and SLOTS imported from ./items)
@@ -350,17 +387,18 @@ export function useGameState() {
           return false;
         }
         // add item if not already present
-        if (!inventory.find((i) => i.id === pk.item.id)) {
-          const next = [...inventory, pk.item];
+        const item = pk.item;
+        if (item && !inventory.find((i) => i.id === item.id)) {
+          const next = [...inventory, item];
           if (next.length > INVENTORY_MAX) next.shift();
           setInventory(next);
           setPickups((prev) => prev.filter((p) => p.id !== pickupId));
           try { saveCoreGame({ player: pickPlayerData(player), inventory: next, equipment }); } catch (e) {}
-          logger && logger(`Picked up: ${pk.item.name}`);
+          logger && logger(`Picked up: ${item.name}`);
         } else {
           // item already in inventory; just remove pickup
           setPickups((prev) => prev.filter((p) => p.id !== pickupId));
-          logger && logger(`Already have: ${pk.item.name}`);
+          logger && logger(`Already have: ${item && item.name}`);
         }
       }
       // cleanup collectedRef after short delay to avoid memory growth
@@ -401,14 +439,14 @@ export function useGameState() {
             try { logger && logger(`Can't pick up ${pk.item.name}: would exceed weight (${current + itemWeight} > ${MAX_CARRY_WEIGHT})`); } catch (e) {}
             continue;
           }
-          if (!inventory.find((i) => i.id === pk.item.id)) {
+          const item = pk.item;
+          if (item && !inventory.find((i) => i.id === item.id)) {
             collectedRef.current.add(pk.id);
             toCollectIds.push(pk.id);
-            itemsToAdd.push(pk.item);
-            try { logger && logger(`Picked up: ${pk.item.name}`); } catch (e) {}
-                try { saveCoreGame({ player: pickPlayerData(nextPlayer), inventory: inventoryRef.current || [], equipment: equipmentRef.current || {}, pickups: nextPickups }, 'collect_gold'); } catch (e) {}
+            itemsToAdd.push(item);
+            try { logger && logger(`Picked up: ${item.name}`); } catch (e) {}
             // already owned
-            try { logger && logger(`Already have: ${pk.item.name}`); } catch (e) {}
+            try { logger && logger(`Already have: ${item.name}`); } catch (e) {}
           }
         }
       }
@@ -678,6 +716,16 @@ export function useGameState() {
       }
     }
 
+    // include allocated progression bonuses
+    try {
+      const alloc = progression && (progression as any).allocated ? (progression as any).allocated : { hp: 0, dmg: 0, def: 0, crit: 0, dodge: 0 };
+      acc.hp = (acc.hp || 0) + (alloc.hp || 0) * 5;
+      acc.dmg = (acc.dmg || 0) + (alloc.dmg || 0) * 1;
+      acc.def = (acc.def || 0) + (alloc.def || 0) * 1;
+      acc.crit = (acc.crit || 0) + (alloc.crit || 0) * 0.5;
+      acc.dodge = (acc.dodge || 0) + (alloc.dodge || 0) * 0.5;
+    } catch (e) {}
+
     const newMaxHp = Math.max(1, Math.round(baseMaxHp + (acc.hp || 0)));
 
     setPlayer((prev) => {
@@ -693,11 +741,11 @@ export function useGameState() {
         hp: newHp,
         dmg: Math.max(0, Math.round(baseDmg + (acc.dmg || 0))),
         def: Math.max(0, Math.round(baseDef + (acc.def || 0))),
-        dodge: Math.max(0, Math.round(baseDodge + (acc.dodge || 0))),
-        crit: Math.max(0, Math.round(baseCrit + (acc.crit || 0))),
+        dodge: Math.max(0, Number((baseDodge + (acc.dodge || 0)).toFixed(2))),
+        crit: Math.max(0, Number((baseCrit + (acc.crit || 0)).toFixed(2))),
       } as Player;
     });
-  }, [equipment, player.level]);
+  }, [equipment, player.level, progression]);
 
   const [enemies, setEnemies] = useState<Enemy[]>([]);
 
@@ -902,6 +950,6 @@ export function useGameState() {
 
   const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, saveCoreGame, loadGame, isInCombat } as const;
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, saveCoreGame, loadGame, isInCombat, progression, allocate: allocate, deallocate: deallocate } as const;
 }
 

@@ -22,14 +22,14 @@ import { useToasts } from "../hooks/useToasts";
 import { useDungeon } from "../hooks/useDungeon";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical, progression, allocate, deallocate } = useGameState();
 
   // modal system (generalized)
   const [modalName, setModalName] = useState<string | null>(null);
   const [modalProps, setModalProps] = useState<any>(null);
   const openModal = (name: string, props?: any) => {
     // compute final props (apply defaults for inventory modal)
-    const resolved = name === "inventory" ? (props ?? { inventory, equipment }) : (props ?? null);
+    const resolved = name === "inventory" ? (props ?? { inventory, equipment, player, progression, allocate, deallocate }) : (props ?? null);
     // debug log to help verify clicks and show resolved props
     try { console.log("openModal ->", name, resolved); } catch (e) {}
     setModalName(name);
@@ -316,6 +316,8 @@ export default function Game() {
           modal: {modalName}
         </div>
       )}
+      {/* debug overlay: progression + localStorage (temporary) */}
+      {/* debug overlay removed in production */}
       <header className="app-header">
         <h1>Arena Quest</h1>
         <p className="subtitle">Adventure mmorp</p>
@@ -372,6 +374,9 @@ export default function Game() {
           inventory={inventory}
           equipment={equipment}
           player={player}
+          progression={progression}
+          allocate={allocate}
+          deallocate={deallocate}
           onEquip={(item: any) => {
             try { console.log('equip requested', item && item.id, item && item.slot); } catch (e) {}
             try {
