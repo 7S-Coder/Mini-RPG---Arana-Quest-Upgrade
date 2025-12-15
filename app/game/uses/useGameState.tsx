@@ -6,10 +6,13 @@ import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "../templates/item
 import { isTierAllowedOnMap, getMapById } from "../templates/maps";
 import { ENEMY_TEMPLATES } from "../templates/enemies";
 import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity } from "../types";
+import useStatistics from "../../hooks/useStatistics";
 
 // ENEMY_TEMPLATES moved to ./enemies.ts
 
 export function useGameState() {
+  const { stats, record } = useStatistics();
+
   const [player, setPlayer] = useState<Player>({
     x: 100,
     y: 100,
@@ -134,7 +137,8 @@ export function useGameState() {
     const nextPlayer = { ...(playerRef.current || {}), gold: +((((playerRef.current && playerRef.current.gold) || 0) + price).toFixed(2)) } as Player;
     setInventory(nextInventory);
     setPlayer(nextPlayer);
-    try { saveGame({ player: pickPlayerData(nextPlayer), inventory: nextInventory, equipment: equipmentRef.current || {}, pickups: pickupsRef.current || [] }); } catch (e) {}
+      try { record.goldEarned && record.goldEarned(price); } catch (e) {}
+      try { saveCoreGame({ player: pickPlayerData(nextPlayer), inventory: nextInventory, equipment: equipmentRef.current || {}, pickups: pickupsRef.current || [] }, 'sell_item'); } catch (e) {}
     return true;
   };
 
@@ -332,7 +336,8 @@ export function useGameState() {
         setPlayer(nextPlayer);
         const nextPickups = (pickupsRef.current || []).filter((p) => p.id !== pickupId);
         setPickups(nextPickups);
-        try { saveGame({ player: pickPlayerData(nextPlayer), inventory: inventoryRef.current || [], equipment: equipmentRef.current || {}, pickups: nextPickups }); } catch (e) {}
+        try { record.goldEarned && record.goldEarned(amount); } catch (e) {}
+        try { saveCoreGame({ player: pickPlayerData(nextPlayer), inventory: inventoryRef.current || [], equipment: equipmentRef.current || {}, pickups: nextPickups }); } catch (e) {}
         logger && logger(`Picked up: +${Number(amount).toFixed(2)} g`);
       } else if (pk.kind === 'item' && pk.item) {
         // check weight limit
@@ -350,7 +355,7 @@ export function useGameState() {
           if (next.length > INVENTORY_MAX) next.shift();
           setInventory(next);
           setPickups((prev) => prev.filter((p) => p.id !== pickupId));
-          try { saveGame({ player: pickPlayerData(player), inventory: next, equipment }); } catch (e) {}
+          try { saveCoreGame({ player: pickPlayerData(player), inventory: next, equipment }); } catch (e) {}
           logger && logger(`Picked up: ${pk.item.name}`);
         } else {
           // item already in inventory; just remove pickup
@@ -401,7 +406,7 @@ export function useGameState() {
             toCollectIds.push(pk.id);
             itemsToAdd.push(pk.item);
             try { logger && logger(`Picked up: ${pk.item.name}`); } catch (e) {}
-          } else {
+                try { saveCoreGame({ player: pickPlayerData(nextPlayer), inventory: inventoryRef.current || [], equipment: equipmentRef.current || {}, pickups: nextPickups }, 'collect_gold'); } catch (e) {}
             // already owned
             try { logger && logger(`Already have: ${pk.item.name}`); } catch (e) {}
           }
@@ -411,6 +416,7 @@ export function useGameState() {
       if (goldTotal > 0) {
         const nextPlayer = { ...player, gold: +(((player.gold ?? 0) + goldTotal).toFixed(2)) } as any;
         setPlayer(nextPlayer);
+        try { record.goldEarned && record.goldEarned(goldTotal); } catch (e) {}
       }
       if (itemsToAdd.length > 0) {
         const next = (() => {
@@ -418,13 +424,13 @@ export function useGameState() {
           if (merged.length > INVENTORY_MAX) merged.splice(0, merged.length - INVENTORY_MAX);
           return merged;
         })();
-        setInventory(next);
+                  try { saveCoreGame({ player: pickPlayerData(player), inventory: next, equipment }, 'collect_item'); } catch (e) {}
       }
       if (toCollectIds.length > 0) {
         const nextPickups = (pickupsRef.current || []).filter((p) => !toCollectIds.includes(p.id));
         setPickups(nextPickups);
         try {
-          saveGame({
+          saveCoreGame({
             player: pickPlayerData({ ...player, gold: +(((player.gold ?? 0) + goldTotal).toFixed(2)) }),
             inventory: itemsToAdd.length > 0 ? (() => { const merged = [...(inventoryRef.current || []), ...itemsToAdd]; if (merged.length > INVENTORY_MAX) merged.splice(0, merged.length - INVENTORY_MAX); return merged; })() : (inventoryRef.current || []),
             equipment: equipmentRef.current || {},
@@ -476,7 +482,6 @@ export function useGameState() {
     if (currentGold < cost) {
       return false;
     }
-    // snapshot next player and inventory to ensure save persists immediately
     const nextPlayer = { ...player, gold: +((Number(player.gold ?? 0) - cost).toFixed(2)) } as Player;
     const itm: Item = {
       id: uid(),
@@ -494,7 +499,8 @@ export function useGameState() {
     })();
     setPlayer(nextPlayer);
     setInventory(nextInventory);
-    try { saveGame({ player: pickPlayerData(nextPlayer), inventory: nextInventory, equipment }); } catch (e) {}
+    try { record.goldSpent && record.goldSpent(cost); } catch (e) {}
+    try { saveCoreGame({ player: pickPlayerData(nextPlayer), inventory: nextInventory, equipment: equipmentRef.current || {} }, 'buy_potion'); } catch (e) {}
     return true;
   };
 
@@ -509,7 +515,7 @@ export function useGameState() {
     const nextPlayer = { ...player, hp: Math.min((player.maxHp ?? player.hp), (player.hp ?? 0) + heal) } as Player;
     setInventory(nextInventory);
     setPlayer(nextPlayer);
-    try { saveGame({ player: pickPlayerData(nextPlayer), inventory: nextInventory, equipment }); } catch (e) {}
+    try { saveCoreGame({ player: pickPlayerData(nextPlayer), inventory: nextInventory, equipment }); } catch (e) {}
     return true;
   };
 
@@ -593,7 +599,7 @@ export function useGameState() {
         return next;
       })();
       setInventory(nextInventory);
-      try { saveGame({ player: pickPlayerData(player), inventory: nextInventory, equipment }); } catch (e) {}
+      try { saveCoreGame({ player: pickPlayerData(player), inventory: nextInventory, equipment }); } catch (e) {}
       return { ok: true, msg: `Forge successful: created ${forgedName}` };
     } catch (e) {
       console.error('forge error', e);
@@ -791,7 +797,9 @@ export function useGameState() {
   };
 
   // --- Save / Load (localStorage persistence) ---------------------------------
-  const SAVE_KEY = "arenaquest_save";
+  const CORE_SAVE_KEY = "arenaquest_core_v1";
+  const RUNTIME_SAVE_KEY = "arenaquest_runtime_v1";
+  const STATS_SAVE_KEY = "arenaquest_stats_v1";
 
   const pickPlayerData = (p: Player) => ({
     x: p.x,
@@ -808,35 +816,30 @@ export function useGameState() {
     gold: p.gold,
   });
 
-  const saveGame = (extra: Record<string, any> | null = null) => {
-    try {
-      // prefer explicit values from `extra`, otherwise read from refs to avoid
-      // capturing stale values from closures right after setState calls.
-      const srcPlayer = (extra && extra.player) ? extra.player : playerRef.current;
-      const srcInventory = (extra && Object.prototype.hasOwnProperty.call(extra, 'inventory')) ? extra.inventory : (inventoryRef.current || []);
-      const srcEquipment = (extra && Object.prototype.hasOwnProperty.call(extra, 'equipment')) ? extra.equipment : (equipmentRef.current || {});
-      const srcPickups = (extra && Object.prototype.hasOwnProperty.call(extra, 'pickups')) ? extra.pickups : (pickupsRef.current || []);
+  const buildCoreSave = (extra: Record<string, any> | null = null) => ({
+    version: 1,
+    player: pickPlayerData((extra && extra.player) ? extra.player : playerRef.current),
+    inventory: (extra && Object.prototype.hasOwnProperty.call(extra, 'inventory')) ? extra.inventory : (inventoryRef.current || []),
+    equipment: (extra && Object.prototype.hasOwnProperty.call(extra, 'equipment')) ? extra.equipment : (equipmentRef.current || {}),
+    // progression fields (map/dungeon) can be added here when available
+    timestamp: Date.now(),
+    ...(extra || {}),
+  });
 
-      const save = {
-        version: 1,
-        player: pickPlayerData(srcPlayer),
-        inventory: srcInventory,
-        equipment: srcEquipment,
-        pickups: srcPickups,
-        timestamp: Date.now(),
-        ...(extra || {}),
-      };
-      try { console.debug('[SAVE] writing to localStorage', { key: SAVE_KEY, save }); } catch (e) {}
-      localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+  const saveCoreGame = (extra: Record<string, any> | null = null, reason?: string) => {
+    try {
+      const payload = buildCoreSave(extra);
+      try { console.debug('[SAVE CORE]', reason || 'manual', { key: CORE_SAVE_KEY, payload }); } catch (e) {}
+      localStorage.setItem(CORE_SAVE_KEY, JSON.stringify(payload));
       return true;
     } catch (e) {
-      try { console.error('saveGame error', e); } catch (e) {}
+      try { console.error('saveCoreGame error', e); } catch (e) {}
       return false;
     }
   };
 
-  // expose save function to global so other local actions can force-save after state updates
-  try { (window as any).__arenaquest_save_game = saveGame; } catch (e) {}
+  // expose core save function to global so other local actions can force-save after state updates
+  try { (window as any).__arenaquest_save_game = saveCoreGame; } catch (e) {}
 
   const migrateSave = (save: any) => {
     // placeholder for migration logic when save.version changes
@@ -846,8 +849,8 @@ export function useGameState() {
 
   const loadGame = () => {
     try {
-      const raw = localStorage.getItem(SAVE_KEY);
-      try { console.debug('[LOAD] raw from localStorage', { key: SAVE_KEY, raw }); } catch (e) {}
+      const raw = localStorage.getItem(CORE_SAVE_KEY);
+      try { console.debug('[LOAD] raw from localStorage', { key: CORE_SAVE_KEY, raw }); } catch (e) {}
       if (!raw) return null;
       const save = JSON.parse(raw);
       try { console.debug('[LOAD] parsed save', save); } catch (e) {}
@@ -895,16 +898,10 @@ export function useGameState() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Autosave on important state changes (debounced)
-  useEffect(() => {
-    const t = window.setTimeout(() => {
-      try { saveGame(); } catch (e) {}
-    }, 800);
-    return () => window.clearTimeout(t);
-  }, [player, inventory, equipment, pickups]);
+  // NOTE: removed global autosave — core saves are now explicit via `saveCoreGame`.
 
   const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, saveGame, loadGame, isInCombat } as const;
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, saveCoreGame, loadGame, isInCombat } as const;
 }
 
