@@ -45,10 +45,11 @@ const defaultMaps: MapTemplate[] = [
     allowedTiers: ['common'],
     loot: 'loot: Common',
     logColor: '#2ecc71',
-    enemyPool: ['gobelin','loup','slime', 'pebble', 'wyrm', 'wyrm_king', 'hydre'],
+    enemyPool: ['gobelin','loup','slime', 'pebble', 'wyrm', 'wyrm_king', 'hydre', 'monocle'],
     dungeons: [
       { id: 'forest_depths_1', name: 'Depths', floors: 5, bossTemplateId: 'wyrm' },
-      { id: 'forest_cavern_1', name: 'Caverns', floors: 5, bossTemplateId: 'ogre' },
+      { id: 'forest_cavern_1', name: 'Caverns', floors: 5, bossTemplateId: 'monocle' },
+      
     ],
       // Example fixed rooms for the `forest` map — each room id follows the pattern
       // <dungeonId>_floor_<n>. When a dungeon is active, the game will attempt to
@@ -59,6 +60,12 @@ const defaultMaps: MapTemplate[] = [
         { id: 'forest_depths_1_floor_3', name: 'Moss Hall', enemyPool: ['slime','pebble'] },
         { id: 'forest_depths_1_floor_2', name: 'Rooted Pass', enemyPool: ['loup','pebble'] },
         { id: 'forest_depths_1_floor_1', name: 'Wyrm Lair', enemyPool: ['wyrm_king'], isBossRoom: true },
+
+        { id: 'forest_cavern_1_floor_5', name: 'Gloomy Grotto', enemyPool: ['slime','gobelin'] },
+        { id: 'forest_cavern_1_floor_4', name: 'Damp Tunnel', enemyPool: ['pebble','loup'] },
+        { id: 'forest_cavern_1_floor_3', name: 'Echoing Chamber', enemyPool: ['gobelin','pebble'] },
+        { id: 'forest_cavern_1_floor_2', name: 'Stalagmite Path', enemyPool: ['loup','slime'] },
+        { id: 'forest_cavern_1_floor_1', name: 'Monocle', enemyPool: ['monocle'], isBossRoom: true },
       ],
   },
   {

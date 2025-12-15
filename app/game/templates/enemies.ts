@@ -20,9 +20,7 @@ export const ENEMY_TEMPLATES: EnemyTemplate[] = [
     // Epics
   { templateId: "ogre", name: "Ogre", hp: 40, dmg: 14, def: 4, dodge: 1, crit: 3, speed: 18, rarity: 'epic' },
   { templateId: "wyrm", name: "Wyrm", hp: 45, dmg: 16, def: 5, dodge: 4, crit: 4, speed: 28, rarity: 'epic' },
-  // Forest dungeon boss (example)
-  { templateId: "wyrm_king", name: "Wyrm King", hp: 140, dmg: 26, def: 8, dodge: 6, crit: 8, speed: 22, rarity: 'mythic' },
-  { templateId: "golem", name: "Golem", hp: 50, dmg: 15, def: 6, dodge: 0, crit: 2, speed: 14, rarity: 'epic' },
+
   // Legendaries
   { templateId: "magma", name: "Magma", hp: 60, dmg: 18, def: 8, dodge: 0, crit: 1, speed: 10, rarity: 'legendary' },
   { templateId: "troll_cavernes", name: "Cave Troll", hp: 70, dmg: 20, def: 9, dodge: 2, crit: 2, speed: 12, rarity: 'legendary' },
@@ -33,6 +31,12 @@ export const ENEMY_TEMPLATES: EnemyTemplate[] = [
   { templateId: "dragon", name: "Ancient Dragon", hp: 150, dmg: 32, def: 12, dodge: 8, crit: 10, speed: 30, rarity: 'mythic' },
   { templateId: "phoenix", name: "Legendary Phoenix", hp: 175, dmg: 43, def: 11, dodge: 10, crit: 45, speed: 28, rarity: 'mythic' },
   { templateId: "leviathan", name: "Leviathan", hp: 200, dmg: 50, def: 15, dodge: 12, crit: 12, speed: 20, rarity: 'mythic' },
+  
+  //bosses
+  // Forest dungeon boss 
+  { templateId: "wyrm_king", name: "Wyrm King", hp: 140, dmg: 26, def: 8, dodge: 6, crit: 8, speed: 22, rarity: 'mythic' },
+  { templateId: "monocle", name: "Monocle", hp: 1600, dmg: 24, def: 12, dodge: 8, crit: 50, speed: 30, rarity: 'mythic' },
+  { templateId: "golem", name: "Golem", hp: 50, dmg: 15, def: 6, dodge: 0, crit: 2, speed: 14, rarity: 'epic' },
 ];
 
 export default ENEMY_TEMPLATES;
