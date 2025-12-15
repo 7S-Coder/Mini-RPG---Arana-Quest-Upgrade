@@ -68,6 +68,25 @@ export default function Game() {
   const { logs, pushLog, clearLogs } = useLogs();
   const { toasts, addToast } = useToasts();
 
+  // show toast when player levels up: inform gained allocation points
+  const lastLevelRef = useRef<number | null>(null);
+  useEffect(() => {
+    try {
+      const cur = player?.level ?? null;
+      // initialize ref on first render
+      if (lastLevelRef.current === null) {
+        lastLevelRef.current = cur;
+        return;
+      }
+      if (cur !== null && lastLevelRef.current !== null && cur > lastLevelRef.current) {
+        const gained = (cur - lastLevelRef.current) || 0;
+        const points = gained * 5;
+        try { addToast && addToast(`Niveau supérieur ! ${points} points à attribuer.`, 'ok', 4000); } catch (e) {}
+      }
+      lastLevelRef.current = cur;
+    } catch (e) {}
+  }, [player && player.level, addToast]);
+
   useEffect(() => { inCombatRef.current = inCombat; }, [inCombat]);
 
   // show a welcome message once when the game component mounts (spawn)

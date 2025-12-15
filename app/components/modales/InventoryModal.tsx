@@ -269,7 +269,8 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                       </div>
 
                       <div style={{ marginTop: 8, color: '#999', fontSize: 12 }}>
-                        Allocations are persisted separately and applied on top of base stats and equipment.
+                        Points sauvegardés dans la progression — s'ajoutent aux stats et à l'équipement.
+                        Coûts : HP+5 (1), DMG+1 (2), DEF+1 (3), Crit/Dodge +0,5% (3).
                       </div>
                     </div>
                   </div>
@@ -327,7 +328,8 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                 </div>
 
                 <div style={{ marginTop: 8, color: '#999', fontSize: 12 }}>
-                  Allocations are persisted separately and applied on top of base stats and equipment.
+                  Points sauvegardés dans la progression — s'ajoutent aux stats et à l'équipement.
+                  Coûts : HP+5 (1), DMG+1 (2), DEF+1 (3), Crit/Dodge +0,5% (3).
                 </div>
               </div>
             </div>
