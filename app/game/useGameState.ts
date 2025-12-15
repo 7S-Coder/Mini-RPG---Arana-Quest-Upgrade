@@ -75,12 +75,12 @@ export function useGameState() {
       while (lvl < MAX_LEVEL && xp >= xpToNextLevel(lvl)) {
         xp = xp - xpToNextLevel(lvl);
         lvl += 1;
-        // recalc stats from base and new level (small per-level increases)
-        const newMaxHp = BASE_HP + Math.floor((lvl - 1) * 4); // +4 HP per level
-        const newDmg = BASE_DMG + Math.floor((lvl - 1) * 0.2); // +1 DMG every ~5 levels
-        const newDef = BASE_DEF + Math.floor((lvl - 1) * 0.05); // +1 DEF every 20 levels
-        const newDodge = BASE_DODGE + Math.floor((lvl - 1) * 0.03);
-        const newCrit = BASE_CRIT + Math.floor((lvl - 1) * 0.02);
+        // recalc stats from base and new level (updated growth rates)
+        const newMaxHp = BASE_HP + Math.floor((lvl - 1) * 2); // +2 HP per level (was +4)
+        const newDmg = BASE_DMG + Math.floor((lvl - 1) / 10); // +1 DMG every 10 levels (was ~5)
+        const newDef = BASE_DEF + Math.floor((lvl - 1) / 30); // +1 DEF every 30 levels (was 20)
+        const newDodge = BASE_DODGE + Math.floor((lvl - 1) * 0.03); // unchanged (slow)
+        const newCrit = BASE_CRIT + Math.floor((lvl - 1) * 0.02); // unchanged (slow)
 
         p = {
           ...p,
