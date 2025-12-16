@@ -1,6 +1,6 @@
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import React from 'react';
-import Game from '../../app/game/Game';
+import Game from '../../../app/game/Game';
 
 describe('TC-GAME-02 — Terminer un combat', () => {
   test('termine le combat et récompense le joueur', async () => {

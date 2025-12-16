@@ -1,6 +1,6 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import React from 'react';
-import Game from '../../app/game/Game';
+import Game from '../../../app/game/Game';
 
 // NOTE: these tests assume a test runner configured with jsdom and support for React/Next client components.
 // They are intended as a starting point — adjust imports/setup if using Vitest/Jest.
