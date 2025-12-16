@@ -81,7 +81,7 @@ export default function Game() {
       if (cur !== null && lastLevelRef.current !== null && cur > lastLevelRef.current) {
         const gained = (cur - lastLevelRef.current) || 0;
         const points = gained * 5;
-        try { addToast && addToast(`Niveau supérieur ! ${points} points à attribuer.`, 'ok', 4000); } catch (e) {}
+        try { addToast && addToast(`Level up! ${points} points to be allocated.`, 'ok', 4000); } catch (e) {}
       }
       lastLevelRef.current = cur;
     } catch (e) {}
