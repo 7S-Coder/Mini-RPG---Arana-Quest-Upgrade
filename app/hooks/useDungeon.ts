@@ -34,7 +34,7 @@ export function useDungeon(opts: {
     try {
       const currentMap = getMaps().find((m) => m.id === selectedMapId) ?? null;
       if (currentMap?.dungeons && dungeonProgressRef.current.activeMapId !== currentMap.id) {
-        const threshold = (currentMap as any).dungeonThreshold ?? 20;
+        const threshold = (currentMap as any).dungeonThreshold ?? 10;
         dungeonProgressRef.current.activeMapId = currentMap.id;
         dungeonProgressRef.current.activeDungeonIndex = null;
         dungeonProgressRef.current.activeDungeonId = null;
@@ -69,7 +69,8 @@ export function useDungeon(opts: {
           dungeonProgressRef.current.activeDungeonIndex = null;
           dungeonProgressRef.current.activeDungeonId = null;
           dungeonProgressRef.current.remaining = 0;
-          dungeonProgressRef.current.fightsRemainingBeforeDungeon = 0;
+          // after being expelled from the dungeon, require the map's threshold again
+          dungeonProgressRef.current.fightsRemainingBeforeDungeon = (currentMap as any).dungeonThreshold ?? 10;
           try { console.log('the dungeon gate moves away from you..'); } catch (e) {}
           try { addToast && addToast("The dungeon gate moves away from you..", 'error', 4000); } catch (e) {}
           const sess = encounterSessionRef.current || 0;
@@ -81,6 +82,17 @@ export function useDungeon(opts: {
           pushLog("You died — expelled from the dungeon. Progress has been reset.");
         } catch (e) { console.error('[DEBUG] error resetting dungeon on death', e); }
         return true; // handled => exit caller early
+      }
+
+      // If the player died outside a dungeon while farming this map, reset the farming counter
+      if (resultType === 'death' && currentMap?.dungeons && dungeonProgressRef.current.activeMapId === currentMap?.id && dungeonProgressRef.current.activeDungeonIndex == null) {
+        try {
+          dungeonProgressRef.current.fightsRemainingBeforeDungeon = (currentMap as any).dungeonThreshold ?? 10;
+          dungeonProgressRef.current.lastProcessedSession = encounterSessionRef.current || 0;
+          dungeonProgressRef.current.suppressUntilSession = (encounterSessionRef.current || 0) + 1;
+          syncDungeonUI();
+          pushLog('You died — dungeon farming progress reset.');
+        } catch (e) { console.error('[DEBUG] error resetting farming progress on death', e); }
       }
 
       // farming progress: decrement fightsRemainingBeforeDungeon when applicable

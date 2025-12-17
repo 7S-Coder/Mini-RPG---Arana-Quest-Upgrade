@@ -37,6 +37,23 @@ export default function Game() {
   };
   const closeModal = () => { setModalName(null); setModalProps(null); };
 
+  // Keyboard shortcut: Ctrl/Cmd + I opens the inventory modal (unless typing in input)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      try {
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'i' || e.key === 'I')) {
+          const active = document.activeElement as HTMLElement | null;
+          if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as any).isContentEditable)) return;
+          e.preventDefault();
+          if (modalName === 'inventory') closeModal();
+          else openModal('inventory');
+        }
+      } catch (err) {}
+    };
+    window.addEventListener('keydown', handler as any);
+    return () => window.removeEventListener('keydown', handler as any);
+  }, [openModal, closeModal, modalName]);
+
   // uid helper to avoid duplicate keys across fast calls / HMR
   const uid = () => {
     try {

@@ -121,7 +121,7 @@ const defaultMaps: MapTemplate[] = [
     theme: 'volcano',
     dungeonThreshold: 15,
     minLevel: 71,
-    allowedTiers: ['epic', 'legendary'],
+    allowedTiers: ['epic', 'legendary', 'mythic'],
     loot: 'loot: Epic - Legendary',
     logColor: '#e74c3c',
     enemyPool: ['magma_beast','fire_drake','phoenix','lava_golem','will_o_the_wisp','leviathan'],
