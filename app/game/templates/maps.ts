@@ -92,8 +92,8 @@ const defaultMaps: MapTemplate[] = [
     theme: 'ruins',
     dungeonThreshold: 15,
     minLevel: 51,
-    allowedTiers: ['rare', 'epic'],
-    loot: 'loot: Rare - Epic',
+    allowedTiers: ['rare', 'epic', 'legendary'],
+    loot: 'loot: Rare - Epic - Legendary',
     logColor: '#9b59b6',
     enemyPool: ['golem','wyrm','cultist', 'spectre', 'corrupted_knight', 'ancien_spirit', 'ghost', 'nain'],
     dungeons: [
@@ -122,7 +122,7 @@ const defaultMaps: MapTemplate[] = [
     dungeonThreshold: 15,
     minLevel: 71,
     allowedTiers: ['epic', 'legendary', 'mythic'],
-    loot: 'loot: Epic - Legendary',
+    loot: 'loot: Epic - Legendary - Mythic',
     logColor: '#e74c3c',
     enemyPool: ['magma_beast','fire_drake','phoenix','lava_golem','will_o_the_wisp','leviathan'],
     dungeons: [
@@ -205,7 +205,17 @@ export function pickEnemyFromMap(mapId?: string) {
 export function getRoomsForMap(mapId?: string) {
   const m = getMapById(mapId ?? undefined);
   if (!m || !Array.isArray(m.rooms)) return [];
-  return [...m.rooms];
+  // Deduplicate rooms by id while preserving order to avoid duplicated
+  // room definitions caused by custom maps or accidental repeats.
+  const seen = new Set<string>();
+  const out: RoomDef[] = [];
+  for (const r of m.rooms) {
+    if (!r || !r.id) continue;
+    if (seen.has(r.id)) continue;
+    seen.add(r.id);
+    out.push(r);
+  }
+  return out;
 }
 
 // Pick an enemy for a specific room if the map defines rooms with fixed enemy pools.
@@ -220,7 +230,8 @@ export function pickEnemyFromRoom(mapId?: string, roomId?: string) {
   }
 
   if (roomId && Array.isArray(map.rooms)) {
-    const room = map.rooms.find((r) => r.id === roomId);
+    const rooms = getRoomsForMap(mapId);
+    const room = rooms.find((r) => r.id === roomId);
     if (room && Array.isArray(room.enemyPool) && room.enemyPool.length > 0) {
       const poolTemplates = ENEMY_TEMPLATES.filter((t) => room.enemyPool!.includes(t.templateId));
       if (poolTemplates.length > 0) {

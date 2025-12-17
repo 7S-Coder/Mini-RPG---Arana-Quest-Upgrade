@@ -1,0 +1,70 @@
+Seigneur Méléthor, le Semeur de Nids
+
+Titre: Seigneur Méléthor, le Semeur de Nids
+Origine & Territoires: Forest, Caves, Ruins, Volcano
+
+Présentation:
+Méléthor est une entité ancienne née du croisement de la sève corrompue de l'Arbre Céleste et des feux primordiaux du Molten Core. Sa présence s'étend comme une maladie sur plusieurs biomes — des clairières envahies du Forest aux cavernes humides, en passant par les sanctuaires brisés des Ruins et les fournaises du Volcano. Là où il passe, les nids prolifèrent et les créatures locales se rassemblent sous son commandement.
+
+Minions et forces associées (exemples tirés des pools d'ennemis):
+- Zones communes / faibles: Cockroach, Rat, Bat, Ants — éclaireurs et essaims.
+- Forêt (rare): Wolf, Bee, Big Bee, Butterfly, Monkey — essaims aériens et sentinelles arboricoles.
+- Cavernes (epic): Salamander, Snail, Snake, Wood Fairy, Vampire — gardiens élémentaires et prédateurs furtifs.
+- Ruines (legendary): Golem, Cultist, Ancient Spirit, Hydr(a) — gardiens cérémoniels et constructs corrompus.
+- Volcano (mythic): Magma Beast, Phoenix, Leviathan, Ancient Drake — avatars du feu et bêtes titanesques.
+
+Lieux-clés et repaires (dungeons & rooms):
+- The Beehive / The Celestial Tree (Forest) : ruches corrompues, ruches-multiples servant de relais pour Méléthor.
+- The Underground Cave / Echoing Depths (Caves) : chambres où les salamandres et créatures de lave s'alignent pour le rituel.
+- The Forgotten Sanctum / The Ruins Heart (Ruins) : autels et sanctuaires où les cultistes invoquent et alimentent son essence.
+- Molten Core / Dragon Crucible (Volcano) : foyer primaire où Méléthor renforce ses avatars mythiques.
+
+Capacités & signatures:
+- Semeur d'Essaims : peut corrompre faune locale pour former des essaims (bee/big_bee/ants) qui harcèlent le joueur.
+- Lien d'Écosystème : renforce et coordonne ennemis des pools de la carte active (p. ex. salamanders en caves, magma_beast en volcano).
+- Rappel des Anciens : invoque constructs/spirits (golem, ancient_spirit) lorsqu'il est attaqué.
+- Flamme Résurgente : régénération partielle via feu (phoenix-like rebirth), dégâts de zone magmatiques.
+- Corruption des Fragments : les fragments-clés de map (ex. "Cave Key fragment A") sont partiellement imprégnés de son essence — nécessaires pour l'affronter.
+
+Hooks de quête et idées de rencontre:
+- Récupérer fragments : collecter les fragments nécessaires pour ouvrir l'accès au repaire (les maps exigent des fragments A/B).
+- Purger les ruches : nettoyer une série de rooms dans "The Beehive" pour couper son réseau d'essaims avant d'ouvrir le boss room.
+- Ritual Hunt : détruire trois autels dans les Ruins avant d'affronter l'Ancient Guardian, affaiblissant Méléthor.
+- Duel du Molten Core : affronter des vagues de magma_beast et fire_drake avant le boss final (Phoenix Lord / Ancient Dragon).
+
+Butin signature & récompenses:
+- Fragment imprégné (map key fragment) — nécessaire pour débloquer d'autres maps.
+- Couronne de Nid (legendary) — objet cosmétique / bonus de commande d'essaims.
+- Reliques de Feu (mythic) — armes/armures avec dégâts magmatiques et chance de résurgence (phoenix effect).
+- Plan de Forge / Schéma — permet d'ouvrir des options de forge haut-rang (legendary/mythic).
+
+Rencontres suggérées (difficulté croissante):
+1. Patrols (Forest) : 3-5 groupes d'abeilles/big_bee/ants.
+2. Caves Gauntlet (Caves) : salamander + snake + snail elite.
+3. Sanctum Cleansing (Ruins) : cultist waves + ancient_spirit mini-boss.
+4. Core Incursion (Volcano) : magma beasts et fire drakes menant au Phoenix Lord.
+5. Heart of the Nest (Boss) : Méléthor entouré d'un mélange de bosses (queen_bee / rabid_hyenas / ancient_guardian / phoenix_lord selon map), rotation d'états et phase de résurgence.
+
+Notes de conception rapide:
+- Méléthor fonctionne bien comme méta-boss multi-zone : ses influences modifient temporairement les pools d'ennemis et les comportements des rooms.
+- Les fragments requis (ex: "Cave Key fragment A/B") servent à créer une progression claire et à forcer l'exploration.
+- Prévoir des indicateurs visuels (ruches, cendres, runes) sur les maps pour signaler l'influence croissante de Méléthor.
+
+-- Généré automatiquement après lecture des templates d'ennemis et de maps (enemies.ts, maps.ts)
+
+Histoire : Les Chroniques du Nid
+
+Chapitre I — Les Premières Ruchettes
+Quand Méléthor prit conscience de son influence, ce fut d'abord un bruissement discret : des ruches changées, des fourmilières qui se réordonnaient. Les villageois de la lisière du Forest parlèrent d'abeilles plus grandes que leurs mains, de ciels obscurcis par des nuées. Un jeune éclaireur, Anaël, fut le premier à revenir avec une plume noire collée à sa capuche et le récit d'une clairière où les arbres murmuraient.
+
+Chapitre II — Les Cavernes Murmurantes
+Les murmures descendirent sous la terre. Là où la pierre gardait son silence, des salamandres s'alignèrent autour de cratères fumants, et des statues moururent puis se relevèrent, couvertes de mousse et de cire. Une expédition menée par la cartographe Lysa se perdit dans l'écho d'une caverne ; ses notes parlaient d'une « chambre aux cendres » où des symboles avaient fondu comme de la cire. Ceux qui revenaient furent hantés par des rêves de nids tissés dans la pierre.
+
+Chapitre III — Le Sanctuaire Fracturé
+Aux Ruins, les cultistes trouvèrent un chant nouveau, un refrain qui amalgame la sève et la lave. Ils bâtirent autels en forme de ruches autour d'anciennes statues, et leur culte prit la forme d'une ruche inversée : les prêtres offraient fragments et métal, et la terre rendait en essaims. Une troupe d'aventuriers tenta de briser trois autels ; à chaque autel détruit, un hurlement de roi-abeille retentit et une garde corrompue se dressa.
+
+Chapitre IV — Le Feu et la Résurgence
+Enfin, au coeur du Volcano, l'épreuve suprême attendit : un duel où la lave servait de miroir. Méléthor, ou du moins l'un de ses avatars, s'illumina d'une chaleur blanche et rendit les blessures avec des braises vivantes. Quand la guerre des éléments culmina, Anaël, Lysa et les survivants unirent leurs forces — coupant les ruches maîtresses, brisant les anneaux de pierre qui liaient la créature aux éléments. Méléthor recula, non vaincu mais affaibli, et son cri fit tomber des fragments qui, une fois forgés, portèrent la marque chaude de la résurgence.
+
+Épilogue
+Les fragments recueillis devinrent des reliques : instruments de progression, objets de convoitise, et rappels que Méléthor n'était pas un tyran isolé mais un réseau vivant. Les héros qui survécurent gardèrent la mémoire d'un seigneur qui renaît lentement à chaque saison — et la promesse muette que, tant qu'il reste des ruches, il faudra rester vigilants.

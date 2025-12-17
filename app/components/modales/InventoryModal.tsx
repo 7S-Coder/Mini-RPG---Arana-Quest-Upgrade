@@ -340,8 +340,29 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                   <div style={{ textAlign: 'center' }}>
                     <button disabled={remainingPoints < COSTS.dodge} onClick={() => allocate && allocate('dodge')}>+1 (cost 3)</button>
                     {deallocate ? <button disabled={(allocated.dodge || 0) <= 0} onClick={() => deallocate && deallocate('dodge')} style={{ marginLeft: 6 }}>-</button> : null}
+                  
+                  <button
+                    id="resetPoints"
+                    disabled={!deallocate || Object.values(allocated).reduce((s: number, v: any) => s + (Number(v || 0)), 0) <= 0}
+                    onClick={() => {
+                      if (!deallocate) return;
+                      try {
+                        if (!confirm('Reset all allocated points?')) return;
+                      } catch (e) {}
+                      const stats = ['hp', 'dmg', 'def', 'crit', 'dodge'];
+                      for (const s of stats) {
+                        const count = (allocated as any)[s] || 0;
+                        for (let i = 0; i < count; i++) {
+                          try { deallocate && deallocate(s); } catch (e) {}
+                        }
+                      }
+                    }}
+                  >Reset Points</button>
                   </div>
+
+                  
                 </div>
+
 
                 <div style={{ marginTop: 8, color: '#999', fontSize: 12 }}>
                   Points sauvegardés dans la progression — s'ajoutent aux stats et à l'équipement.

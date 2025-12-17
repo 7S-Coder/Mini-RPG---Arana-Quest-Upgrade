@@ -2,7 +2,7 @@
 
 import React from "react";
 import Modal from "./Modal";
-import { getMaps } from "../../game/templates/maps";
+import { getMaps, getRoomsForMap } from "../../game/templates/maps";
 import { ENEMY_TEMPLATES } from "../../game/templates/enemies";
 
 export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgress, playerLevel, inventory }: { onClose: () => void; onSelect: (id?: string | null) => void; selectedId?: string | null; dungeonProgress?: { activeMapId?: string | null; activeDungeonIndex?: number | null; activeDungeonId?: string | null; remaining?: number; fightsRemainingBeforeDungeon?: number }; playerLevel?: number, inventory?: any[] }) {
@@ -125,7 +125,7 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
                                 try {
                                   if (Array.isArray(m.rooms)) {
                                     // find a boss room for this dungeon by id match or inclusion
-                                    const room = m.rooms.find(r => r.isBossRoom && r.id && (r.id.startsWith((d.id ?? '') + '_floor_') || r.id.includes(d.id ?? '')));
+                                    const room = getRoomsForMap(m.id).find(r => r.isBossRoom && r.id && (r.id.startsWith((d.id ?? '') + '_floor_') || r.id.includes(d.id ?? '')));
                                     if (room && Array.isArray(room.enemyPool) && room.enemyPool.length > 0) {
                                       // prefer an enemyPool entry that exists in ENEMY_TEMPLATES
                                       const candidate = room.enemyPool.find(ep => ENEMY_TEMPLATES.some(t => t.templateId === ep)) || room.enemyPool[0];

@@ -14,7 +14,7 @@ import EffectsLayer from "../components/EffectsLayer";
 import BestiaryModal from "../components/modales/BestiaryModal";
 import MapsModal from "../components/modales/MapsModal";
 import CatalogModal from "../components/modales/CatalogModal";
-import { getMaps, pickEnemyFromMap, pickEnemyFromRoom } from "./templates/maps";
+import { getMaps, pickEnemyFromMap, pickEnemyFromRoom, getRoomsForMap } from "./templates/maps";
 import { ENEMY_TEMPLATES } from "./templates/enemies";
 import { calcDamage } from "./damage";
 import { useLogs } from "../hooks/useLogs";
@@ -22,7 +22,7 @@ import { useToasts } from "../hooks/useToasts";
 import { useDungeon } from "../hooks/useDungeon";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical, progression, allocate, deallocate } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical, progression, allocate, deallocate, saveCoreGame } = useGameState();
 
   // modal system (generalized)
   const [modalName, setModalName] = useState<string | null>(null);
@@ -196,7 +196,7 @@ export default function Game() {
             const tid = pickEnemyFromRoom(selectedMapId ?? undefined, roomId);
             if (tid) {
               // If this room is defined, allow it even if not present in map.enemyPool
-              const roomObj = selectedMap?.rooms ? selectedMap.rooms.find((r) => r.id === roomId) : undefined;
+              const roomObj = getRoomsForMap(selectedMapId ?? undefined).find((r) => r.id === roomId) as any | undefined;
               const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid);
               const tplBelongs = roomObj ? true : (selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid)) : !!tpl);
               if (tplBelongs) {
@@ -325,11 +325,11 @@ export default function Game() {
   // dungeon initialization is handled by useDungeon
 
   // wrapper used by store modal so it returns a result message usable by the modal
-  const storeBuy = useCallback((type: 'small' | 'medium' | 'large') => {
+  const storeBuy = useCallback((type: 'small' | 'medium' | 'large' | 'huge' | 'giant') => {
     try {
       const ok = buyPotion(type);
       if (ok) {
-        const label = type === 'small' ? 'small potion' : (type === 'medium' ? 'medium potion' : 'large potion');
+        const label = type === 'small' ? 'small potion' : (type === 'medium' ? 'medium potion' : (type === 'large' ? 'large potion' : (type === 'huge' ? 'huge potion' : 'giant potion')));
         const msg = `Purchase successful: ${label}.`;
         pushLog(msg);
         return { ok: true, msg };
@@ -504,6 +504,31 @@ export default function Game() {
                 }
               }
               setSelectedMapId(id ?? null);
+              // auto-unlock highest allowed tier for this map if player meets threshold
+              try {
+                if (id) {
+                  const mm = mapsList.find((x) => x.id === id);
+                  const RARITY_ORDER = ['common','rare','epic','legendary','mythic'];
+                  const allowed = mm?.allowedTiers ?? [];
+                  if (allowed.length > 0) {
+                    let highestIdx = 0;
+                    for (const t of allowed) {
+                      const idx = RARITY_ORDER.indexOf(t as any);
+                      if (idx > highestIdx) highestIdx = idx;
+                    }
+                    const target = RARITY_ORDER[highestIdx];
+                    if (target && target !== 'common' && !(player.unlockedTiers && player.unlockedTiers.includes(target))) {
+                      const threshold = mm?.dungeonThreshold ?? mm?.minLevel ?? 0;
+                      if ((player.level ?? 0) >= (threshold || 0)) {
+                        setPlayer((p) => ({ ...p, unlockedTiers: [...(p.unlockedTiers ?? ['common']), target as any] }));
+                        try { saveCoreGame && saveCoreGame(null, 'auto_unlock_map_tier'); } catch (e) {}
+                        try { pushLog && pushLog(`Unlocked tier: ${target} (map ${mm?.name})`); } catch (e) {}
+                        try { addToast && addToast(`Unlocked tier: ${target}`, 'ok'); } catch (e) {}
+                      }
+                    }
+                  }
+                }
+              } catch (e) { console.error('auto-unlock map tier error', e); }
               if (id) {
                 const mm = mapsList.find((x) => x.id === id);
                 const tierInfo = mm?.loot && mm.loot.length > 0 ? mm.loot : (mm?.allowedTiers && mm.allowedTiers.length > 0 ? `loot: ${mm.allowedTiers.join(' - ')}` : 'loot: any');

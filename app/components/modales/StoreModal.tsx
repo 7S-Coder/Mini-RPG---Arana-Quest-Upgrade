@@ -5,14 +5,14 @@ import Modal from "./Modal";
 
 type Props = {
   onClose: () => void;
-  buyPotion: (type: 'small' | 'medium' | 'large') => { ok: boolean; msg: string } | string;
+  buyPotion: (type: 'small' | 'medium' | 'large' | 'huge' | 'giant') => { ok: boolean; msg: string } | string;
   playerGold: number;
 };
 
 export default function StoreModal({ onClose, buyPotion, playerGold }: Props) {
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
 
-  const handleBuy = (type: 'small' | 'medium' | 'large') => {
+  const handleBuy = (type: 'small' | 'medium' | 'large' | 'huge' | 'giant') => {
     try {
       const res = (buyPotion as any)(type);
       let msgObj: { ok: boolean; msg: string };
@@ -45,6 +45,7 @@ export default function StoreModal({ onClose, buyPotion, playerGold }: Props) {
                 </div>
               </div>
 
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
                 <div>
                   <div style={{ fontWeight: 700 }}>Medium potion</div>
@@ -56,6 +57,8 @@ export default function StoreModal({ onClose, buyPotion, playerGold }: Props) {
                 </div>
               </div>
 
+              
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
                 <div>
                   <div style={{ fontWeight: 700 }}>Large potion</div>
@@ -64,6 +67,28 @@ export default function StoreModal({ onClose, buyPotion, playerGold }: Props) {
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <div style={{ color: '#ffd96b', fontWeight: 800 }}>25 g</div>
                   <button className="btn" onClick={() => handleBuy('large')}>Buy</button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
+                <div>
+                  <div style={{ fontWeight: 700 }}>Huge potion</div>
+                  <div style={{ fontSize: 12, color: '#bbb' }}>Restores 200 HP</div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div style={{ color: '#ffd96b', fontWeight: 800 }}>45 g</div>
+                  <button className="btn" onClick={() => handleBuy('huge')}>Buy</button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
+                <div>
+                  <div style={{ fontWeight: 700 }}>Giant potion</div>
+                  <div style={{ fontSize: 12, color: '#bbb' }}>Restores 400 HP</div>
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <div style={{ color: '#ffd96b', fontWeight: 800 }}>80 g</div>
+                  <button className="btn" onClick={() => handleBuy('giant')}>Buy</button>
                 </div>
               </div>
               </div>

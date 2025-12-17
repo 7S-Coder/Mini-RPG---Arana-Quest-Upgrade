@@ -28,6 +28,8 @@ export function useGameState() {
     def: 2,
     speed: 120, // default 120 px/s
     gold: 0,
+    // ensure unlockedTiers always present so gating logic works
+    unlockedTiers: ['common'],
   });
   // refs to hold latest state for synchronous access during save
   const playerRef = useRef<Player>(player);
@@ -564,9 +566,9 @@ export function useGameState() {
   };
 
   // Buy a potion from the store. types: small(20), medium(50), large(100)
-  const buyPotion = (type: 'small' | 'medium' | 'large'): boolean => {
-    const costs: Record<string, number> = { small: 5, medium: 12, large: 25 };
-    const heals: Record<string, number> = { small: 20, medium: 50, large: 100 };
+  const buyPotion = (type: 'small' | 'medium' | 'large' | 'huge' | 'giant'): boolean => {
+    const costs: Record<string, number> = { small: 5, medium: 12, large: 25, huge: 45, giant: 80 };
+    const heals: Record<string, number> = { small: 20, medium: 50, large: 100, huge: 200, giant: 400 };
     const cost = costs[type] ?? 5;
     const heal = heals[type] ?? 20;
     const currentGold = Number((player.gold ?? 0));
@@ -574,10 +576,11 @@ export function useGameState() {
       return false;
     }
     const nextPlayer = { ...player, gold: +((Number(player.gold ?? 0) - cost).toFixed(2)) } as Player;
+    const label = (type === 'small' ? 'Small potion' : type === 'medium' ? 'Medium potion' : type === 'large' ? 'Large potion' : type === 'huge' ? 'Huge potion' : 'Giant potion');
     const itm: Item = {
       id: uid(),
       slot: 'consumable' as any,
-      name: `${type === 'small' ? 'Small potion' : type === 'medium' ? 'Medium potion' : 'Large potion'} (+${heal} HP)`,
+      name: `${label} (+${heal} HP)`,
       rarity: 'common',
       category: 'consumable' as any,
       stats: { heal },
@@ -946,6 +949,7 @@ export function useGameState() {
     def: p.def,
     speed: p.speed,
     gold: p.gold,
+    unlockedTiers: p.unlockedTiers ?? ['common'],
   });
 
   const buildCoreSave = (extra: Record<string, any> | null = null) => ({

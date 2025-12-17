@@ -10,6 +10,8 @@
     "test": "vitest",
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration"
+    ,
+    "godMod": "node scripts/godMod.js"
   },
   "dependencies": {
     "next": "16.0.10",

@@ -273,17 +273,18 @@ body{
 }
 .pickup:hover{transform:translate(-50%,-55%) scale(1.03); box-shadow:0 10px 30px rgba(0,0,0,0.6)}
 .pickup .label{color:inherit; font-weight:800}
-.pickup.gold{background:linear-gradient(90deg,#fff7d6,#ffe88a); border:1px solid rgba(200,150,60,0.95); box-shadow:0 8px 30px rgba(200,150,60,0.12)}
+/* Solid backgrounds (no gradients) for pickups */
+.pickup.gold{background-color:#fff7d6; border:1px solid rgba(200,150,60,0.95); box-shadow:0 6px 18px rgba(0,0,0,0.12)}
 .pickup.gold .label{color:#1b1b1b}
 .pickup.gold .icon{color:#1b1b1b}
-.pickup.item{background:linear-gradient(90deg,#eef6ff,#d6ebff); border:1px solid rgba(120,160,220,0.95); box-shadow:0 8px 30px rgba(120,160,220,0.08)}
+.pickup.item{background-color:#eef6ff; border:1px solid rgba(120,160,220,0.95); box-shadow:0 6px 18px rgba(0,0,0,0.10)}
 
 /* Rarity-specific pickup backgrounds (more vivid) */
-.pickup.common{background:linear-gradient(90deg,#ffffff,#f6f6f6); border:1px solid rgba(220,220,220,0.98); box-shadow:0 8px 18px rgba(0,0,0,0.18)}
-.pickup.rare{background:linear-gradient(90deg,#99d9ff,#4aa3ff); border:1px solid rgba(74,163,255,0.95); box-shadow:0 8px 28px rgba(74,163,255,0.16); color:#052033}
-.pickup.epic{background:linear-gradient(90deg,#d9b3ff,#b46bff); border:1px solid rgba(180,107,255,0.95); box-shadow:0 8px 28px rgba(180,107,255,0.16); color:#2b0836}
-.pickup.legendary{background:linear-gradient(90deg,#fff1b8,#ffd36b); border:1px solid rgba(255,211,107,0.95); box-shadow:0 8px 28px rgba(255,211,107,0.18); color:#2b2000}
-.pickup.mythic{background:linear-gradient(90deg,#ffb3b3,#ff6b6b); border:1px solid rgba(255,107,107,0.95); box-shadow:0 8px 28px rgba(255,107,107,0.18); color:#350000}
+.pickup.common{background-color:#f6f6f6; border:1px solid rgba(220,220,220,0.98); box-shadow:0 6px 14px rgba(0,0,0,0.12); color:#111}
+.pickup.rare{background-color:#1e90ff; border:1px solid rgba(30,144,255,0.95); box-shadow:0 6px 20px rgba(30,144,255,0.12); color:#001428}
+.pickup.epic{background-color:#8a2be2; border:1px solid rgba(138,43,226,0.95); box-shadow:0 6px 20px rgba(138,43,226,0.12); color:#ffffff}
+.pickup.legendary{background-color:#ffb84d; border:1px solid rgba(255,184,77,0.95); box-shadow:0 6px 20px rgba(255,184,77,0.14); color:#2b2000}
+.pickup.mythic{background-color:#ff4d4d; border:1px solid rgba(255,77,77,0.95); box-shadow:0 6px 20px rgba(255,77,77,0.14); color:#350000}
 .pickup .icon{font-size:16px}
 
 /* subtle bounce when spawn */
