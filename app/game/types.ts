@@ -2,7 +2,7 @@ export type Rarity = "common" | "rare" | "epic" | "legendary" | "mythic";
 
 export type Item = {
   id: string;
-  slot: "familiar" | "boots" | "belt" | "hat" | "chestplate" | "ring" | "weapon";
+  slot: "familiar" | "boots" | "belt" | "hat" | "chestplate" | "ring" | "weapon" | "key";
   name: string;
   rarity: Rarity;
   category?: "weapon" | "armor" | "accessory" | "pet";

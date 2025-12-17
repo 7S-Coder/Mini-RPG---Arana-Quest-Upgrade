@@ -33,6 +33,8 @@ export type MapTemplate = {
   // optional explicit rooms (fixed encounters) inside this map
   rooms?: RoomDef[];
   dungeons?: DungeonDef[]; // maps may contain multiple dungeons
+  // optional list of item names (fragments) required to unlock the map
+  requiredKeyFragments?: string[];
 };
 
 const defaultMaps: MapTemplate[] = [
@@ -45,7 +47,7 @@ const defaultMaps: MapTemplate[] = [
     allowedTiers: ['common'],
     loot: 'loot: Common',
     logColor: '#2ecc71',
-    enemyPool: ['Wolf', 'Mushroom', 'Bee', 'Crow', 'Butterfly'],
+    enemyPool: ['wolf', 'mushroom', 'bee', 'crow', 'butterfly'],
     dungeons: [
       { id: 'forest_the_beehive_1', name: 'The Beehive', floors: 5, bossTemplateId: 'queen_bee' },
       { id: 'the_celestial_tree', name: 'The Celestial Tree', floors: 5, bossTemplateId: 'quetzal' },
@@ -75,8 +77,10 @@ const defaultMaps: MapTemplate[] = [
     minLevel: 31,
     allowedTiers: ['common', 'rare', 'epic'],
     loot: 'loot: Common - Rare - Epic',
-    logColor: '#95a5a6',
+      logColor: '#95a5a6',
     enemyPool: ['salamander','snail','snake','bear', 'wood_fairy'],
+    // requires both fragments to unlock
+    requiredKeyFragments: ['Cave Key fragment A', 'Cave Key fragment B'],
     dungeons: [
       { id: 'caves_the_underground_cave_1', name: 'The Underground Cave', floors: 5, bossTemplateId: 'rabid_hyenas' },
       { id: 'caves_echoing_depths_2', name: 'Echoing Depths', floors: 5, bossTemplateId: 'cave_stalker' },
@@ -96,6 +100,8 @@ const defaultMaps: MapTemplate[] = [
       { id: 'ruins_the_forgotten_sanctum_1', name: 'The Forgotten Sanctum', floors: 5, bossTemplateId: 'ancient_guardian' },
       { id: 'ruins_the_ruins_heart_2', name: 'The Ruins Heart', floors: 5, bossTemplateId: 'hydra' },
     ],
+    // fragments required to unlock the Ruins (drop in previous map)
+    requiredKeyFragments: ['Ruins Key fragment A', 'Ruins Key fragment B'],
     rooms: [
         { id: 'ruins_the_forgotten_sanctum_1_floor_1', name: '', enemyPool: ['cultist','ghost', 'wyrm'] },
         { id: 'ruins_the_forgotten_sanctum_1_floor_2', name: '', enemyPool: ['golem', 'ghost', 'cultist'] },
@@ -118,14 +124,16 @@ const defaultMaps: MapTemplate[] = [
     allowedTiers: ['epic', 'legendary'],
     loot: 'loot: Epic - Legendary',
     logColor: '#e74c3c',
-    enemyPool: ['magma_beast','fire_drake','phoenix','lava_golem', "will_o'_the_wisp", 'leviathan'],
+    enemyPool: ['magma_beast','fire_drake','phoenix','lava_golem','will_o_the_wisp','leviathan'],
     dungeons: [
       { id: 'volcano_molten_core_1', name: 'Molten Core', floors: 5, bossTemplateId: 'phoenix_lord', requiredLevel: 71 },
       { id: 'volcano_dragon_crucible_1', name: 'Dragon Crucible', floors: 5, bossTemplateId: 'ancient_dragon', requiredLevel: 71 },
     ],
+    // fragments required to unlock the Volcano
+    requiredKeyFragments: ['Volcano Key fragment A', 'Volcano Key fragment B'],
     rooms: [
-        { id: 'volcano_molten_core_1_floor_1', name: '', enemyPool: ["fire_drake","will_o'_the_wisp", "magma_beast"] },
-        { id: 'volcano_molten_core_1_floor_2', name: '', enemyPool: ["will_o'_the_wisp", "magma_beast", "leviathan"] },
+        { id: 'volcano_molten_core_1_floor_1', name: '', enemyPool: ["fire_drake","will_o_the_wisp", "magma_beast"] },
+        { id: 'volcano_molten_core_1_floor_2', name: '', enemyPool: ["will_o_the_wisp", "magma_beast", "leviathan"] },
         { id: 'volcano_molten_core_1_floor_3', name: '', enemyPool: ["fire_drake", "leviathan"] },
         { id: 'volcano_molten_core_1_floor_4', name: '', enemyPool: ["leviathan"] },
         { id: 'volcano_molten_core_1_floor_5', name: '', enemyPool: ['phoenix_lord'], isBossRoom: true },

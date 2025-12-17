@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { uid, clampToViewport } from "../utils";
 import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "../templates/items";
-import { isTierAllowedOnMap, getMapById } from "../templates/maps";
+import { isTierAllowedOnMap, getMapById, getMaps } from "../templates/maps";
 import { ENEMY_TEMPLATES } from "../templates/enemies";
 import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity } from "../types";
 import useStatistics from "../../hooks/useStatistics";
@@ -46,6 +46,7 @@ export function useGameState() {
     chestplate: null,
     ring: null,
     weapon: null,
+    key: null,
   });
   const equipmentRef = useRef<typeof equipment>(equipment);
   useEffect(() => { equipmentRef.current = equipment; }, [equipment]);
@@ -248,6 +249,7 @@ export function useGameState() {
       belt: "armor",
       ring: "accessory",
       familiar: "pet",
+      key: "accessory",
     };
 
     const scaled = scaleStats(stats, rarity);
@@ -333,6 +335,54 @@ export function useGameState() {
     };
 
     // spawn the item as a pickup at the enemy location (player must collect)
+    // Special: small chance to drop map key fragments when encountering dungeon bosses/elite
+    try {
+      // Find any "next" maps whose fragments should drop in this map (previous map concept)
+      const allMaps = getMaps();
+      if (selectedMapId) {
+        const idxMap = allMaps.findIndex((m) => m.id === selectedMapId);
+        if (idxMap >= 0) {
+          // consider any map that appears immediately after this one in the maps array
+          const candidate = allMaps[idxMap + 1];
+          if (candidate && Array.isArray(candidate.requiredKeyFragments) && candidate.requiredKeyFragments.length > 0) {
+            // attempt to map the encountered enemy/room to a specific dungeon index so
+            // Donjon A -> Fragment A, Donjon B -> Fragment B when possible
+            let fragIdx: number | null = null;
+            try {
+              const roomId = (enemy && (enemy as any).roomId) || '';
+              if (roomId && Array.isArray(candidate.dungeons)) {
+                for (let di = 0; di < candidate.dungeons.length; di++) {
+                  const dd = candidate.dungeons[di];
+                  if (!dd) continue;
+                  if (typeof dd.id === 'string' && roomId.includes(dd.id)) {
+                    fragIdx = di;
+                    break;
+                  }
+                }
+              }
+            } catch (e) {}
+
+            // fallback: if we couldn't determine dungeon index, pick random fragment index
+            if (fragIdx === null) fragIdx = Math.random() < 0.5 ? 0 : 1;
+
+            const fragName = candidate.requiredKeyFragments[fragIdx] || null;
+            if (fragName) {
+              const baseChance = 0.04; // 4% base
+              const bossBonus = (enemy && (enemy as any).isBoss) ? 0.18 : 0; // bosses get +18%
+              const rarityBonus = ((enemy && (enemy as any).rarity) === 'epic' || (enemy && (enemy as any).rarity) === 'legendary') ? 0.05 : 0;
+              if (Math.random() < (baseChance + bossBonus + rarityBonus)) {
+                const fragItem: Item = { id: uid(), slot: 'key', name: fragName, rarity: 'rare', category: 'accessory' } as Item;
+                const pos = clampToViewport(enemy.x, enemy.y);
+                const fragPickup: Pickup = { id: uid(), kind: 'item', item: fragItem, x: pos.x, y: pos.y, createdAt: Date.now() };
+                setPickups((p) => [...p, fragPickup]);
+                return fragItem;
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {}
+
     const pos = clampToViewport(enemy.x, enemy.y);
     const itemPickup: Pickup = { id: uid(), kind: 'item', item, x: pos.x, y: pos.y, createdAt: Date.now() };
     setPickups((p) => [...p, itemPickup]);

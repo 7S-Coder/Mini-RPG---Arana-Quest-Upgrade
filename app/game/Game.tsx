@@ -474,7 +474,7 @@ export default function Game() {
         <BestiaryModal onClose={closeModal} enemies={enemies} selectedMapId={selectedMapId} />
       )}
       {modalName === 'maps' && (
-        <MapsModal playerLevel={player.level} onClose={closeModal} onSelect={(id?: string | null) => {
+        <MapsModal inventory={inventory} playerLevel={player.level} onClose={closeModal} onSelect={(id?: string | null) => {
               try {
               if (id) {
                 const mm = mapsList.find((x) => x.id === id);

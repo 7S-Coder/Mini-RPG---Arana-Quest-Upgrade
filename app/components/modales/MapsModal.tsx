@@ -5,7 +5,7 @@ import Modal from "./Modal";
 import { getMaps } from "../../game/templates/maps";
 import { ENEMY_TEMPLATES } from "../../game/templates/enemies";
 
-export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgress, playerLevel }: { onClose: () => void; onSelect: (id?: string | null) => void; selectedId?: string | null; dungeonProgress?: { activeMapId?: string | null; activeDungeonIndex?: number | null; activeDungeonId?: string | null; remaining?: number; fightsRemainingBeforeDungeon?: number }; playerLevel?: number }) {
+export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgress, playerLevel, inventory }: { onClose: () => void; onSelect: (id?: string | null) => void; selectedId?: string | null; dungeonProgress?: { activeMapId?: string | null; activeDungeonIndex?: number | null; activeDungeonId?: string | null; remaining?: number; fightsRemainingBeforeDungeon?: number }; playerLevel?: number, inventory?: any[] }) {
   const maps = getMaps();
 
   const hexToRgba = (hex?: string, alpha = 1) => {
@@ -62,6 +62,22 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
                   {m.minLevel ? (
                     <div style={{ fontSize: 12, color: accent, marginTop: 6 }}>Levels: {m.minLevel}+</div>
                   ) : null}
+                        {Array.isArray(m.requiredKeyFragments) && m.requiredKeyFragments.length > 0 ? (
+                          <div style={{ fontSize: 12, color: accent, marginTop: 6 }}>
+                            <div style={{ fontWeight: 700, marginBottom: 6 }}>Fragments</div>
+                            <ul style={{ margin: 0, paddingLeft: 14 }}>
+                              {m.requiredKeyFragments.map((f) => {
+                                const owned = Array.isArray(inventory) && inventory.some((it: any) => it && it.name === f);
+                                return (
+                                  <li key={f} style={{ listStyle: 'none', marginBottom: 4, display: 'flex', gap: 8, alignItems: 'center' }}>
+                                    <div style={{ width: 12, textAlign: 'center', color: owned ? '#2ecc71' : '#888' }}>{owned ? '✓' : '○'}</div>
+                                    <div style={{ color: owned ? '#e6ffe6' : accent, fontSize: 12 }}>{f}</div>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        ) : null}
                   {(() => {
                     if (m.loot && m.loot.length > 0) return <div style={{ fontSize: 12, color: accent, marginTop: 6 }}>{m.loot}</div>;
                     if (m.allowedTiers && m.allowedTiers.length > 0) return <div style={{ fontSize: 12, color: accent, marginTop: 6 }}>{`loot: ${m.allowedTiers.join(' - ')}`}</div>;
@@ -71,15 +87,20 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                   <div style={{ width: 18, height: 18, borderRadius: 4, background: accent, border: '1px solid rgba(0,0,0,0.2)' }} />
                   {(() => {
-                    const locked = (typeof m.minLevel === 'number' && typeof playerLevel === 'number' && playerLevel < m.minLevel);
+                    const levelLocked = (typeof m.minLevel === 'number' && typeof playerLevel === 'number' && playerLevel < m.minLevel);
+                    const missingFragments = (Array.isArray(m.requiredKeyFragments) ? m.requiredKeyFragments.filter(f => !(Array.isArray(inventory) && inventory.some((it: any) => it && it.name === f))) : []);
+                    const keyLocked = (missingFragments.length > 0);
+                    const locked = levelLocked || keyLocked;
+                    const label = locked ? (levelLocked ? `Locked (lvl ${m.minLevel}+)` : (keyLocked ? `Locked (missing key fragments)` : 'Locked')) : (selected ? 'Active' : 'Choose');
                     return (
                       <button
                         className="btn"
                         style={{ ...btnStyle, opacity: locked ? 0.6 : 1 }}
                         onClick={() => { if (!locked) { onSelect(m.id); onClose(); } }}
                         disabled={locked}
+                        title={keyLocked ? `Missing fragments: ${missingFragments.join(', ')}` : undefined}
                       >
-                        {locked ? (m.minLevel && playerLevel < m.minLevel ? `Locked (lvl ${m.minLevel}+)` : 'Locked') : (selected ? 'Active' : 'Choose')}
+                        {label}
                       </button>
                     );
                   })()}
