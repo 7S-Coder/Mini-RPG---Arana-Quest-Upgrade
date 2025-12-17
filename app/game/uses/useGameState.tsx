@@ -648,8 +648,9 @@ export function useGameState() {
   // Equip / Unequip helpers to keep logic centralized and avoid race conditions
   const equipItem = (item: Item): boolean => {
     try { console.log('equipItem called', item && item.id, item && item.slot); } catch (e) {}
-    // ensure item is actually in inventory before equipping
-    const has = inventory.find((i) => i.id === item.id);
+    // ensure item is actually in inventory before equipping (use ref to avoid stale closure)
+    const invNow = inventoryRef.current || [];
+    const has = invNow.find((i) => i.id === item.id);
     if (!has) {
       try { console.warn('equipItem: item not found in inventory', item && item.id); } catch (e) {}
       return false;
@@ -659,8 +660,8 @@ export function useGameState() {
       try { console.warn('equipItem blocked during combat'); } catch (e) {}
       return false;
     }
-    // read current equipped for this slot (synchronously from closure)
-    const currentEquipped = equipment[item.slot];
+    // read current equipped for this slot from ref (avoid stale closure values)
+    const currentEquipped = (equipmentRef.current || {})[item.slot];
 
     // update equipment (pure)
     setEquipment((prevEquip) => ({ ...prevEquip, [item.slot]: item }));
@@ -676,21 +677,51 @@ export function useGameState() {
     });
 
     // stats are derived from `equipment` via effect; no incremental apply/remove here
-    // force-save shortly after to avoid race with state flush
-    try { window.setTimeout(() => { try { const fn = (window as any).__arenaquest_save_game; if (typeof fn === 'function') fn(); } catch (e) {} }, 50); } catch (e) {}
+    // force-save shortly after to avoid race with state flush (use refs to build payload)
+    try {
+      window.setTimeout(() => {
+        try {
+          const payload = {
+            version: 1,
+            player: pickPlayerData(playerRef.current || {} as Player),
+            inventory: inventoryRef.current || [],
+            equipment: equipmentRef.current || {},
+            timestamp: Date.now(),
+          };
+          try { localStorage.setItem('arenaquest_core_v1', JSON.stringify(payload)); } catch (e) {}
+          const fn = (window as any).__arenaquest_save_game;
+          if (typeof fn === 'function') fn();
+        } catch (e) {}
+      }, 50);
+    } catch (e) {}
     return true;
   };
 
   const unequipItem = (slot: Item["slot"]) => {
     try { console.log('unequipItem called', slot); } catch (e) {}
-    // read current equipped
-    const current = equipment[slot];
+    // read current equipped from ref (avoid stale closure values)
+    const current = (equipmentRef.current || {})[slot];
     // remove equipment entry
     setEquipment((prev) => ({ ...prev, [slot]: null }));
     // add the unequipped item back into inventory; stats are recomputed from `equipment`
     if (current) addToInventory(current);
-    // ensure save occurs after state updates
-    try { window.setTimeout(() => { try { const fn = (window as any).__arenaquest_save_game; if (typeof fn === 'function') fn(); } catch (e) {} }, 50); } catch (e) {}
+    // ensure save occurs after state updates (use refs)
+    try {
+      window.setTimeout(() => {
+        try {
+          const payload = {
+            version: 1,
+            player: pickPlayerData(playerRef.current || {} as Player),
+            inventory: inventoryRef.current || [],
+            equipment: equipmentRef.current || {},
+            timestamp: Date.now(),
+          };
+          try { localStorage.setItem('arenaquest_core_v1', JSON.stringify(payload)); } catch (e) {}
+          const fn = (window as any).__arenaquest_save_game;
+          if (typeof fn === 'function') fn();
+        } catch (e) {}
+      }, 50);
+    } catch (e) {}
   };
 
   // Helper to get the rarity of the currently equipped item in a slot
