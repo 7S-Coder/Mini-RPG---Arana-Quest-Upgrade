@@ -27,15 +27,16 @@ export default function Game() {
   // modal system (generalized)
   const [modalName, setModalName] = useState<string | null>(null);
   const [modalProps, setModalProps] = useState<any>(null);
-  const openModal = (name: string, props?: any) => {
+  const openModal = useCallback((name: string, props?: any) => {
     // compute final props (apply defaults for inventory modal)
     const resolved = name === "inventory" ? (props ?? { inventory, equipment, player, progression, allocate, deallocate }) : (props ?? null);
     // debug log to help verify clicks and show resolved props
     try { console.log("openModal ->", name, resolved); } catch (e) {}
     setModalName(name);
     setModalProps(resolved);
-  };
-  const closeModal = () => { setModalName(null); setModalProps(null); };
+  }, [inventory, equipment, player, progression, allocate, deallocate]);
+
+  const closeModal = useCallback(() => { setModalName(null); setModalProps(null); }, []);
 
   // Keyboard shortcut: Ctrl/Cmd + I opens the inventory modal (unless typing in input)
   useEffect(() => {
