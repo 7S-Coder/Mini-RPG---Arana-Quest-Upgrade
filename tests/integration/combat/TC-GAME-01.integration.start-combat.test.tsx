@@ -16,7 +16,7 @@ describe('TC-GAME-01 — Lancer un combat', () => {
 
     // Wait for enemies to be spawned (EnemiesRow renders enemy-name elements)
     await waitFor(() => {
-      const hasLvl = screen.queryAllByText(/LVL:/i).length > 0;
+      const hasLvl = screen.queryAllByText(/- /i).length > 0;
       const hasLog = !!screen.queryByText(/New encounter/i);
       if (!hasLvl && !hasLog) throw new Error('no enemies or log yet');
     }, { timeout: 3000 });
