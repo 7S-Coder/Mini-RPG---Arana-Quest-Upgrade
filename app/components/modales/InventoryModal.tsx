@@ -183,6 +183,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                     <select value={filterSlot} onChange={(e) => setFilterSlot(e.target.value)}>
                       <option value="all">All</option>
                       <option value="consumable">Consumables</option>
+                      <option value="key">Fragments</option>
                       {SLOT_ORDER.map((s) => <option key={s} value={s}>{SLOT_LABELS[s] ?? s}</option>)}
                     </select>
                   </div>
