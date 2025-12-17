@@ -202,9 +202,24 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                               <div>
                                 <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>{it.name}</div>
                                 <div style={{ fontSize: 10, color: '#bbb', marginTop: 4 }}>W:{it.weight ?? 1}</div>
-                                <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>{Object.entries(it.stats || {}).map(([k, v], idx) => (
-                                  <span key={k} style={{ color: '#999', fontWeight: 400 }}>{`${k}: ${v}`}{idx < Object.entries(it.stats || {}).length - 1 ? ' • ' : ''}</span>
-                                ))}</div>
+                                <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>{(() => {
+                                  const entries = Object.entries(it.stats || {});
+                                  const equipped = (equipment as any)[it.slot];
+                                  return entries.map(([k, v], idx) => {
+                                    const curVal = Number(v || 0);
+                                    const eqVal = equipped && equipped.stats ? Number(((equipped.stats as any)[k] ?? 0)) : 0;
+                                    const isBetter = curVal > eqVal;
+                                    const isWorse = curVal < eqVal;
+                                    const valueStyle: React.CSSProperties = isBetter ? { color: '#39ff8a', fontWeight: 700 } : isWorse ? { color: '#ff6b6b', fontWeight: 700 } : { color: '#999', fontWeight: 400 };
+                                    return (
+                                      <span key={k} style={{ color: '#999', fontWeight: 400 }}>
+                                        {`${k}: `}
+                                        <span style={valueStyle}>{curVal}</span>
+                                        {idx < entries.length - 1 ? ' • ' : ''}
+                                      </span>
+                                    );
+                                  });
+                                })()}</div>
                               </div>
                               <div style={{ display: 'flex', gap: 8 }}>
                                 {it.category === 'consumable' ? (
