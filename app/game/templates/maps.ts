@@ -45,42 +45,41 @@ const defaultMaps: MapTemplate[] = [
     allowedTiers: ['common'],
     loot: 'loot: Common',
     logColor: '#2ecc71',
-    enemyPool: ['gobelin','loup','slime', 'pebble', 'wyrm', 'wyrm_king', 'hydre', 'monocle'],
+    enemyPool: ['Wolf', 'Mushroom', 'Bee', 'Crow', 'Butterfly'],
     dungeons: [
-      { id: 'forest_depths_1', name: 'Depths', floors: 5, bossTemplateId: 'wyrm' },
-      { id: 'forest_cavern_1', name: 'Caverns', floors: 5, bossTemplateId: 'monocle' },
-      
+      { id: 'forest_the_beehive_1', name: 'The Beehive', floors: 5, bossTemplateId: 'queen_bee' },
+      { id: 'the_celestial_tree', name: 'The Celestial Tree', floors: 5, bossTemplateId: 'quetzal' },
     ],
       // Example fixed rooms for the `forest` map — each room id follows the pattern
       // <dungeonId>_floor_<n>. When a dungeon is active, the game will attempt to
       // pick an enemy from the corresponding room (deterministic encounters).
       rooms: [
-        { id: 'forest_depths_1_floor_5', name: 'Shallow Thicket', enemyPool: ['gobelin','slime'] },
-        { id: 'forest_depths_1_floor_4', name: 'Old Clearing', enemyPool: ['gobelin','loup'] },
-        { id: 'forest_depths_1_floor_3', name: 'Moss Hall', enemyPool: ['slime','pebble'] },
-        { id: 'forest_depths_1_floor_2', name: 'Rooted Pass', enemyPool: ['loup','pebble'] },
-        { id: 'forest_depths_1_floor_1', name: 'Wyrm Lair', enemyPool: ['wyrm_king'], isBossRoom: true },
+        { id: 'forest_the_beehive_floor_1', name: '', enemyPool: ['ants','mushroom'] },
+        { id: 'forest_the_beehive_floor_2', name: '', enemyPool: ['bee', 'big_bee'] },
+        { id: 'forest_the_beehive_floor_3', name: '', enemyPool: ['big_bee','mushroom'] },
+        { id: 'forest_the_beehive_floor_4', name: '', enemyPool: ['big_bee','mushroom', 'bee'] },
+        { id: 'forest_the_beehive_floor_5', name: '', enemyPool: ['queen_bee'], isBossRoom: true },
 
-        { id: 'forest_cavern_1_floor_5', name: 'Gloomy Grotto', enemyPool: ['slime','gobelin'] },
-        { id: 'forest_cavern_1_floor_4', name: 'Damp Tunnel', enemyPool: ['pebble','loup'] },
-        { id: 'forest_cavern_1_floor_3', name: 'Echoing Chamber', enemyPool: ['gobelin','pebble'] },
-        { id: 'forest_cavern_1_floor_2', name: 'Stalagmite Path', enemyPool: ['loup','slime'] },
-        { id: 'forest_cavern_1_floor_1', name: 'Monocle', enemyPool: ['monocle'], isBossRoom: true },
+        { id: 'forest_the_celestial_tree_floor_1', name: 'Gloomy Grotto', enemyPool: ['ants','crow'] },
+        { id: 'forest_the_celestial_tree_floor_2', name: 'Damp Tunnel', enemyPool: ['crow','butterfly'] },
+        { id: 'forest_the_celestial_tree_floor_3', name: 'Echoing Chamber', enemyPool: ['monkey','butterfly', 'crow'] },
+        { id: 'forest_the_celestial_tree_floor_4', name: 'Stalagmite Path', enemyPool: ['monkey','butterfly'] },
+        { id: 'forest_the_celestial_tree_floor_5', name: 'Monocle', enemyPool: ['quetzal'], isBossRoom: true },
       ],
   },
   {
     id: 'caves',
     name: 'Caves',
-    theme: 'cave',
+    theme: 'caves',
     dungeonThreshold: 15,
     minLevel: 31,
-    allowedTiers: ['common', 'rare'],
-    loot: 'loot: Common - Rare ',
+    allowedTiers: ['common', 'rare', 'epic'],
+    loot: 'loot: Common - Rare - Epic',
     logColor: '#95a5a6',
-    enemyPool: ['slime','brigand','spectre','bandit', 'ogre', 'magma', 'seigneur', 'dragon'],
+    enemyPool: ['salamander','snail','snake','bear', 'wood_fairy'],
     dungeons: [
-      { id: 'caves_echo_1', name: 'Echoes', floors: 5, bossTemplateId: 'magma' },
-      { id: 'caves_depth_2', name: 'Abyss', floors: 5, bossTemplateId: 'ogre' },
+      { id: 'caves_the_underground_cave_1', name: 'The Underground Cave', floors: 5, bossTemplateId: 'rabid_hyenas' },
+      { id: 'caves_echoing_depths_2', name: 'Echoing Depths', floors: 5, bossTemplateId: 'cave_stalker' },
     ],
   },
   {
@@ -92,33 +91,57 @@ const defaultMaps: MapTemplate[] = [
     allowedTiers: ['rare', 'epic'],
     loot: 'loot: Rare - Epic',
     logColor: '#9b59b6',
-    enemyPool: ['brigand','wyrm','ogre', 'spectre', 'golem', 'chimere', 'leviathan'],
+    enemyPool: ['golem','wyrm','cultist', 'spectre', 'corrupted_knight', 'ancien_spirit', 'ghost', 'nain'],
     dungeons: [
-      { id: 'ruins_halls_1', name: 'Ancient Halls', floors: 5, bossTemplateId: 'wyrm' },
-      { id: 'ruins_depths_2', name: 'Underground', floors: 5, bossTemplateId: 'golem' },
+      { id: 'ruins_the_forgotten_sanctum_1', name: 'The Forgotten Sanctum', floors: 5, bossTemplateId: 'ancient_guardian' },
+      { id: 'ruins_the_ruins_heart_2', name: 'The Ruins Heart', floors: 5, bossTemplateId: 'hydra' },
     ],
+    rooms: [
+        { id: 'ruins_the_forgotten_sanctum_1_floor_1', name: '', enemyPool: ['cultist','ghost', 'wyrm'] },
+        { id: 'ruins_the_forgotten_sanctum_1_floor_2', name: '', enemyPool: ['golem', 'ghost', 'cultist'] },
+        { id: 'ruins_the_forgotten_sanctum_1_floor_3', name: '', enemyPool: ['wyrm','cultist'] },
+        { id: 'ruins_the_forgotten_sanctum_1_floor_4', name: '', enemyPool: ['golem','wyrm'] },
+        { id: 'ruins_the_forgotten_sanctum_1_floor_5', name: '', enemyPool: ['ancient_guardian'], isBossRoom: true },
+        { id: 'ruins_underground_2_floor_1', name: '', enemyPool: ['golem','corrupted_knight'] },
+        { id: 'ruins_underground_2_floor_2', name: '', enemyPool: ['corrupted_knight','nain'] },
+        { id: 'ruins_underground_2_floor_3', name: '', enemyPool: ['ancien_spirit','corrupted_knight', 'nain'] },
+        { id: 'ruins_underground_2_floor_4', name: '', enemyPool: ['nain','corrupted_knight', 'ancien_spirit', 'golem'] },
+        { id: 'ruins_underground_2_floor_5', name: '', enemyPool: ['hydra'], isBossRoom: true },
+      ],
   },
   {
-    id: 'craters_scars',
-    name: 'Scourge Craters',
-    theme: 'scars',
+    id: 'volcano',
+    name: 'Volcano',
+    theme: 'volcano',
     dungeonThreshold: 15,
     minLevel: 71,
     allowedTiers: ['epic', 'legendary'],
     loot: 'loot: Epic - Legendary',
     logColor: '#e74c3c',
-    enemyPool: ['ogre','magma','wyrm','spectre', 'seigneur', 'troll_cavernes', 'phoenix'],
+    enemyPool: ['magma_beast','fire_drake','phoenix','lava_golem', "will_o'_the_wisp", 'leviathan'],
     dungeons: [
-      { id: 'scars_delve_1', name: 'Scourge Depths', floors: 5, bossTemplateId: 'seigneur', requiredLevel: 71 },
-      { id: 'scars_core_1', name: 'Core', floors: 5, bossTemplateId: 'seigneur', requiredLevel: 71 },
+      { id: 'volcano_molten_core_1', name: 'Molten Core', floors: 5, bossTemplateId: 'phoenix_lord', requiredLevel: 71 },
+      { id: 'volcano_dragon_crucible_1', name: 'Dragon Crucible', floors: 5, bossTemplateId: 'ancient_dragon', requiredLevel: 71 },
     ],
+    rooms: [
+        { id: 'volcano_molten_core_1_floor_1', name: '', enemyPool: ["fire_drake","will_o'_the_wisp", "magma_beast"] },
+        { id: 'volcano_molten_core_1_floor_2', name: '', enemyPool: ["will_o'_the_wisp", "magma_beast", "leviathan"] },
+        { id: 'volcano_molten_core_1_floor_3', name: '', enemyPool: ["fire_drake", "leviathan"] },
+        { id: 'volcano_molten_core_1_floor_4', name: '', enemyPool: ["leviathan"] },
+        { id: 'volcano_molten_core_1_floor_5', name: '', enemyPool: ['phoenix_lord'], isBossRoom: true },
+        { id: 'volcano_dragon_crucible_2_floor_1', name: '', enemyPool: ['lava_golem','ancient_drake'] },
+        { id: 'volcano_dragon_crucible_2_floor_2', name: '', enemyPool: ['phoenix','ancient_drake'] },
+        { id: 'volcano_dragon_crucible_2_floor_3', name: '', enemyPool: ['silver_dragon','ancient_drake', 'lava_golem'] },
+        { id: 'volcano_dragon_crucible_2_floor_4', name: '', enemyPool: ['silver_dragon','ancient_drake', 'lava_golem', 'phoenix'] },
+        { id: 'volcano_dragon_crucible_2_floor_5', name: '', enemyPool: ['ancient_dragon'], isBossRoom: true },
+      ],
   },
 ];
 
 let customMaps: MapTemplate[] = [];
 
 // Small default pool used when no map is selected (the 'spawn' area)
-const SPAWN_POOL: string[] = ['cockroach'];
+const SPAWN_POOL: string[] = ['cockroach', 'rat', 'bat', 'ants'];
 
 export function getSpawnPool() {
   return [...SPAWN_POOL];
