@@ -324,10 +324,13 @@ export function useGameState() {
     } catch (e) {}
 
 
+    // sanitize chosen.name: remove any explicit rarity words from template names
+    const sanitizedBaseName = (chosen.name || '').replace(/\b(common|rare|epic|legendary|mythic)\b/gi, '').trim();
+    const displayName = sanitizedBaseName.length > 0 ? sanitizedBaseName : chosen.name;
     const item: Item = {
       id: uid(),
       slot: chosen.slot,
-      name: `${chosen.name} (${finalRarity})`,
+      name: `${displayName} (${finalRarity})`,
       rarity: finalRarity,
       category: (chosen as any).category,
       stats: scaleStats(chosen.stats, finalRarity),

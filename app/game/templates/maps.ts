@@ -44,8 +44,8 @@ const defaultMaps: MapTemplate[] = [
     theme: 'forest',
     dungeonThreshold: 15,
     minLevel: 10,
-    allowedTiers: ['common'],
-    loot: 'loot: Common',
+    allowedTiers: ['common', 'rare'],
+    loot: 'loot: Common - Rare',
     logColor: '#2ecc71',
     enemyPool: ['wolf', 'mushroom', 'bee', 'crow', 'butterfly'],
     dungeons: [

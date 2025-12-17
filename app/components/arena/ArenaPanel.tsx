@@ -64,7 +64,7 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
           {pickups.map((p) => (
             <div
               key={p.id}
-              className={`pickup ${p.kind === 'gold' ? 'gold' : 'item'} spawn`}
+              className={`pickup ${p.kind === 'gold' ? 'gold' : `item ${p.item?.rarity ?? ''}`} spawn`}
                   onClick={() => {
                 try {
                   const ok = collectPickup ? collectPickup(p.id, (m) => { try { pushLog && pushLog(m); } catch (e) {} }) : false;
