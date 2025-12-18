@@ -58,6 +58,13 @@ export function useGameState() {
   const [pickups, setPickups] = useState<Pickup[]>([]);
   const pickupsRef = useRef<Pickup[]>(pickups);
   useEffect(() => { pickupsRef.current = pickups; }, [pickups]);
+
+  // consecutive wins (cleared encounters without dying)
+  const [consecWins, setConsecWins] = useState<number>(0);
+  const consecWinsRef = useRef<number>(consecWins);
+  useEffect(() => { consecWinsRef.current = consecWins; }, [consecWins]);
+  const incConsecWins = () => setConsecWins((s) => (s || 0) + 1);
+  const resetConsecWins = () => setConsecWins(0);
   // create or reuse a shared collected-pickup ref on the global (prevents double-collect on fast clicks)
   let collectedRef: React.MutableRefObject<Set<string>>;
   try {
@@ -949,6 +956,8 @@ export function useGameState() {
     def: p.def,
     speed: p.speed,
     gold: p.gold,
+    // Do NOT persist current consecutive wins across page reloads — always reset on load
+    consecWins: 0,
     unlockedTiers: p.unlockedTiers ?? ['common'],
   });
 
@@ -995,7 +1004,10 @@ export function useGameState() {
       }
 
       if (save.player) {
-        setPlayer((p) => ({ ...p, ...save.player } as Player));
+        // Apply saved player data but reset transient fields like consecutive wins
+        const sp = { ...save.player, consecWins: 0 };
+        setPlayer((p) => ({ ...p, ...sp } as Player));
+        try { setConsecWins(0); } catch (e) {}
       }
       if (Array.isArray(save.inventory)) {
         // when loading inventory, we'll apply it but remove any items that are currently equipped
@@ -1038,6 +1050,6 @@ export function useGameState() {
 
   const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, saveCoreGame, loadGame, isInCombat, progression, allocate: allocate, deallocate: deallocate } as const;
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, saveCoreGame, loadGame, isInCombat, progression, allocate: allocate, deallocate: deallocate, consecWins, incConsecWins, resetConsecWins } as const;
 }
 

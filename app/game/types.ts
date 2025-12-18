@@ -46,6 +46,8 @@ export type Player = {
   gold?: number;
   // unlocked item tiers for crafting/forge and other gating (e.g. ['common','rare'])
   unlockedTiers?: Rarity[];
+  // consecutive wins without dying
+  consecWins?: number;
 };
 
 export type ItemTemplate = Omit<Item, "id" | "rarity"> & { weight?: number; rarity?: Rarity };

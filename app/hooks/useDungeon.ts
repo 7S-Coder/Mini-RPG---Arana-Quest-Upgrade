@@ -26,6 +26,8 @@ export function useDungeon(opts: {
   const { selectedMapId, pushLog, addEffect, addToast, createCustomItem, addXp, setPlayer, encounterSessionRef, startEncounterRef } = opts;
 
   const dungeonProgressRef = useRef<DungeonProgress>({ activeMapId: null, activeDungeonIndex: null, activeDungeonId: null, remaining: 0, fightsRemainingBeforeDungeon: 0, lastProcessedSession: undefined, lastDungeonProcessedSession: undefined, suppressUntilSession: undefined });
+  // guard to prevent scheduling the startEncounter twice for the same activation
+  const schedulingRef = useRef<boolean>(false);
   const [dungeonUI, setDungeonUI] = useState(() => ({ ...dungeonProgressRef.current }));
   const syncDungeonUI = () => setDungeonUI({ ...dungeonProgressRef.current });
 
@@ -57,6 +59,7 @@ export function useDungeon(opts: {
 
   function processEndEncounter(args: { currentMap: any; player: any; opts?: any; msg?: string }) {
     try {
+      try { console.debug('[useDungeon] processEndEncounter entered', { currentSession: encounterSessionRef.current, activeMapId: dungeonProgressRef.current.activeMapId, lastProcessedSession: dungeonProgressRef.current.lastProcessedSession, lastDungeonProcessedSession: dungeonProgressRef.current.lastDungeonProcessedSession, suppressUntilSession: dungeonProgressRef.current.suppressUntilSession, fightsRemainingBeforeDungeon: dungeonProgressRef.current.fightsRemainingBeforeDungeon }); } catch(e) {}
       const { currentMap, player, opts, msg } = args;
       const wasDungeonActiveAtStart = (dungeonProgressRef.current.activeDungeonIndex != null && dungeonProgressRef.current.activeMapId === currentMap?.id);
       const currentSession = encounterSessionRef.current || 0;
@@ -97,18 +100,24 @@ export function useDungeon(opts: {
 
       // farming progress: decrement fightsRemainingBeforeDungeon when applicable
       if (currentMap?.dungeons && dungeonProgressRef.current.activeMapId === currentMap.id && (dungeonProgressRef.current.activeDungeonIndex == null) && resultType === 'clear') {
+        try { console.debug('[useDungeon] farming-check', { currentSession, suppressUntil: dungeonProgressRef.current.suppressUntilSession, lastProcessed: dungeonProgressRef.current.lastProcessedSession, before: dungeonProgressRef.current.fightsRemainingBeforeDungeon }); } catch(e) {}
         if (dungeonProgressRef.current.suppressUntilSession && currentSession <= (dungeonProgressRef.current.suppressUntilSession || 0)) {
+          try { console.debug('[useDungeon] farming-check skipped due to suppressUntilSession', { currentSession, suppressUntil: dungeonProgressRef.current.suppressUntilSession }); } catch(e) {}
           // skip
+        } else if (dungeonProgressRef.current.lastProcessedSession === currentSession) {
+          try { console.debug('[useDungeon] farming-check skipped due to lastProcessedSession equal to currentSession', { currentSession }); } catch(e) {}
         } else if (dungeonProgressRef.current.lastProcessedSession !== currentSession) {
           dungeonProgressRef.current.lastProcessedSession = currentSession;
           const before = dungeonProgressRef.current.fightsRemainingBeforeDungeon || 0;
           dungeonProgressRef.current.fightsRemainingBeforeDungeon = Math.max(0, before - 1);
           const after = dungeonProgressRef.current.fightsRemainingBeforeDungeon || 0;
           const remaining = after;
+          try { console.debug('[useDungeon] farming-decrement', { before, after, currentSession }); } catch(e) {}
           syncDungeonUI();
           if (remaining <= 0) {
             const idx = Math.floor(Math.random() * (currentMap.dungeons?.length || 1));
             const d = currentMap?.dungeons ? currentMap.dungeons[idx] : undefined;
+            try { console.debug('[useDungeon] activating dungeon', { idx, dungeonId: d?.id, currentSession: encounterSessionRef.current, lastProcessed: dungeonProgressRef.current.lastProcessedSession, suppressUntil: dungeonProgressRef.current.suppressUntilSession, schedulingLocked: schedulingRef.current }); } catch (e) {}
             dungeonProgressRef.current.activeDungeonIndex = idx;
             dungeonProgressRef.current.activeDungeonId = d?.id ?? null;
             dungeonProgressRef.current.remaining = d?.floors ?? 0;
@@ -116,11 +125,21 @@ export function useDungeon(opts: {
             const dungeonName = d?.name ?? d?.id ?? 'dungeon';
             syncDungeonUI();
             try {
-              window.setTimeout(() => {
-                try {
-                  startEncounterRef.current && startEncounterRef.current();
-                } catch (e) { console.error('[DEBUG] scheduled startEncounter error', e); }
-              }, 50);
+              // Prevent double-scheduling: if already scheduled for this activation, skip
+              if (!schedulingRef.current) {
+                try { console.debug('[useDungeon] scheduling startEncounter (not previously scheduled)'); } catch (e) {}
+                schedulingRef.current = true;
+                window.setTimeout(() => {
+                  try {
+                    try { console.debug('[useDungeon] invoking startEncounterRef.current', { schedulingRef: schedulingRef.current, session: encounterSessionRef.current }); } catch (e) {}
+                    startEncounterRef.current && startEncounterRef.current();
+                  } catch (e) { console.error('[DEBUG] scheduled startEncounter error', e); }
+                  // clear scheduling guard after the scheduled call
+                  schedulingRef.current = false;
+                }, 50);
+              } else {
+                try { console.debug('[useDungeon] startEncounter already scheduled, skipping duplicate'); } catch (e) {}
+              }
             } catch (e) { console.error('[DEBUG] scheduling startEncounter error', e); }
             pushLog(`You enter the dungeon '${dungeonName}' on ${currentMap.name} — good luck!`);
             try { addEffect && addEffect({ type: 'dungeon', text: `Entrance: ${dungeonName}`, target: 'player' }); } catch (e) {}

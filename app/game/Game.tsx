@@ -22,7 +22,7 @@ import { useToasts } from "../hooks/useToasts";
 import { useDungeon } from "../hooks/useDungeon";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical, progression, allocate, deallocate, saveCoreGame } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins } = useGameState();
 
   // modal system (generalized)
   const [modalName, setModalName] = useState<string | null>(null);
@@ -80,6 +80,8 @@ export default function Game() {
   const logClearRef = useRef<number | null>(null);
   const encounterCountRef = useRef<number>(0);
   const encounterSessionRef = useRef<number>(0);
+  const lastEncounterKeyRef = useRef<string | null>(null);
+  const lastEncounterTimestampRef = useRef<number>(0);
   const startEncounterRef = useRef<() => void>(() => {});
 
   // useLogs hook will be used below (extracted)
@@ -130,6 +132,20 @@ export default function Game() {
   // toast/log hooks used instead of local state
 
   const startEncounter = useCallback(() => {
+    // idempotency guard: avoid double-invoking startEncounter for the same dungeon/room
+    try {
+      const dp = dungeonProgressRef.current || {};
+      const key = `${selectedMapId ?? 'none'}|${dp.activeDungeonId ?? 'none'}|${dp.activeDungeonIndex ?? -1}|${dp.remaining ?? -1}`;
+      const now = Date.now();
+      if (lastEncounterKeyRef.current === key && (now - (lastEncounterTimestampRef.current || 0)) < 2000) {
+        try { console.debug('[DEBUG] startEncounter suppressed duplicate', { key, since: now - (lastEncounterTimestampRef.current || 0) }); } catch (e) {}
+        return;
+      }
+      // mark attempt time immediately so concurrent calls get suppressed
+      lastEncounterKeyRef.current = key;
+      lastEncounterTimestampRef.current = now;
+    } catch (e) {}
+
     // prevent spawning if already in combat (use ref to avoid stale closure)
     if (inCombatRef.current) {
       pushLog("You're already in combat.");
@@ -157,8 +173,13 @@ export default function Game() {
 
     const isDungeonActive = dungeonProgressRef.current.activeMapId === selectedMap?.id && (dungeonProgressRef.current.remaining || 0) > 0;
     if (isDungeonActive) {
+      // compute current floor index (1..floors) so room ids match template naming
+      const remaining = dungeonProgressRef.current.remaining || 0;
+      const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
+      const def = (idx !== null && selectedMap?.dungeons) ? selectedMap.dungeons[idx] : undefined;
+      const currentFloor = def ? (def.floors - remaining + 1) : remaining;
       // if this is the final floor, spawn boss only, otherwise spawn 4 mobs
-      if ((dungeonProgressRef.current.remaining || 0) === 1) {
+      if (remaining === 1) {
         count = 1; // boss only
       } else {
         count = 4;
@@ -174,17 +195,19 @@ export default function Game() {
         // boss floor: spawn boss once
         const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
         const bossId = (idx !== null && selectedMap?.dungeons && selectedMap.dungeons[idx]) ? selectedMap.dungeons[idx].bossTemplateId : undefined;
+        const remaining = dungeonProgressRef.current.remaining || 0;
+        const def = (idx !== null && selectedMap?.dungeons) ? selectedMap.dungeons[idx] : undefined;
+        const currentFloor = def ? (def.floors - remaining + 1) : remaining;
         if (bossId) {
-          // ensure boss template is listed in the map's enemyPool
+          // allow boss spawn if the template exists (bosses may be outside the generic pool)
           const bossTpl = ENEMY_TEMPLATES.find((t) => t.templateId === bossId);
-          const bossBelongs = bossTpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(bossId);
-          if (bossBelongs) {
+          if (bossTpl) {
             const dungeonId = (selectedMap?.dungeons && typeof idx === 'number') ? selectedMap.dungeons[idx].id : undefined;
-            const roomId = dungeonId ? `${dungeonId}_floor_1` : undefined;
+            const roomId = dungeonId ? `${dungeonId}_floor_${currentFloor}` : undefined;
             spawnEnemy(bossId, undefined, { isBoss: true, roomId });
             spawned++;
           } else {
-            console.log('[DEBUG] boss template not in map.enemyPool, skipping spawn', { bossId, selectedMapId, bossTpl, pool: selectedMap?.enemyPool });
+            console.log('[DEBUG] boss template not found, skipping boss spawn', { bossId, selectedMapId, pool: selectedMap?.enemyPool });
           }
         }
       } else {
@@ -192,7 +215,10 @@ export default function Game() {
           if (isDungeonActive && dungeonProgressRef.current.activeDungeonId) {
             const dungeonId = dungeonProgressRef.current.activeDungeonId;
             const remaining = dungeonProgressRef.current.remaining || 0;
-            const roomId = `${dungeonId}_floor_${remaining}`;
+            const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
+            const def = (idx !== null && selectedMap?.dungeons) ? selectedMap.dungeons[idx] : undefined;
+            const currentFloor = def ? (def.floors - remaining + 1) : remaining;
+            const roomId = `${dungeonId}_floor_${currentFloor}`;
             const tid = pickEnemyFromRoom(selectedMapId ?? undefined, roomId);
             if (tid) {
               // If this room is defined, allow it even if not present in map.enemyPool
@@ -255,12 +281,20 @@ export default function Game() {
     const areaName = selectedMap?.name ?? 'Spawn';
     pushLog(`New encounter in ${areaName}: ${spawned} enemy(s) appeared.`);
     console.log('[DEBUG] spawned encounter', { session: encounterSessionRef.current, requested: count, spawned, isDungeonActive, dungeonProgress: dungeonProgressRef.current });
+    // record start time for this encounter
+    lastEncounterTimestampRef.current = Date.now();
     setInCombat(true);
   }, [spawnEnemy, pushLog, selectedMapId]);
 
   // expose the startEncounter function to the dungeon hook so it can schedule auto-enter
   useEffect(() => {
-    try { startEncounterRef.current = startEncounter as any; } catch (e) {}
+    try {
+      // wrap assignment so any invocation via the ref is logged
+      startEncounterRef.current = (() => {
+        try { console.debug('[startEncounterRef] invoked via ref', { session: encounterSessionRef.current, selectedMapId }); } catch (e) {}
+        try { return startEncounter(); } catch (e) { console.error('[startEncounterRef] startEncounter threw', e); }
+      }) as any;
+    } catch (e) {}
   }, [startEncounter]);
 
 
@@ -288,6 +322,10 @@ export default function Game() {
     if (opts?.type === 'death') {
       try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
       try { addToast(msg ? String(msg) : 'You died.', 'error', 4000); } catch (e) {}
+      try { resetConsecWins && resetConsecWins(); } catch (e) {}
+    }
+    else if (opts?.type !== 'flee') {
+      try { incConsecWins && incConsecWins(); console.debug('[Game] incremented consecWins', { consecWins }); } catch (e) {}
     }
     if (msg) pushLog(msg);
     // Track farming progress: if player is on a map that has dungeons but the dungeon
@@ -366,7 +404,7 @@ export default function Game() {
         </aside>
 
         <main className="center-area">
-          <div className="center-top">
+          <div className="center-top" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button
               className={`btn primary ${inCombat ? "disabled" : ""}`}
               onClick={startEncounter}
@@ -374,6 +412,17 @@ export default function Game() {
             >
               {inCombat ? "In combat..." : (selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null ? "Next room" : "Go to Arena")}
             </button>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+              {/* Flame button: only visible when player has a streak > 5 */}
+              { (consecWins || 0) > 5 && (consecWins || 0) < 15 ? (
+                <button style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 12, background: 'linear-gradient(90deg,#7f0b0b,#b21b1b)', color: '#fff', boxShadow: '0 8px 20px rgba(178,27,27,0.35)', border: '1px solid rgba(255,80,80,0.12)', cursor: 'pointer', fontWeight: 900 }}>
+                  <span style={{ fontSize: 16, lineHeight: 1, color: '#ffd9b3' }}>🔥</span>
+                  <span style={{ fontSize: 13 }}> <span style={{ color: '#ffd37a' }}>{consecWins}</span></span>
+                </button>
+              ) : null }
+
+              
+            </div>
             {/* dungeon banner when active */}
             {selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && (dungeonUI.activeDungeonIndex != null) && (
               (() => {
