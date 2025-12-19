@@ -38,118 +38,144 @@ export type MapTemplate = {
 };
 
 const defaultMaps: MapTemplate[] = [
+  // MAP 0 — Spawn/Initiation
+  {
+    id: 'spawn',
+    name: 'Spawn Area',
+    theme: 'spawn',
+    logColor: '#cccccc',
+    dungeonThreshold: 999, // No dungeons
+    minLevel: 1,
+    allowedTiers: ['common', 'uncommon'],
+    loot: 'loot: Common - Uncommon',
+    enemyPool: ['slime', 'rat_spawn', 'butterfly_spawn'],
+  },
+
+  // MAP 1 — Forest
   {
     id: 'forest',
     name: 'Forest',
     theme: 'forest',
-    dungeonThreshold: 15,
-    minLevel: 10,
-    allowedTiers: ['common', 'rare'],
-    loot: 'loot: Common - Rare',
     logColor: '#2ecc71',
-    enemyPool: ['wolf', 'mushroom', 'bee', 'crow', 'butterfly'],
+    dungeonThreshold: 10,
+    minLevel: 6,
+    allowedTiers: ['common', 'uncommon', 'rare'],
+    loot: 'loot: Common - Uncommon - Rare',
+    enemyPool: ['rat', 'butterfly', 'wolf', 'ant', 'bee', 'mushroom', 'crow', 'monkey'],
+    requiredKeyFragments: [],
     dungeons: [
-      { id: 'forest_the_beehive_1', name: 'The Beehive', floors: 5, bossTemplateId: 'queen_bee' },
-      { id: 'the_celestial_tree', name: 'The Celestial Tree', floors: 5, bossTemplateId: 'quetzal' },
+      { id: 'beehive', name: 'The Beehive', floors: 5, bossTemplateId: 'queen_bee' },
+      { id: 'celestial_tree', name: 'The Celestial Tree', floors: 5, bossTemplateId: 'quetzal' },
     ],
-      // Example fixed rooms for the `forest` map — each room id follows the pattern
-      // <dungeonId>_floor_<n>. When a dungeon is active, the game will attempt to
-      // pick an enemy from the corresponding room (deterministic encounters).
-      rooms: [
-        { id: 'forest_the_beehive_floor_1', name: '', enemyPool: ['ants','mushroom'] },
-        { id: 'forest_the_beehive_floor_2', name: '', enemyPool: ['bee', 'big_bee'] },
-        { id: 'forest_the_beehive_floor_3', name: '', enemyPool: ['big_bee','mushroom'] },
-        { id: 'forest_the_beehive_floor_4', name: '', enemyPool: ['big_bee','mushroom', 'bee'] },
-        { id: 'forest_the_beehive_floor_5', name: '', enemyPool: ['queen_bee'], isBossRoom: true },
-
-        { id: 'forest_the_celestial_tree_floor_1', name: 'Gloomy Grotto', enemyPool: ['ants','crow'] },
-        { id: 'forest_the_celestial_tree_floor_2', name: 'Damp Tunnel', enemyPool: ['crow','butterfly'] },
-        { id: 'forest_the_celestial_tree_floor_3', name: 'Echoing Chamber', enemyPool: ['monkey','butterfly', 'crow'] },
-        { id: 'forest_the_celestial_tree_floor_4', name: 'Stalagmite Path', enemyPool: ['monkey','butterfly'] },
-        { id: 'forest_the_celestial_tree_floor_5', name: 'Monocle', enemyPool: ['quetzal'], isBossRoom: true },
-      ],
+    rooms: [
+      // Beehive
+      { id: 'forest_beehive_floor_1', enemyPool: ['ant', 'mushroom'] },
+      { id: 'forest_beehive_floor_2', enemyPool: ['bee', 'big_bee'] },
+      { id: 'forest_beehive_floor_3', enemyPool: ['big_bee', 'mushroom'] },
+      { id: 'forest_beehive_floor_4', enemyPool: ['big_bee', 'mushroom', 'bee'] },
+      { id: 'forest_beehive_floor_5', enemyPool: ['queen_bee'], isBossRoom: true },
+      // Celestial Tree
+      { id: 'forest_celestial_tree_floor_1', enemyPool: ['ant', 'crow'] },
+      { id: 'forest_celestial_tree_floor_2', enemyPool: ['crow', 'butterfly'] },
+      { id: 'forest_celestial_tree_floor_3', enemyPool: ['monkey', 'butterfly', 'crow'] },
+      { id: 'forest_celestial_tree_floor_4', enemyPool: ['monkey', 'butterfly'] },
+      { id: 'forest_celestial_tree_floor_5', enemyPool: ['quetzal'], isBossRoom: true },
+    ],
   },
+
+  // MAP 2 — Caves
   {
     id: 'caves',
     name: 'Caves',
     theme: 'caves',
-    dungeonThreshold: 15,
-    minLevel: 31,
-    allowedTiers: ['common', 'rare', 'epic'],
-    loot: 'loot: Common - Rare - Epic',
-      logColor: '#95a5a6',
-    enemyPool: ['salamander','snail','snake','bear', 'wood_fairy'],
-    // requires both fragments to unlock
-    requiredKeyFragments: ['Cave Key fragment A', 'Cave Key fragment B'],
+    logColor: '#95a5a6',
+    dungeonThreshold: 10,
+    minLevel: 16,
+    allowedTiers: ['uncommon', 'rare', 'epic'],
+    loot: 'loot: Uncommon - Rare - Epic',
+    enemyPool: ['bat', 'snail', 'salamander', 'snake', 'wood_fairy', 'bear'],
+    requiredKeyFragments: ['Forest Key A', 'Forest Key B'],
     dungeons: [
-      { id: 'caves_the_underground_cave_1', name: 'The Underground Cave', floors: 5, bossTemplateId: 'rabid_hyenas' },
-      { id: 'caves_echoing_depths_2', name: 'Echoing Depths', floors: 5, bossTemplateId: 'cave_stalker' },
+      { id: 'underground_cave', name: 'The Underground Cave', floors: 5, bossTemplateId: 'rabid_hyenas' },
+    ],
+    rooms: [
+      { id: 'caves_underground_cave_floor_1', enemyPool: ['bat', 'batwan'] },
+      { id: 'caves_underground_cave_floor_2', enemyPool: ['batwan', 'salamander'] },
+      { id: 'caves_underground_cave_floor_3', enemyPool: ['salamander', 'wood_fairy'] },
+      { id: 'caves_underground_cave_floor_4', enemyPool: ['wood_fairy', 'snake'] },
+      { id: 'caves_underground_cave_floor_5', enemyPool: ['rabid_hyenas'], isBossRoom: true },
     ],
   },
+
+  // MAP 3 — Ruins
   {
     id: 'ruins',
     name: 'Ruins',
     theme: 'ruins',
-    dungeonThreshold: 15,
-    minLevel: 51,
+    logColor: '#9b59b6',
+    dungeonThreshold: 10,
+    minLevel: 30,
     allowedTiers: ['rare', 'epic', 'legendary'],
     loot: 'loot: Rare - Epic - Legendary',
-    logColor: '#9b59b6',
-    enemyPool: ['golem','wyrm','cultist', 'spectre', 'corrupted_knight', 'ancien_spirit', 'ghost', 'nain'],
+    enemyPool: ['skeleton', 'cursed_knight', 'shadow_mage', 'gargoyle', 'wraith', 'ancient_sentinel'],
+    requiredKeyFragments: ['Caves Key A', 'Caves Key B'],
     dungeons: [
-      { id: 'ruins_the_forgotten_sanctum_1', name: 'The Forgotten Sanctum', floors: 5, bossTemplateId: 'ancient_guardian' },
-      { id: 'ruins_the_ruins_heart_2', name: 'The Ruins Heart', floors: 5, bossTemplateId: 'hydra' },
+      { id: 'forgotten_temple', name: 'Forgotten Temple', floors: 5, bossTemplateId: 'ancient_guardian' },
+      { id: 'library_of_ashes', name: 'Library of Ashes', floors: 5, bossTemplateId: 'forgotten_keeper' },
     ],
-    // fragments required to unlock the Ruins (drop in previous map)
-    requiredKeyFragments: ['Ruins Key fragment A', 'Ruins Key fragment B'],
     rooms: [
-        { id: 'ruins_the_forgotten_sanctum_1_floor_1', name: '', enemyPool: ['cultist','ghost', 'wyrm'] },
-        { id: 'ruins_the_forgotten_sanctum_1_floor_2', name: '', enemyPool: ['golem', 'ghost', 'cultist'] },
-        { id: 'ruins_the_forgotten_sanctum_1_floor_3', name: '', enemyPool: ['wyrm','cultist'] },
-        { id: 'ruins_the_forgotten_sanctum_1_floor_4', name: '', enemyPool: ['golem','wyrm'] },
-        { id: 'ruins_the_forgotten_sanctum_1_floor_5', name: '', enemyPool: ['ancient_guardian'], isBossRoom: true },
-        { id: 'ruins_underground_2_floor_1', name: '', enemyPool: ['golem','corrupted_knight'] },
-        { id: 'ruins_underground_2_floor_2', name: '', enemyPool: ['corrupted_knight','nain'] },
-        { id: 'ruins_underground_2_floor_3', name: '', enemyPool: ['ancien_spirit','corrupted_knight', 'nain'] },
-        { id: 'ruins_underground_2_floor_4', name: '', enemyPool: ['nain','corrupted_knight', 'ancien_spirit', 'golem'] },
-        { id: 'ruins_underground_2_floor_5', name: '', enemyPool: ['hydra'], isBossRoom: true },
-      ],
+      // Forgotten Temple
+      { id: 'ruins_forgotten_temple_floor_1', enemyPool: ['skeleton', 'shadow_mage'] },
+      { id: 'ruins_forgotten_temple_floor_2', enemyPool: ['cursed_knight', 'skeleton'] },
+      { id: 'ruins_forgotten_temple_floor_3', enemyPool: ['cursed_knight', 'gargoyle'] },
+      { id: 'ruins_forgotten_temple_floor_4', enemyPool: ['gargoyle', 'wraith'] },
+      { id: 'ruins_forgotten_temple_floor_5', enemyPool: ['ancient_guardian'], isBossRoom: true },
+      // Library of Ashes
+      { id: 'ruins_library_of_ashes_floor_1', enemyPool: ['shadow_mage', 'skeleton'] },
+      { id: 'ruins_library_of_ashes_floor_2', enemyPool: ['shadow_mage', 'wraith'] },
+      { id: 'ruins_library_of_ashes_floor_3', enemyPool: ['wraith', 'ancient_sentinel'] },
+      { id: 'ruins_library_of_ashes_floor_4', enemyPool: ['ancient_sentinel', 'gargoyle'] },
+      { id: 'ruins_library_of_ashes_floor_5', enemyPool: ['forgotten_keeper'], isBossRoom: true },
+    ],
   },
+
+  // MAP 4 — Volcano
   {
     id: 'volcano',
     name: 'Volcano',
     theme: 'volcano',
-    dungeonThreshold: 15,
-    minLevel: 71,
+    logColor: '#e74c3c',
+    dungeonThreshold: 10,
+    minLevel: 50,
     allowedTiers: ['epic', 'legendary', 'mythic'],
     loot: 'loot: Epic - Legendary - Mythic',
-    logColor: '#e74c3c',
-    enemyPool: ['magma_beast','fire_drake','phoenix','lava_golem','will_o_the_wisp','leviathan'],
+    enemyPool: ['fire_imp', 'lava_golem', 'magma_serpent', 'ash_phoenix', 'flame_titan'],
+    requiredKeyFragments: ['Ruins Key A', 'Ruins Key B'],
     dungeons: [
-      { id: 'volcano_molten_core_1', name: 'Molten Core', floors: 5, bossTemplateId: 'phoenix_lord', requiredLevel: 71 },
-      { id: 'volcano_dragon_crucible_1', name: 'Dragon Crucible', floors: 5, bossTemplateId: 'ancient_dragon', requiredLevel: 71 },
+      { id: 'infernal_abyss', name: 'Infernal Abyss', floors: 5, bossTemplateId: 'infernal_warden' },
+      { id: 'ashen_citadel', name: 'Ashen Citadel', floors: 5, bossTemplateId: 'avatar_of_cinders' },
     ],
-    // fragments required to unlock the Volcano
-    requiredKeyFragments: ['Volcano Key fragment A', 'Volcano Key fragment B'],
     rooms: [
-        { id: 'volcano_molten_core_1_floor_1', name: '', enemyPool: ["fire_drake","will_o_the_wisp", "magma_beast"] },
-        { id: 'volcano_molten_core_1_floor_2', name: '', enemyPool: ["will_o_the_wisp", "magma_beast", "leviathan"] },
-        { id: 'volcano_molten_core_1_floor_3', name: '', enemyPool: ["fire_drake", "leviathan"] },
-        { id: 'volcano_molten_core_1_floor_4', name: '', enemyPool: ["leviathan"] },
-        { id: 'volcano_molten_core_1_floor_5', name: '', enemyPool: ['phoenix_lord'], isBossRoom: true },
-        { id: 'volcano_dragon_crucible_2_floor_1', name: '', enemyPool: ['lava_golem','ancient_drake'] },
-        { id: 'volcano_dragon_crucible_2_floor_2', name: '', enemyPool: ['phoenix','ancient_drake'] },
-        { id: 'volcano_dragon_crucible_2_floor_3', name: '', enemyPool: ['silver_dragon','ancient_drake', 'lava_golem'] },
-        { id: 'volcano_dragon_crucible_2_floor_4', name: '', enemyPool: ['silver_dragon','ancient_drake', 'lava_golem', 'phoenix'] },
-        { id: 'volcano_dragon_crucible_2_floor_5', name: '', enemyPool: ['ancient_dragon'], isBossRoom: true },
-      ],
+      // Infernal Abyss
+      { id: 'volcano_infernal_abyss_floor_1', enemyPool: ['fire_imp', 'lava_golem'] },
+      { id: 'volcano_infernal_abyss_floor_2', enemyPool: ['lava_golem', 'magma_serpent'] },
+      { id: 'volcano_infernal_abyss_floor_3', enemyPool: ['magma_serpent', 'ash_phoenix'] },
+      { id: 'volcano_infernal_abyss_floor_4', enemyPool: ['ash_phoenix', 'flame_titan'] },
+      { id: 'volcano_infernal_abyss_floor_5', enemyPool: ['infernal_warden'], isBossRoom: true },
+      // Ashen Citadel
+      { id: 'volcano_ashen_citadel_floor_1', enemyPool: ['fire_imp', 'magma_serpent'] },
+      { id: 'volcano_ashen_citadel_floor_2', enemyPool: ['lava_golem', 'ash_phoenix'] },
+      { id: 'volcano_ashen_citadel_floor_3', enemyPool: ['magma_serpent', 'flame_titan'] },
+      { id: 'volcano_ashen_citadel_floor_4', enemyPool: ['ash_phoenix', 'flame_titan'] },
+      { id: 'volcano_ashen_citadel_floor_5', enemyPool: ['avatar_of_cinders'], isBossRoom: true },
+    ],
   },
 ];
 
 let customMaps: MapTemplate[] = [];
 
 // Small default pool used when no map is selected (the 'spawn' area)
-const SPAWN_POOL: string[] = ['cockroach', 'rat', 'bat', 'ants'];
+const SPAWN_POOL: string[] = ['slime', 'rat_spawn', 'butterfly_spawn'];
 
 export function getSpawnPool() {
   return [...SPAWN_POOL];

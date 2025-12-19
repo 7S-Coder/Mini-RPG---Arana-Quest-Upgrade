@@ -20,6 +20,7 @@ type Props = {
 
 const RARITY_COLOR: Record<string, string> = {
   common: '#ddd',
+  uncommon: '#2ecc71',
   rare: '#6fb3ff',
   epic: '#b47cff',
   legendary: '#ffd16b',

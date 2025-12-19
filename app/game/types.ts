@@ -1,4 +1,4 @@
-export type Rarity = "common" | "rare" | "epic" | "legendary" | "mythic";
+export type Rarity = "common" | "uncommon" | "rare" | "epic" | "legendary" | "mythic";
 
 export type EquipmentSlot = "familiar" | "boots" | "belt" | "hat" | "chestplate" | "ring" | "weapon" | "key";
 

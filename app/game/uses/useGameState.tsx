@@ -5,6 +5,12 @@ import { uid, clampToViewport } from "../utils";
 import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "../templates/items";
 import { isTierAllowedOnMap, getMapById, getMaps } from "../templates/maps";
 import { ENEMY_TEMPLATES } from "../templates/enemies";
+import {
+  getLootConfigForMap,
+  rollFromLootTable,
+  getDropChanceForMap,
+  LOOT_RARITY_ORDER,
+} from "../templates/lootTables";
 import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity, EquipmentSlot } from "../types";
 import useStatistics from "../../hooks/useStatistics";
 import useProgression from "../../hooks/useProgression";
@@ -161,7 +167,11 @@ export function useGameState() {
   const INVENTORY_MAX = 48;
 
   // overall chance that an enemy will drop an item at all
-  const DROP_CHANCE = 0.10; // 10% chance by default
+  // overall chance that an enemy will drop an item at all
+  // NOTE: This is now map-specific, handled per-map configuration
+  const getDropChance = (mapId?: string | null): number => {
+    return getDropChanceForMap(mapId || undefined);
+  };
 
   const addToInventory = (item: Item) => {
     setInventory((prev) => {
@@ -206,10 +216,10 @@ export function useGameState() {
     const name = `${baseName} ${slot.charAt(0).toUpperCase() + slot.slice(1)} (${rarity})`;
     const stats: Record<string, number> = {};
     // Specialized stat assignment depending on slot
-    const dmgFactor: Record<Rarity, number> = { common: 0.5, rare: 0.8, epic: 1.1, legendary: 1.6, mythic: 2.5 };
-    const hpFactor: Record<Rarity, number> = { common: 0.03, rare: 0.05, epic: 0.08, legendary: 0.14, mythic: 0.25 };
-    const defFactor: Record<Rarity, number> = { common: 0.05, rare: 0.08, epic: 0.12, legendary: 0.18, mythic: 0.3 };
-    const critFactor: Record<Rarity, number> = { common: 0.5, rare: 0.9, epic: 1.4, legendary: 2.2, mythic: 3.5 };
+    const dmgFactor: Record<Rarity, number> = { common: 0.5, uncommon: 0.65, rare: 0.8, epic: 1.1, legendary: 1.6, mythic: 2.5 };
+    const hpFactor: Record<Rarity, number> = { common: 0.03, uncommon: 0.04, rare: 0.05, epic: 0.08, legendary: 0.14, mythic: 0.25 };
+    const defFactor: Record<Rarity, number> = { common: 0.05, uncommon: 0.065, rare: 0.08, epic: 0.12, legendary: 0.18, mythic: 0.3 };
+    const critFactor: Record<Rarity, number> = { common: 0.5, uncommon: 0.7, rare: 0.9, epic: 1.4, legendary: 2.2, mythic: 3.5 };
 
     switch (slot) {
       case "weapon":
@@ -266,16 +276,83 @@ export function useGameState() {
     return { id: uid(), slot, name, rarity, category: slotToCategory[slot], stats: scaled, cost: computeItemCost(scaled as Record<string, number> | undefined, rarity) };
   };
 
-  const maybeDropFromEnemy = (enemy: Enemy, selectedMapId: string | null): Item | null => {
-    // overall roll: skip most item drops to keep loot rare
-    if (Math.random() > DROP_CHANCE) return null;
+  const maybeDropFromEnemy = (enemy: Enemy, selectedMapId: string | null, isBoss?: boolean, isDungeonRoom?: boolean): Item | null => {
+    // Check drop chance (map-specific)
+    const dropChance = getDropChance(selectedMapId);
+    if (Math.random() > dropChance) return null;
 
-    // pick template first (weighted) then determine rarity: template rarity wins, otherwise roll
-    // weighted pick from ITEM_POOL (fall back to uniform if no weights)
-    // If spawn area (no selectedMapId), restrict template pool to common-tier templates so names/stats match common rarity
-    const poolForPick = (!selectedMapId) ? ITEM_POOL.filter((t) => (t.rarity ?? 'common') === 'common') : ITEM_POOL;
+    // Determine which loot table to use
+    const lootConfig = getLootConfigForMap(selectedMapId || undefined);
+    let selectedTable = lootConfig.trashLootTable;
+    let allowedRarities = lootConfig.allowedRarities;
+
+    if (isBoss && lootConfig.bossLootTable) {
+      selectedTable = lootConfig.bossLootTable;
+      allowedRarities = Object.keys(selectedTable) as Rarity[];
+    } else if (isDungeonRoom && lootConfig.dungeonLootTable) {
+      selectedTable = lootConfig.dungeonLootTable;
+      allowedRarities = Object.keys(selectedTable) as Rarity[];
+    }
+
+    // Roll rarity from the selected table
+    let finalRarity = rollFromLootTable(selectedTable);
+    if (!finalRarity) {
+      finalRarity = lootConfig.allowedRarities[0] || 'common';
+    }
+
+    try {
+      console.debug('[DROP] rolled rarity', {
+        selectedMapId,
+        isBoss,
+        isDungeonRoom,
+        selectedTable: selectedTable,
+        rolled: finalRarity,
+        enemyRarity: enemy.rarity,
+      });
+    } catch (e) {}
+
+    // CRITICAL RULE: Mythics never drop from trash (common enemies)
+    if (finalRarity === 'mythic' && enemy.rarity === 'common') {
+      finalRarity = 'legendary';
+      try {
+        console.debug('[DROP] Downgraded mythic to legendary (mythic never drops from common trash)');
+      } catch (e) {}
+    }
+
+    // Clamp rarity to max allowed on this map
+    const rarityOrder = LOOT_RARITY_ORDER;
+    const maxIdx = rarityOrder.indexOf(lootConfig.maxRarity);
+    const currentIdx = rarityOrder.indexOf(finalRarity);
+
+    if (currentIdx > maxIdx) {
+      finalRarity = lootConfig.maxRarity;
+      try {
+        console.debug('[DROP] Clamped to map max rarity', { selectedMapId, finalRarity });
+      } catch (e) {}
+    }
+
+    // Clamp to allowed rarities on this map
+    if (!allowedRarities.includes(finalRarity)) {
+      // Find the closest lower rarity that is allowed
+      let idx = rarityOrder.indexOf(finalRarity);
+      while (idx >= 0 && !allowedRarities.includes(rarityOrder[idx])) {
+        idx--;
+      }
+      if (idx < 0) {
+        // No allowed rarity found, cancel drop
+        try {
+          console.debug('[DROP] No allowed rarity, cancelling drop', { selectedMapId, finalRarity });
+        } catch (e) {}
+        return null;
+      }
+      finalRarity = rarityOrder[idx];
+    }
+
+    // Pick template first (weighted)
+    const poolForPick = !selectedMapId ? ITEM_POOL.filter((t) => (t.rarity ?? 'common') === 'common') : ITEM_POOL;
     const totalWeight = poolForPick.reduce((s, t) => s + (t.weight ?? 1), 0);
     let chosen: ItemTemplate;
+
     if (totalWeight <= 0) {
       chosen = poolForPick[Math.floor(Math.random() * poolForPick.length)];
     } else {
@@ -289,50 +366,6 @@ export function useGameState() {
         }
       }
     }
-
-    // determine rarity: use template rarity if present otherwise roll
-    let finalRarity = chosen.rarity ?? rollRarity();
-    try { console.debug('[DROP] initial', { selectedMapId, enemy: enemy && enemy.templateId, enemyRarity: enemy && enemy.rarity, chosenRarity: (chosen as any).rarity, rolled: finalRarity }); } catch (e) {}
-    // clamp to enemy rarity (do not allow higher-rarity drops than the enemy)
-    // but allow an extremely small chance to upgrade above enemy rarity
-    const RARITY_ORDER: Rarity[] = ["common", "rare", "epic", "legendary", "mythic"];
-    const UPGRADE_CHANCE = 0.00001; // 0.001%
-    if (finalRarity && enemy.rarity) {
-      const gotIdx = RARITY_ORDER.indexOf(finalRarity);
-      const enemyIdx = RARITY_ORDER.indexOf(enemy.rarity as Rarity);
-      if (gotIdx > enemyIdx) {
-        if (!(Math.random() < UPGRADE_CHANCE)) {
-          finalRarity = enemy.rarity as Rarity;
-        }
-      }
-    }
-    if (!finalRarity) return null;
-
-    // If no map selected (spawn area) or map is not found, defensively force only common drops
-    try {
-      const mapObj = getMapById(selectedMapId ?? undefined);
-      if (!selectedMapId || !mapObj) {
-        finalRarity = 'common';
-        try { console.debug('[DROP] spawn area or missing map - forcing common drop', { selectedMapId, mapObj, enemy: enemy && enemy.templateId, original: (chosen as any).rarity, interim: finalRarity }); } catch (e) {}
-      }
-    } catch (e) {}
-
-    // Enforce map allowed tiers: if the map disallows this rarity, degrade to the highest allowed lower rarity
-    try {
-      const order = RARITY_ORDER;
-      let idx = order.indexOf(finalRarity);
-      while (idx >= 0 && !isTierAllowedOnMap(selectedMapId, order[idx])) {
-        try { console.debug('[DROP] stepping down rarity for map restrictions', { selectedMapId, tryTier: order[idx] }); } catch (e) {}
-        idx -= 1; // step down rarity
-      }
-      if (idx < 0) {
-        try { console.debug('[DROP] no allowed rarities for this map, cancelling drop', { selectedMapId, finalRarity }); } catch (e) {}
-        return null;
-      }
-      finalRarity = order[idx];
-      try { console.debug('[DROP] final rarity after map clamp', { selectedMapId, finalRarity }); } catch (e) {}
-    } catch (e) {}
-
 
     // sanitize chosen.name: remove any explicit rarity words from template names
     const sanitizedBaseName = (chosen.name || '').replace(/\b(common|rare|epic|legendary|mythic)\b/gi, '').trim();

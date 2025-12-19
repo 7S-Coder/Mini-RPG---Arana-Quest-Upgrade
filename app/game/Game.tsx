@@ -438,7 +438,10 @@ export default function Game() {
 
   // damage calculation extracted to game/damage.ts (calcDamage)
 
-  const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, onDrop: (enemy: any) => maybeDropFromEnemy(enemy, selectedMapId) });
+  const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, onDrop: (enemy: any) => {
+    const isDungeonRoom = !!enemy.roomId;
+    return maybeDropFromEnemy(enemy, selectedMapId, !!enemy.isBoss, isDungeonRoom);
+  } });
 
   const mapsList = getMaps();
   const selectedMap = useMemo(() => mapsList.find((m) => m.id === selectedMapId) ?? null, [mapsList, selectedMapId]);
