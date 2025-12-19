@@ -137,6 +137,42 @@ export default function Game() {
     } catch (e) {}
   }, [player && player.level, addToast]);
 
+  // show toast when maps are unlocked
+  const unlockedMapsRef = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    try {
+      const mapsList = getMaps();
+      const playerLevel = player?.level ?? 0;
+      const inventory = player?.inventory ?? [];
+      
+      mapsList.forEach((map) => {
+        // Skip spawn area
+        if (map.id === 'spawn') return;
+        
+        // Check if already notified
+        if (unlockedMapsRef.current.has(map.id)) return;
+        
+        // Check level requirement
+        const levelRequirement = map.minLevel ?? 0;
+        const levelMet = playerLevel >= levelRequirement;
+        
+        // Check fragment requirements
+        let fragmentsMet = true;
+        if (Array.isArray(map.requiredKeyFragments) && map.requiredKeyFragments.length > 0) {
+          fragmentsMet = map.requiredKeyFragments.every((frag) => 
+            inventory.some((item: any) => item && item.name === frag)
+          );
+        }
+        
+        // If all requirements met, show unlock toast
+        if (levelMet && fragmentsMet) {
+          unlockedMapsRef.current.add(map.id);
+          try { addToast && addToast(`🗺️ Map unlocked: ${map.name}`, 'ok', 3000); } catch (e) {}
+        }
+      });
+    } catch (e) {}
+  }, [player && player.level, player && player.inventory, addToast]);
+
   useEffect(() => { inCombatRef.current = inCombat; }, [inCombat]);
 
   // show a welcome message once when the game component mounts (spawn)
