@@ -120,15 +120,26 @@ export default function Game() {
 
   // show toast when player levels up: inform gained allocation points
   const lastLevelRef = useRef<number | null>(null);
+  const mountTimeRef = useRef<number>(Date.now());
   useEffect(() => {
     try {
       const cur = player?.level ?? null;
-      // initialize ref on first render
-      if (lastLevelRef.current === null) {
+      const timeSinceMountMs = Date.now() - mountTimeRef.current;
+      
+      // Initialize on first valid level
+      if (lastLevelRef.current === null && cur !== null) {
         lastLevelRef.current = cur;
         return;
       }
-      if (cur !== null && lastLevelRef.current !== null && cur > lastLevelRef.current) {
+      
+      // Only show toast if: level increased AND more than 1 second has passed since mount
+      // (this prevents showing toast during initial page load)
+      if (
+        cur !== null && 
+        lastLevelRef.current !== null && 
+        cur > lastLevelRef.current &&
+        timeSinceMountMs > 1000
+      ) {
         const gained = (cur - lastLevelRef.current) || 0;
         const points = gained * 5;
         try { addToast && addToast(`Level up! ${points} points to be allocated.`, 'ok', 4000); } catch (e) {}
@@ -144,6 +155,9 @@ export default function Game() {
       const mapsList = getMaps();
       const playerLevel = player?.level ?? 0;
       const inventory = player?.inventory ?? [];
+      
+      // On first run, initialize the ref with already-unlocked maps (no toast)
+      const isFirstRun = unlockedMapsRef.current.size === 0;
       
       mapsList.forEach((map) => {
         // Skip spawn area
@@ -164,10 +178,12 @@ export default function Game() {
           );
         }
         
-        // If all requirements met, show unlock toast
+        // If all requirements met, add to ref and show toast only if not first run
         if (levelMet && fragmentsMet) {
           unlockedMapsRef.current.add(map.id);
-          try { addToast && addToast(`🗺️ Map unlocked: ${map.name}`, 'ok', 3000); } catch (e) {}
+          if (!isFirstRun) {
+            try { addToast && addToast(`🗺️ Map unlocked: ${map.name}`, 'ok', 3000); } catch (e) {}
+          }
         }
       });
     } catch (e) {}
