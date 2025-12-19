@@ -449,14 +449,15 @@ export function useGameState() {
           window.setTimeout(() => collectedRef.current.delete(pickupId), 3000);
           return false;
         }
-        // add item if not already present
+        // add item if not already present - use ref for most current inventory state
         const item = pk.item;
-        if (item && !inventory.find((i) => i.id === item.id)) {
-          const next = [...inventory, item];
+        const currentInv = inventoryRef.current || inventory;
+        if (item && !currentInv.find((i) => i.id === item.id)) {
+          const next = [...currentInv, item];
           if (next.length > INVENTORY_MAX) next.shift();
           setInventory(next);
           setPickups((prev) => prev.filter((p) => p.id !== pickupId));
-          try { saveCoreGame({ player: pickPlayerData(player), inventory: next, equipment }); } catch (e) {}
+          try { saveCoreGame({ player: pickPlayerData(player), inventory: next, equipment: equipmentRef.current || equipment }); } catch (e) {}
           logger && logger(`Picked up: ${item.name}`);
         } else {
           // item already in inventory; just remove pickup
@@ -503,11 +504,13 @@ export function useGameState() {
             continue;
           }
           const item = pk.item;
-          if (item && !inventory.find((i) => i.id === item.id)) {
+          const currentInv = inventoryRef.current || inventory;
+          if (item && !currentInv.find((i) => i.id === item.id)) {
             collectedRef.current.add(pk.id);
             toCollectIds.push(pk.id);
             itemsToAdd.push(item);
             try { logger && logger(`Picked up: ${item.name}`); } catch (e) {}
+          } else {
             // already owned
             try { logger && logger(`Already have: ${item.name}`); } catch (e) {}
           }
@@ -521,11 +524,12 @@ export function useGameState() {
       }
       if (itemsToAdd.length > 0) {
         const next = (() => {
-          const merged = [...inventory, ...itemsToAdd];
+          const merged = [...(inventoryRef.current || inventory), ...itemsToAdd];
           if (merged.length > INVENTORY_MAX) merged.splice(0, merged.length - INVENTORY_MAX);
           return merged;
         })();
-                  try { saveCoreGame({ player: pickPlayerData(player), inventory: next, equipment }, 'collect_item'); } catch (e) {}
+        setInventory(next);
+        try { saveCoreGame({ player: pickPlayerData(player), inventory: next, equipment }, 'collect_item'); } catch (e) {}
       }
       if (toCollectIds.length > 0) {
         const nextPickups = (pickupsRef.current || []).filter((p) => !toCollectIds.includes(p.id));

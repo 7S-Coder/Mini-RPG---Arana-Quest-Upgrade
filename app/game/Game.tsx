@@ -134,17 +134,21 @@ export default function Game() {
   // toast/log hooks used instead of local state
 
   const startEncounter = useCallback(() => {
-    // idempotency guard: avoid double-invoking startEncounter for the same dungeon/room
+    // idempotency guard: avoid double-invoking startEncounter for same encounter
+    // Use a combination of time window and dungeon state to detect duplicates
     try {
-      const dp = dungeonProgressRef.current || {};
-      const key = `${selectedMapId ?? 'none'}|${dp.activeDungeonId ?? 'none'}|${dp.activeDungeonIndex ?? -1}|${dp.remaining ?? -1}`;
       const now = Date.now();
-      if (lastEncounterKeyRef.current === key && (now - (lastEncounterTimestampRef.current || 0)) < 2000) {
-        try { console.debug('[DEBUG] startEncounter suppressed duplicate', { key, since: now - (lastEncounterTimestampRef.current || 0) }); } catch (e) {}
+      const dp = dungeonProgressRef.current || {};
+      const currentKey = `${selectedMapId}|${dp.activeDungeonId}|${dp.remaining}`;
+      
+      // If same key called within 2500ms, suppress (handles rapid re-clicks and race conditions)
+      if (lastEncounterKeyRef.current === currentKey && (now - (lastEncounterTimestampRef.current || 0)) < 2500) {
+        try { console.debug('[DEBUG] startEncounter suppressed (duplicate call within 2500ms)', { currentKey }); } catch (e) {}
         return;
       }
-      // mark attempt time immediately so concurrent calls get suppressed
-      lastEncounterKeyRef.current = key;
+      
+      // Update guard
+      lastEncounterKeyRef.current = currentKey;
       lastEncounterTimestampRef.current = now;
     } catch (e) {}
 
@@ -155,9 +159,9 @@ export default function Game() {
     }
     // clear any existing enemies from a previous session to avoid mixed spawns
     try { setEnemies([]); } catch (e) {}
-    console.log('[DEBUG] startEncounter - entering', { session: encounterSessionRef.current + 1, selectedMapId, dungeonProgress: dungeonProgressRef.current });
     // bump encounter session id so endEncounter can know which encounter finished
     encounterSessionRef.current = (encounterSessionRef.current || 0) + 1;
+    console.log('[DEBUG] startEncounter - entering', { session: encounterSessionRef.current, selectedMapId, dungeonProgress: dungeonProgressRef.current });
     // spawn 1-3 enemies
     // clear pending log clear timeout if any
     if (logClearRef.current) {
@@ -174,18 +178,27 @@ export default function Game() {
     }
 
     const isDungeonActive = dungeonProgressRef.current.activeMapId === selectedMap?.id && (dungeonProgressRef.current.remaining || 0) > 0;
-    if (isDungeonActive) {
-      // compute current floor index (1..floors) so room ids match template naming
-      const remaining = dungeonProgressRef.current.remaining || 0;
+    // Note: floor calculation deferred until we capture dungeon state below
+    
+    // Capture all dungeon state at encounter start
+    let dungeonRemaining = 0;
+    let dungeonCurrentFloor = 0;
+    if (isDungeonActive && dungeonProgressRef.current.activeDungeonId) {
+      const dungeonId = dungeonProgressRef.current.activeDungeonId;
+      dungeonRemaining = dungeonProgressRef.current.remaining || 0;
       const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
       const def = (idx !== null && selectedMap?.dungeons) ? selectedMap.dungeons[idx] : undefined;
-      const currentFloor = def ? (def.floors - remaining + 1) : remaining;
-      // if this is the final floor, spawn boss only, otherwise spawn 4 mobs
-      if (remaining === 1) {
-        count = 1; // boss only
-      } else {
-        count = 4;
-      }
+      dungeonCurrentFloor = def ? (def.floors - dungeonRemaining + 1) : dungeonRemaining;
+      
+      try { console.log('[DEBUG] startEncounter dungeon capture:', { 
+        mapId: selectedMapId,
+        dungeonId, 
+        remaining: dungeonRemaining, 
+        dungeonIndex: idx, 
+        totalFloors: def?.floors, 
+        calculatedFloor: dungeonCurrentFloor,
+        session: encounterSessionRef.current 
+      }); } catch (e) {}
     }
     // we'll set actual spawned count after attempting to spawn available templates
     // dungeon initialization is handled by useDungeon
@@ -197,33 +210,35 @@ export default function Game() {
     let roomSpawnCandidates: string[] | null = null;
     let roomObjGlobal: any | undefined = undefined;
     if (isDungeonActive && dungeonProgressRef.current.activeDungeonId) {
+      const mapId = selectedMapId ?? 'unknown';
       const dungeonId = dungeonProgressRef.current.activeDungeonId;
-      const remaining = dungeonProgressRef.current.remaining || 0;
-      const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
-      const def = (idx !== null && selectedMap?.dungeons) ? selectedMap.dungeons[idx] : undefined;
-      const currentFloor = def ? (def.floors - remaining + 1) : remaining;
-      const roomId = `${dungeonId}_floor_${currentFloor}`;
+      const roomId = `${mapId}_${dungeonId}_floor_${dungeonCurrentFloor}`;
       roomObjGlobal = getRoomsForMap(selectedMapId ?? undefined).find((r) => r.id === roomId) as any | undefined;
       if (roomObjGlobal && Array.isArray(roomObjGlobal.enemyPool) && roomObjGlobal.enemyPool.length > 0) {
         // clone to avoid modifying original
         roomSpawnCandidates = [...roomObjGlobal.enemyPool];
       }
+      // Set count based on captured dungeon state
+      if (dungeonRemaining === 1) {
+        count = 1; // boss only
+      } else {
+        count = 4;
+      }
     }
 
     for (let i = 0; i < count; i++) {
-      if (isDungeonActive && (dungeonProgressRef.current.remaining || 0) === 1) {
-        // boss floor: spawn boss once
+      if (isDungeonActive && dungeonRemaining === 1) {
+        // boss floor: spawn boss once (use captured floor from encounter start)
         const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
         const bossId = (idx !== null && selectedMap?.dungeons && selectedMap.dungeons[idx]) ? selectedMap.dungeons[idx].bossTemplateId : undefined;
-        const remaining = dungeonProgressRef.current.remaining || 0;
         const def = (idx !== null && selectedMap?.dungeons) ? selectedMap.dungeons[idx] : undefined;
-        const currentFloor = def ? (def.floors - remaining + 1) : remaining;
         if (bossId) {
           // allow boss spawn if the template exists (bosses may be outside the generic pool)
           const bossTpl = ENEMY_TEMPLATES.find((t) => t.templateId === bossId);
           if (bossTpl) {
+            const mapId = selectedMapId ?? 'unknown';
             const dungeonId = (selectedMap?.dungeons && typeof idx === 'number') ? selectedMap.dungeons[idx].id : undefined;
-            const roomId = dungeonId ? `${dungeonId}_floor_${currentFloor}` : undefined;
+            const roomId = dungeonId ? `${mapId}_${dungeonId}_floor_${dungeonCurrentFloor}` : undefined;
             spawnEnemy(bossId, undefined, { isBoss: true, roomId });
             spawned++;
           } else {
@@ -231,14 +246,11 @@ export default function Game() {
           }
         }
           } else {
-            // If inside a dungeon (non-boss floor), prefer room-based deterministic spawns
+            // If inside a dungeon (non-boss floor), prefer room-based deterministic spawns (use captured floor)
             if (isDungeonActive && dungeonProgressRef.current.activeDungeonId) {
+              const mapId = selectedMapId ?? 'unknown';
               const dungeonId = dungeonProgressRef.current.activeDungeonId;
-              const remaining = dungeonProgressRef.current.remaining || 0;
-              const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
-              const def = (idx !== null && selectedMap?.dungeons) ? selectedMap.dungeons[idx] : undefined;
-              const currentFloor = def ? (def.floors - remaining + 1) : remaining;
-              const roomId = `${dungeonId}_floor_${currentFloor}`;
+              const roomId = `${mapId}_${dungeonId}_floor_${dungeonCurrentFloor}`;
               // If we have a prepared non-repeating candidate list, draw from it without replacement
               let tid: string | undefined = undefined;
               if (roomSpawnCandidates && roomSpawnCandidates.length > 0) {
