@@ -14,12 +14,15 @@ import EffectsLayer from "../components/EffectsLayer";
 import BestiaryModal from "../components/modales/BestiaryModal";
 import MapsModal from "../components/modales/MapsModal";
 import CatalogModal from "../components/modales/CatalogModal";
+import DialogueModal from "../components/modales/DialogueModal";
 import { getMaps, pickEnemyFromMap, pickEnemyFromRoom, getRoomsForMap } from "./templates/maps";
 import { ENEMY_TEMPLATES } from "./templates/enemies";
 import { calcDamage } from "./damage";
 import { useLogs } from "../hooks/useLogs";
 import { useToasts } from "../hooks/useToasts";
 import { useDungeon } from "../hooks/useDungeon";
+import { useNarration } from "../hooks/useNarration";
+import { getMapNarration, getCombatNarration, TUTORIAL_MESSAGES } from "./templates/narration";
 
 export default function Game() {
   const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins } = useGameState();
@@ -117,6 +120,11 @@ export default function Game() {
   // useLogs hook will be used below (extracted)
   const { logs, pushLog, clearLogs } = useLogs();
   const { toasts, addToast } = useToasts();
+  const { currentMessage, showNarration, closeNarration, markTutorialShown, isTutorialShown } = useNarration();
+
+  // Narration tracking
+  const mapArrivalShownRef = useRef<Set<string>>(new Set());
+  const mapCombatCountRef = useRef<Record<string, number>>({});
 
   // show toast when player levels up: inform gained allocation points
   const lastLevelRef = useRef<number | null>(null);
@@ -154,7 +162,6 @@ export default function Game() {
     try {
       const mapsList = getMaps();
       const playerLevel = player?.level ?? 0;
-      const inventory = player?.inventory ?? [];
       
       // On first run, initialize the ref with already-unlocked maps (no toast)
       const isFirstRun = unlockedMapsRef.current.size === 0;
@@ -174,7 +181,7 @@ export default function Game() {
         let fragmentsMet = true;
         if (Array.isArray(map.requiredKeyFragments) && map.requiredKeyFragments.length > 0) {
           fragmentsMet = map.requiredKeyFragments.every((frag) => 
-            inventory.some((item: any) => item && item.name === frag)
+            (inventory as any[]).some((item: any) => item && item.name === frag)
           );
         }
         
@@ -187,7 +194,7 @@ export default function Game() {
         }
       });
     } catch (e) {}
-  }, [player && player.level, player && player.inventory, addToast]);
+  }, [player && player.level, inventory, addToast]);
 
   useEffect(() => { inCombatRef.current = inCombat; }, [inCombat]);
 
@@ -197,6 +204,106 @@ export default function Game() {
     // run only once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Handle map arrival narration
+  useEffect(() => {
+    if (!selectedMapId || selectedMapId === 'spawn') {
+      mapArrivalShownRef.current.delete('arrival');
+      mapCombatCountRef.current = {};
+      return;
+    }
+
+    // Show arrival message once per map selection
+    if (!mapArrivalShownRef.current.has(selectedMapId)) {
+      const narration = getMapNarration(selectedMapId as any);
+      if (narration?.events.arrival) {
+        showNarration(narration.events.arrival);
+        mapArrivalShownRef.current.add(selectedMapId);
+      }
+      // Reset combat counter for this map
+      mapCombatCountRef.current[selectedMapId] = 0;
+    }
+  }, [selectedMapId, showNarration]);
+
+  // Handle boss encounter narration
+  useEffect(() => {
+    try {
+      if (inCombat && enemies && enemies.length > 0) {
+        const boss = enemies.find((e) => e.isBoss);
+        if (boss) {
+          const narration = getMapNarration(parseInt(selectedMapId || '0'));
+          if (narration?.events.bossBefore && narration.events.bossBefore.bossName === boss.name) {
+            showNarration(narration.events.bossBefore.message);
+          }
+        }
+      }
+    } catch (e) {}
+  }, [inCombat, enemies, selectedMapId, showNarration]);
+
+  // Tutorial: First combat explanation
+  useEffect(() => {
+    if (inCombat && !isTutorialShown('firstCombat')) {
+      const combatCount = mapCombatCountRef.current[selectedMapId || 'spawn'] ?? 0;
+      if (combatCount === 1) {
+        showNarration(TUTORIAL_MESSAGES.firstCombatTutorial);
+        markTutorialShown('firstCombat');
+      }
+    }
+  }, [inCombat, selectedMapId, showNarration, isTutorialShown, markTutorialShown]);
+
+  // Tutorial: First victory
+  useEffect(() => {
+    if (!inCombat && !isTutorialShown('firstVictory') && mapCombatCountRef.current[selectedMapId || 'spawn'] === 1) {
+      showNarration(TUTORIAL_MESSAGES.firstVictoryTutorial);
+      markTutorialShown('firstVictory');
+    }
+  }, [inCombat, selectedMapId, showNarration, isTutorialShown, markTutorialShown]);
+
+  // Tutorial: First loot pickup
+  useEffect(() => {
+    if (pickups && pickups.length > 0 && !isTutorialShown('firstLoot')) {
+      showNarration(TUTORIAL_MESSAGES.firstLootTutorial);
+      markTutorialShown('firstLoot');
+    }
+  }, [pickups, showNarration, isTutorialShown, markTutorialShown]);
+
+  // Tutorial: First inventory usage (when player has loot)
+  useEffect(() => {
+    if (inventory && (inventory as any[]).length > 0 && !isTutorialShown('firstInventory')) {
+      showNarration(TUTORIAL_MESSAGES.firstInventoryTutorial);
+      markTutorialShown('firstInventory');
+    }
+  }, [inventory, showNarration, isTutorialShown, markTutorialShown]);
+
+  // Tutorial: First boss encounter
+  useEffect(() => {
+    if (inCombat && enemies && enemies.length > 0) {
+      const boss = enemies.find((e) => e.isBoss);
+      if (boss && !isTutorialShown('firstBoss')) {
+        showNarration(TUTORIAL_MESSAGES.firstBossTutorial);
+        markTutorialShown('firstBoss');
+      }
+    }
+  }, [inCombat, enemies, showNarration, isTutorialShown, markTutorialShown]);
+
+  // Tutorial: First level up
+  useEffect(() => {
+    if ((player?.level ?? 0) > 1 && !isTutorialShown('firstLevelUp')) {
+      showNarration(TUTORIAL_MESSAGES.firstLevelUpTutorial);
+      markTutorialShown('firstLevelUp');
+    }
+  }, [player?.level, showNarration, isTutorialShown, markTutorialShown]);
+
+  // Tutorial: Map unlock
+  useEffect(() => {
+    if (selectedMapId && selectedMapId !== 'spawn' && !isTutorialShown('mapUnlock')) {
+      // Check if this is a newly unlocked map (not spawn, not arena)
+      if (selectedMapId !== '0') {
+        showNarration(TUTORIAL_MESSAGES.mapUnlockTutorial);
+        markTutorialShown('mapUnlock');
+      }
+    }
+  }, [selectedMapId, showNarration, isTutorialShown, markTutorialShown]);
 
 
   const addEffect = useCallback((eff: { type: string; text?: string; kind?: string; target?: string; id?: string }) => {
@@ -412,6 +519,7 @@ export default function Game() {
     const areaName = selectedMap?.name ?? 'Spawn';
     pushLog(`New encounter in ${areaName}: ${spawned} enemy(s) appeared.`);
     console.log('[DEBUG] spawned encounter', { session: encounterSessionRef.current, requested: count, spawned, isDungeonActive, dungeonProgress: dungeonProgressRef.current });
+    
     // record start time for this encounter
     lastEncounterTimestampRef.current = Date.now();
     setInCombat(true);
@@ -429,7 +537,7 @@ export default function Game() {
   }, [startEncounter]);
 
 
-  const endEncounter = useCallback((msg?: string, opts?: { type?: 'clear' | 'flee' | 'death' }) => {
+  const endEncounter = useCallback((msg?: string, opts?: { type?: 'clear' | 'flee' | 'death'; isBoss?: boolean; bossName?: string }) => {
     // spawn a single gold pickup for the encounter (sum of per-enemy dust)
     // Do NOT award gold when the encounter ends due to fleeing.
     if (opts?.type !== 'flee') {
@@ -454,6 +562,13 @@ export default function Game() {
       try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
       try { addToast(msg ? String(msg) : 'You died.', 'error', 4000); } catch (e) {}
       try { resetMapStreak(selectedMapId); } catch (e) {}
+      // Show death narration
+      try {
+        const narration = getMapNarration(selectedMapId as any);
+        if (narration?.events.playerDeath) {
+          showNarration(narration.events.playerDeath);
+        }
+      } catch (e) {}
     }
     else if (opts?.type !== 'flee') {
       // Only increment streak during farming (not in dungeon)
@@ -461,6 +576,27 @@ export default function Game() {
       if (!inDungeonActive) {
         try { incMapStreak(selectedMapId); console.debug('[Game] incremented map streak', { mapId: selectedMapId, streak: getMapStreak(selectedMapId) }); } catch (e) {}
       }
+      
+      // Handle combat narration
+      try {
+        // Increment combat count for this map
+        mapCombatCountRef.current[selectedMapId || 'spawn'] = (mapCombatCountRef.current[selectedMapId || 'spawn'] ?? 0) + 1;
+        const combatCount = mapCombatCountRef.current[selectedMapId || 'spawn'];
+        
+        // Check for narration on specific combat counts
+        const combatNarration = getCombatNarration(parseInt(selectedMapId || '0'), combatCount);
+        if (combatNarration) {
+          showNarration(combatNarration);
+        }
+        
+        // Check for boss victory narration
+        if (opts?.isBoss && opts?.bossName) {
+          const narration = getMapNarration(parseInt(selectedMapId || '0'));
+          if (narration?.events.bossVictory && narration.events.bossVictory.bossName === opts.bossName) {
+            showNarration(narration.events.bossVictory.message);
+          }
+        }
+      } catch (e) {}
     }
     if (msg) pushLog(msg);
     // Track farming progress: if player is on a map that has dungeons but the dungeon
@@ -477,7 +613,7 @@ export default function Game() {
       clearLogs();
       logClearRef.current = null;
     }, 1000);
-  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect]);
+  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect, showNarration]);
 
   // clear timeout on unmount
   useEffect(() => {
@@ -761,6 +897,8 @@ export default function Game() {
           </div>
         </Modal>
       )}
+      {/* Dialogue Modal */}
+      <DialogueModal message={currentMessage} onClose={closeNarration} />
       {/* Toast container */}
       <div style={{ position: 'fixed', right: 16, top: 16, zIndex: 999999, display: 'flex', flexDirection: 'column', gap: 8 }}>
         {toasts.map((t) => (

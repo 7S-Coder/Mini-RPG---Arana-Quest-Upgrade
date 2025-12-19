@@ -378,6 +378,7 @@ export function useGameState() {
       category: (chosen as any).category,
       stats: scaleStats(chosen.stats, finalRarity),
       cost: computeItemCost(scaleStats(chosen.stats, finalRarity) as Record<string, number> | undefined, finalRarity),
+      weight: chosen.weight ?? 1,
     };
 
     // spawn the item as a pickup at the enemy location (player must collect)
@@ -605,7 +606,7 @@ export function useGameState() {
     addToInv = true
   ): Item => {
     const stats = scaleStats(payload.stats, payload.rarity);
-    const item: Item = { id: uid(), ...payload, stats, cost: computeItemCost(stats as Record<string, number> | undefined, payload.rarity) };
+    const item: Item = { id: uid(), ...payload, stats, cost: computeItemCost(stats as Record<string, number> | undefined, payload.rarity), weight: payload.weight ?? 1 };
     if (addToInv) addToInventory(item);
     return item;
   };
@@ -645,6 +646,7 @@ export function useGameState() {
           stats: { heal },
           cost,
           quantity: 1,
+          weight: 2,
         };
         const next = [...inventory, itm];
         if (next.length > INVENTORY_MAX) next.shift();
@@ -700,6 +702,7 @@ export function useGameState() {
       category: (tmpl as any).category,
       stats,
       cost: computeItemCost(stats as Record<string, number> | undefined, finalRarity),
+      weight: tmpl.weight ?? 1,
     };
     if (addToInv) addToInventory(item);
     return item;
@@ -752,6 +755,7 @@ export function useGameState() {
         category: sample.category,
         stats: boosted,
         cost: sample.cost ?? computeItemCost(boosted as Record<string, number> | undefined, 'rare'),
+        weight: sample.weight ?? 1,
       } as any;
 
       // create forged item without auto-adding, then update inventory snapshot and save
@@ -1089,12 +1093,63 @@ export function useGameState() {
             if (it && it.id) equippedIds.add(it.id);
           }
         }
+        // Apply weight migration: ensure all items have correct weight based on template
+        const migratedInv = inv.map((item: any) => {
+          // If item already has weight and it's correct, keep it
+          if (item.weight && item.weight > 1) {
+            return item;
+          }
+          // Extract base name without rarity
+          let templateName = item.name || '';
+          if (templateName.includes('(')) {
+            templateName = templateName.split('(')[0].trim();
+          }
+          // Find template by name - try exact match first, then case-insensitive
+          let template = ITEM_POOL.find((t) => t.name === templateName);
+          if (!template && templateName) {
+            template = ITEM_POOL.find((t) => t.name.toLowerCase() === templateName.toLowerCase());
+          }
+          // Get correct weight - if it's a consumable/potion, it should be 2, otherwise use template weight
+          let correctWeight = 1;
+          if (template) {
+            correctWeight = template.weight ?? 1;
+          } else if (item.slot === 'consumable' || item.category === 'consumable') {
+            correctWeight = 2;
+          }
+          return { ...item, weight: correctWeight };
+        });
         // filter inventory to avoid duplicates of equipped items
-        setInventory(inv.filter((i) => !equippedIds.has(i.id)));
+        setInventory(migratedInv.filter((i) => !equippedIds.has(i.id)));
       }
       if (save.equipment && typeof save.equipment === 'object') {
+        // Apply weight migration to equipped items too
+        const migratedEquip: Record<string, any> = {};
+        for (const [slot, item] of Object.entries(save.equipment)) {
+          if (item && typeof item === 'object') {
+            // If item already has weight and it's correct, keep it
+            if (item.weight && item.weight > 1) {
+              migratedEquip[slot] = item;
+              continue;
+            }
+            // Extract base name without rarity
+            let templateName = item.name || '';
+            if (templateName.includes('(')) {
+              templateName = templateName.split('(')[0].trim();
+            }
+            // Find template by name - try exact match first, then case-insensitive
+            let template = ITEM_POOL.find((t) => t.name === templateName);
+            if (!template && templateName) {
+              template = ITEM_POOL.find((t) => t.name.toLowerCase() === templateName.toLowerCase());
+            }
+            // Get correct weight from template
+            const correctWeight = template?.weight ?? 1;
+            migratedEquip[slot] = { ...item, weight: correctWeight };
+          } else {
+            migratedEquip[slot] = item;
+          }
+        }
         // merge loaded equipment into the default shape to avoid losing empty slots
-        setEquipment((prev) => ({ ...prev, ...(save.equipment as any) }));
+        setEquipment((prev) => ({ ...prev, ...migratedEquip }));
       }
       if (Array.isArray(save.pickups)) setPickups(save.pickups as any[]);
       return save;

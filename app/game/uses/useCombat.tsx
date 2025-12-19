@@ -22,7 +22,7 @@ export default function useCombat({
   setEnemies: (updater: any) => void;
   addXp?: (n: number) => void;
   pushLog: (s: React.ReactNode) => void;
-  endEncounter: (msg?: string, opts?: { type?: 'clear' | 'flee' | 'death' }) => void;
+  endEncounter: (msg?: string, opts?: { type?: 'clear' | 'flee' | 'death'; isBoss?: boolean; bossName?: string }) => void;
   onEffect?: (eff: { type: string; text?: string; kind?: string; target?: string; id?: string }) => void;
   onDrop?: (enemy: Enemy) => any;
 }) {
@@ -161,7 +161,14 @@ export default function useCombat({
     ((): void => {
       const alive = postAttackEnemies.filter((e: Enemy) => e.hp > 0);
       if (alive.length === 0) {
-        endEncounter('All enemies defeated!', { type: 'clear' });
+        // Check if any defeated enemy was a boss
+        const defeatedBoss = postAttackEnemies.find((e: Enemy) => e.isBoss);
+        const opts: any = { type: 'clear' };
+        if (defeatedBoss) {
+          opts.isBoss = true;
+          opts.bossName = defeatedBoss.name;
+        }
+        endEncounter('All enemies defeated!', opts);
       }
     })();
 

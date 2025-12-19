@@ -178,27 +178,26 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
               </div>
 
               <div style={{ width: 360, position: 'relative', minHeight: 320, maxHeight: 420, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexShrink: 0 }}>
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <label style={{ color: '#bbb', fontSize: 12 }}>Filter:</label>
-                    <select value={filterSlot} onChange={(e) => setFilterSlot(e.target.value)}>
-                      <option value="all">All</option>
-                      <option value="consumable">Consumables</option>
-                      <option value="key">Fragments</option>
-                      {SLOT_ORDER.map((s) => <option key={s} value={s}>{SLOT_LABELS[s] ?? s}</option>)}
-                    </select>
-                  </div>
-                  <div style={{ color: '#ccc', fontSize: 12 }}>Weight: {currentWeight}/{MAX_CARRY_WEIGHT}</div>
-                </div>
-
                 {activeTab === 'inventory' || activeTab === 'forge' ? (
                   <>
-                    <h2 style={{ marginTop: 0, flexShrink: 0 }}>Inventory</h2>
-                    <div style={{ display: 'grid', gap: 10, overflow: 'auto', flex: 1 }}>
+                    <h2 style={{ marginTop: 0, marginBottom: 8, flexShrink: 0 }}>Inventory</h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexShrink: 0 }}>
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <label style={{ color: '#bbb', fontSize: 12 }}>Filter:</label>
+                        <select value={filterSlot} onChange={(e) => setFilterSlot(e.target.value)}>
+                          <option value="all">All</option>
+                          <option value="consumable">Consumables</option>
+                          <option value="key">Fragments</option>
+                          {SLOT_ORDER.map((s) => <option key={s} value={s}>{SLOT_LABELS[s] ?? s}</option>)}
+                        </select>
+                      </div>
+                      <div style={{ color: '#ccc', fontSize: 12 }}>Weight: {currentWeight}/{MAX_CARRY_WEIGHT}</div>
+                    </div>
+                    <div style={{ display: 'grid', gap: 10, overflow: 'auto', flex: 1, alignContent: 'start' }}>
                       {filteredInventory.length === 0 ? (
                         <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>No items.</div>
                       ) : (
-                        <div style={{ display: 'grid', gap: 10 }}>
+                        <div style={{ display: 'grid', gap: 10, alignContent: 'start' }}>
                           {filteredInventory.map((it) => (
                             <div key={it.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10, position: 'relative' }}>
                               <div>
