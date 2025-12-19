@@ -148,22 +148,22 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                   </>
                 ) : (
                   <>
-                    <h2 style={{ marginTop: 0 }}>Equipment</h2>
+                    <h2 style={{ marginTop: 0, marginBottom: 8 }}>Equipment</h2>
                     <div style={{ width: '100%' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, gridAutoRows: '140px', alignItems: 'stretch', position: 'relative' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, gridAutoRows: '80px', alignItems: 'stretch', position: 'relative' }}>
                         {SLOT_ORDER.map((slot) => {
                           const it = (equipment as any)[slot];
                           const spanStyle: React.CSSProperties = slot === 'hat' ? { gridColumn: '1 / -1' } : {};
                           return (
                             <div key={slot} style={{ boxSizing: 'border-box', ...spanStyle }}>
-                              <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.04)', padding: 12, borderRadius: 8, textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
-                                <div style={{ fontSize: 12, color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
-                                <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 8, overflowWrap: 'anywhere' }}>{it ? it.name : 'empty'}</div>
+                              <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.04)', padding: 8, borderRadius: 8, textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
+                                <div style={{ fontSize: 11, color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
+                                <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 4, overflowWrap: 'anywhere', fontSize: 12 }}>{it ? it.name : 'empty'}</div>
                                 {it ? (
                                   <>
-                                    <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>{Object.entries(it.stats || {}).map(([k, v]) => `${k}: ${v}`).join(' • ')}</div>
+                                    <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{Object.entries(it.stats || {}).map(([k, v]) => `${k}: ${v}`).join(' • ')}</div>
                                     <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                      <button type="button" style={{ marginTop: 8 }} onClick={(e) => { e.stopPropagation(); onUnequip(slot); }}>Unequip</button>
+                                      <button type="button" style={{ marginTop: 4, padding: '4px 8px', fontSize: 11 }} onClick={(e) => { e.stopPropagation(); onUnequip(slot); }}>Unequip</button>
                                     </div>
                                   </>
                                 ) : null}
@@ -177,8 +177,8 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                 )}
               </div>
 
-              <div style={{ width: 360, position: 'relative', minHeight: 320 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ width: 360, position: 'relative', minHeight: 320, maxHeight: 420, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexShrink: 0 }}>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <label style={{ color: '#bbb', fontSize: 12 }}>Filter:</label>
                     <select value={filterSlot} onChange={(e) => setFilterSlot(e.target.value)}>
@@ -193,12 +193,12 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
 
                 {activeTab === 'inventory' || activeTab === 'forge' ? (
                   <>
-                    <h2 style={{ marginTop: 0 }}>Inventory</h2>
-                    <div style={{ display: 'grid', gap: 10 }}>
+                    <h2 style={{ marginTop: 0, flexShrink: 0 }}>Inventory</h2>
+                    <div style={{ display: 'grid', gap: 10, overflow: 'auto', flex: 1 }}>
                       {filteredInventory.length === 0 ? (
                         <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>No items.</div>
                       ) : (
-                        <div style={{ maxHeight: 380, overflow: 'auto', display: 'grid', gap: 10 }}>
+                        <div style={{ display: 'grid', gap: 10 }}>
                           {filteredInventory.map((it) => (
                             <div key={it.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10, position: 'relative' }}>
                               <div>
