@@ -42,7 +42,6 @@ body{
 	background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
 	padding:18px;
 	border-radius:var(--radius);
-	box-shadow: 0 6px 18px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
 }
 
 .center-area{display:flex;flex-direction:column}
@@ -250,6 +249,13 @@ body{
 	40%{transform:translate(-50%, -6px) scale(1)}
 	70%{transform:translate(-50%, -2px) scale(1)}
 	100%{opacity:0; transform:translate(-50%, -10px) scale(0.9)}
+}
+
+/* Streak pulse animation */
+@keyframes streakPulse{
+	0%{transform:scale(1)}
+	50%{transform:scale(1.08)}
+	100%{transform:scale(1)}
 }
 
 /* Pickup marker styles (gold/item) */

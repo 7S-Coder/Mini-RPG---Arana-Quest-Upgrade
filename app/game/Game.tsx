@@ -24,6 +24,23 @@ import { useDungeon } from "../hooks/useDungeon";
 export default function Game() {
   const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins } = useGameState();
 
+  // streak per map (instead of global streak)
+  const [mapStreaks, setMapStreaks] = useState<Record<string, number>>({});
+
+  // helper: convert hex color to rgba with provided alpha
+  const hexToRgba = (hex: string, alpha = 1) => {
+    try {
+      const h = hex.replace('#', '');
+      const bigint = parseInt(h.length === 3 ? h.split('').map(c => c + c).join('') : h, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    } catch (e) {
+      return hex;
+    }
+  };
+
   // modal system (generalized)
   const [modalName, setModalName] = useState<string | null>(null);
   const [modalProps, setModalProps] = useState<any>(null);
@@ -86,6 +103,17 @@ export default function Game() {
   useEffect(() => { consecWinsRef.current = consecWins; }, [consecWins]);
   const startEncounterRef = useRef<() => void>(() => {});
 
+  // helpers for per-map streak management
+  const getMapStreak = (mapId: string | null) => mapId ? (mapStreaks[mapId] ?? 0) : 0;
+  const incMapStreak = (mapId: string | null) => {
+    if (!mapId) return;
+    setMapStreaks((prev) => ({ ...prev, [mapId]: (prev[mapId] ?? 0) + 1 }));
+  };
+  const resetMapStreak = (mapId: string | null) => {
+    if (!mapId) return;
+    setMapStreaks((prev) => ({ ...prev, [mapId]: 0 }));
+  };
+
   // useLogs hook will be used below (extracted)
   const { logs, pushLog, clearLogs } = useLogs();
   const { toasts, addToast } = useToasts();
@@ -132,6 +160,17 @@ export default function Game() {
 
   const { dungeonProgressRef, dungeonUI, processEndEncounter } = useDungeon({ selectedMapId, pushLog, addEffect: addEffect, addToast: (text: string, type?: string, ttl?: number) => addToast(text, type as "ok" | "error" | undefined, ttl), createCustomItem, addXp, setPlayer, encounterSessionRef, startEncounterRef });
   // toast/log hooks used instead of local state
+
+  // Reset streak when dungeon is activated
+  const prevDungeonRemainingRef = useRef<number>(0);
+  useEffect(() => {
+    if (dungeonUI.remaining && dungeonUI.remaining > 0 && prevDungeonRemainingRef.current === 0) {
+      // Dungeon just activated
+      resetMapStreak(dungeonUI.activeMapId ?? null);
+      try { console.log('[Game] dungeon activated, streak reset for map:', dungeonUI.activeMapId); } catch (e) {}
+    }
+    prevDungeonRemainingRef.current = dungeonUI.remaining ?? 0;
+  }, [dungeonUI.remaining, dungeonUI.activeMapId]);
 
   const startEncounter = useCallback(() => {
     // idempotency guard: avoid double-invoking startEncounter for same encounter
@@ -362,10 +401,14 @@ export default function Game() {
     if (opts?.type === 'death') {
       try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
       try { addToast(msg ? String(msg) : 'You died.', 'error', 4000); } catch (e) {}
-      try { resetConsecWins && resetConsecWins(); } catch (e) {}
+      try { resetMapStreak(selectedMapId); } catch (e) {}
     }
     else if (opts?.type !== 'flee') {
-      try { incConsecWins && incConsecWins(); console.debug('[Game] incremented consecWins', { consecWins }); } catch (e) {}
+      // Only increment streak during farming (not in dungeon)
+      const inDungeonActive = dungeonUI.activeMapId === selectedMapId && dungeonUI.activeDungeonIndex != null;
+      if (!inDungeonActive) {
+        try { incMapStreak(selectedMapId); console.debug('[Game] incremented map streak', { mapId: selectedMapId, streak: getMapStreak(selectedMapId) }); } catch (e) {}
+      }
     }
     if (msg) pushLog(msg);
     // Track farming progress: if player is on a map that has dungeons but the dungeon
@@ -439,7 +482,7 @@ export default function Game() {
       </header>
 
       <div className="main-grid">
-        <aside className="sidebar-left">
+        <aside className="sidebar-left" >
           <Player {...player} onOpenModal={openModal} />
         </aside>
 
@@ -452,17 +495,34 @@ export default function Game() {
             >
               {inCombat ? "In combat..." : (selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null ? "Next room" : "Go to Arena")}
             </button>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
-              {/* Flame button: only visible when player has a streak > 5 */}
-              { (consecWins || 0) > 5 && (consecWins || 0) < 15 ? (
-                <button style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', borderRadius: 12, background: 'linear-gradient(90deg,#7f0b0b,#b21b1b)', color: '#fff', boxShadow: '0 8px 20px rgba(178,27,27,0.35)', border: '1px solid rgba(255,80,80,0.12)', cursor: 'pointer', fontWeight: 900 }}>
-                  <span style={{ fontSize: 16, lineHeight: 1, color: '#ffd9b3' }}>🔥</span>
-                  <span style={{ fontSize: 13 }}> <span style={{ color: '#ffd37a' }}>{consecWins}</span></span>
-                </button>
-              ) : null }
-
+            {/* Streak display: animated counter for current map */}
+            {(() => {
+              // Don't show streak if in dungeon
+              const inDungeonActive = selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null;
+              if (inDungeonActive) return null;
               
-            </div>
+              const currentStreak = getMapStreak(selectedMapId);
+              if (currentStreak <= 0) return null;
+              const isHot = currentStreak >= 5;
+              return (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  padding: '8px 12px',
+                  borderRadius: 10,
+                  background: isHot ? 'linear-gradient(135deg, rgba(255,107,107,0.2), rgba(255,180,90,0.15))' : 'rgba(100,100,100,0.2)',
+                  border: `1px solid ${isHot ? 'rgba(255,107,107,0.4)' : 'rgba(150,150,150,0.3)'}`,
+                  animation: isHot ? 'streakPulse 1.2s ease-in-out infinite' : 'none',
+                }}>
+                  <span style={{ fontSize: 18, lineHeight: 1 }}>{isHot ? '🔥' : '⚔️'}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: isHot ? '#ff6b6b' : '#aaa' }}>
+                    {currentStreak} {currentStreak === 1 ? 'win' : 'wins'}
+                  </span>
+                </div>
+              );
+            })()}
+            
             {/* dungeon banner when active */}
             {selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && (dungeonUI.activeDungeonIndex != null) && (
               (() => {
@@ -491,7 +551,7 @@ export default function Game() {
           </div>
         </main>
 
-        <aside className="sidebar-right">
+        <aside className="sidebar-right" >
           <RightSidebar onOpenModal={openModal} />
         </aside>
       </div>
