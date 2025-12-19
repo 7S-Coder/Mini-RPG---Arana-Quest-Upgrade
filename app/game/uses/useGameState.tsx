@@ -5,7 +5,7 @@ import { uid, clampToViewport } from "../utils";
 import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "../templates/items";
 import { isTierAllowedOnMap, getMapById, getMaps } from "../templates/maps";
 import { ENEMY_TEMPLATES } from "../templates/enemies";
-import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity } from "../types";
+import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity, EquipmentSlot } from "../types";
 import useStatistics from "../../hooks/useStatistics";
 import useProgression from "../../hooks/useProgression";
 
@@ -40,7 +40,7 @@ export function useGameState() {
   const processingRef = useRef<boolean>(false);
 
   // equipment slots and inventory
-  const [equipment, setEquipment] = useState<Record<Item["slot"], Item | null>>({
+  const [equipment, setEquipment] = useState<Record<EquipmentSlot, Item | null>>({
     familiar: null,
     boots: null,
     belt: null,
@@ -259,6 +259,7 @@ export function useGameState() {
       ring: "accessory",
       familiar: "pet",
       key: "accessory",
+      consumable: "consumable",
     };
 
     const scaled = scaleStats(stats, rarity);
@@ -584,19 +585,34 @@ export function useGameState() {
     }
     const nextPlayer = { ...player, gold: +((Number(player.gold ?? 0) - cost).toFixed(2)) } as Player;
     const label = (type === 'small' ? 'Small potion' : type === 'medium' ? 'Medium potion' : type === 'large' ? 'Large potion' : type === 'huge' ? 'Huge potion' : 'Giant potion');
-    const itm: Item = {
-      id: uid(),
-      slot: 'consumable' as any,
-      name: `${label} (+${heal} HP)`,
-      rarity: 'common',
-      category: 'consumable' as any,
-      stats: { heal },
-      cost,
-    };
+    const potionName = `${label} (+${heal} HP)`;
+
+    // Check if identical potion already exists in inventory
     const nextInventory = (() => {
-      const next = [...inventory, itm];
-      if (next.length > INVENTORY_MAX) next.shift();
-      return next;
+      const existingPotion = inventory.find((i) => i.name === potionName && (i.slot === 'consumable' || i.category === 'consumable'));
+      if (existingPotion) {
+        // Stack: increment quantity
+        return inventory.map((i) => 
+          i.id === existingPotion.id 
+            ? { ...i, quantity: (i.quantity ?? 1) + 1 }
+            : i
+        );
+      } else {
+        // New potion: add with quantity 1
+        const itm: Item = {
+          id: uid(),
+          slot: 'consumable' as any,
+          name: potionName,
+          rarity: 'common',
+          category: 'consumable' as any,
+          stats: { heal },
+          cost,
+          quantity: 1,
+        };
+        const next = [...inventory, itm];
+        if (next.length > INVENTORY_MAX) next.shift();
+        return next;
+      }
     })();
     setPlayer(nextPlayer);
     setInventory(nextInventory);
@@ -612,7 +628,17 @@ export function useGameState() {
     if ((it as any).category !== 'consumable') return false;
     const heal = Number((it.stats && (it.stats as any).heal) || 0);
     if (!heal) return false;
-    const nextInventory = inventory.filter((i) => i.id !== itemId);
+    
+    // Handle stacked items: decrement quantity or remove if quantity reaches 0
+    const nextInventory = inventory.map((i) => {
+      if (i.id !== itemId) return i;
+      const currentQuantity = i.quantity ?? 1;
+      if (currentQuantity > 1) {
+        return { ...i, quantity: currentQuantity - 1 };
+      }
+      return null; // Return null to filter out
+    }).filter((i) => i !== null) as typeof inventory;
+    
     const nextPlayer = { ...player, hp: Math.min((player.maxHp ?? player.hp), (player.hp ?? 0) + heal) } as Player;
     setInventory(nextInventory);
     setPlayer(nextPlayer);
@@ -724,10 +750,15 @@ export function useGameState() {
       return false;
     }
     // read current equipped for this slot from ref (avoid stale closure values)
-    const currentEquipped = (equipmentRef.current || {})[item.slot];
+    const isEquippableSlot = item.slot !== 'consumable';
+    if (!isEquippableSlot) {
+      try { console.warn('Cannot equip consumable items'); } catch (e) {}
+      return false;
+    }
+    const currentEquipped = (equipmentRef.current || {})[item.slot as EquipmentSlot];
 
     // update equipment (pure)
-    setEquipment((prevEquip) => ({ ...prevEquip, [item.slot]: item }));
+    setEquipment((prevEquip) => ({ ...prevEquip, [item.slot as EquipmentSlot]: item }));
 
     // update inventory: remove the equipped item, and return previous equipped into inventory if any
     setInventory((prevInv) => {
@@ -760,7 +791,7 @@ export function useGameState() {
     return true;
   };
 
-  const unequipItem = (slot: Item["slot"]) => {
+  const unequipItem = (slot: EquipmentSlot) => {
     try { console.log('unequipItem called', slot); } catch (e) {}
     // read current equipped from ref (avoid stale closure values)
     const current = (equipmentRef.current || {})[slot];
@@ -788,7 +819,8 @@ export function useGameState() {
   };
 
   // Helper to get the rarity of the currently equipped item in a slot
-  const getEquippedRarity = (slot: Item["slot"]): Rarity | null => {
+  const getEquippedRarity = (slot: EquipmentSlot | 'consumable'): Rarity | null => {
+    if (slot === 'consumable') return null;
     const it = equipment[slot];
     return it ? it.rarity : null;
   };

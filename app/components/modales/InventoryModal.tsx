@@ -199,9 +199,12 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                       ) : (
                         <div style={{ maxHeight: 380, overflow: 'auto', display: 'grid', gap: 10 }}>
                           {filteredInventory.map((it) => (
-                            <div key={it.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10 }}>
+                            <div key={it.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10, position: 'relative' }}>
                               <div>
-                                <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>{it.name}</div>
+                                <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>
+                                  {it.name}
+                                  {it.quantity && it.quantity > 1 && <span style={{ marginLeft: 8, color: '#999', fontSize: 12 }}>×{it.quantity}</span>}
+                                </div>
                                 <div style={{ fontSize: 10, color: '#bbb', marginTop: 4 }}>W:{it.weight ?? 1}</div>
                                 <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>{(() => {
                                   const entries = Object.entries(it.stats || {});

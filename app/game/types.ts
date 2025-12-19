@@ -1,14 +1,17 @@
 export type Rarity = "common" | "rare" | "epic" | "legendary" | "mythic";
 
+export type EquipmentSlot = "familiar" | "boots" | "belt" | "hat" | "chestplate" | "ring" | "weapon" | "key";
+
 export type Item = {
   id: string;
-  slot: "familiar" | "boots" | "belt" | "hat" | "chestplate" | "ring" | "weapon" | "key";
+  slot: EquipmentSlot | "consumable";
   name: string;
   rarity: Rarity;
-  category?: "weapon" | "armor" | "accessory" | "pet";
+  category?: "weapon" | "armor" | "accessory" | "pet" | "consumable";
   cost?: number;
   stats?: Record<string, number>;
   weight?: number;
+  quantity?: number; // for stackable items like potions
 };
 
 export type Enemy = {

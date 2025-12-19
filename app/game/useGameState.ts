@@ -393,19 +393,34 @@ export function useGameState() {
     }
     // snapshot next player and inventory to ensure save persists immediately
     const nextPlayer = { ...player, gold: +((Number(player.gold ?? 0) - cost).toFixed(2)) } as Player;
-    const itm: Item = {
-      id: uid(),
-      slot: 'consumable' as any,
-      name: `${type === 'small' ? 'Small potion' : type === 'medium' ? 'Medium potion' : 'Large potion'} (+${heal} HP)`,
-      rarity: 'common',
-      category: 'consumable' as any,
-      stats: { heal },
-      cost,
-    };
+    const label = (type === 'small' ? 'Small potion' : type === 'medium' ? 'Medium potion' : 'Large potion');
+    const potionName = `${label} (+${heal} HP)`;
+
     const nextInventory = (() => {
-      const next = [...inventory, itm];
-      if (next.length > INVENTORY_MAX) next.shift();
-      return next;
+      const existingPotion = inventory.find((i) => i.name === potionName && (i.slot === 'consumable' || i.category === 'consumable'));
+      if (existingPotion) {
+        // Stack: increment quantity
+        return inventory.map((i) => 
+          i.id === existingPotion.id 
+            ? { ...i, quantity: (i.quantity ?? 1) + 1 }
+            : i
+        );
+      } else {
+        // New potion: add with quantity 1
+        const itm: Item = {
+          id: uid(),
+          slot: 'consumable' as any,
+          name: potionName,
+          rarity: 'common',
+          category: 'consumable' as any,
+          stats: { heal },
+          cost,
+          quantity: 1,
+        };
+        const next = [...inventory, itm];
+        if (next.length > INVENTORY_MAX) next.shift();
+        return next;
+      }
     })();
     setPlayer(nextPlayer);
     setInventory(nextInventory);

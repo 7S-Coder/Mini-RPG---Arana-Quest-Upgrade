@@ -1,0 +1,32 @@
+Arena Quest — Product Backlog (prioritized)
+
+
+Ajouts suggérés (FR) :
+
+- **Stabilité des donjons :** Corriger définitivement la duplication des salles (notamment la salle 1) et garantir l'apparition du boss au dernier palier. Critères : pas de duplication après 50 runs répétés, boss présent sur le dernier étage.
+
+- **Tests automatisés :** Ajouter des tests unitaires/intégration pour la logique des donjons, la sélection de salles et la génération d'ennemis (harness avec seed déterministe).
+
+- **Migration / Sauvegardes :** Étendre `migrateSave` pour gérer les versions de sauvegarde, nettoyage des clés locales et support de plusieurs slots de sauvegarde (export/import JSON).
+
+- **Affichage donjon :** Mini-carte / liste de salles restantes, indication visuelle des salles spéciales (boss, unique). Acceptance: mini-carte visible pendant un run de donjon.
+
+- **Mécaniques de récompense :** Runs, objectifs journaliers/hebdo, monnaies secondaires et récompenses de streak (palier, caps et récompenses définies).
+
+- **Amélioration inventaire / forge :** Interface de forge améliorée (file d'attente, taux de réussite), tri/filtre persistant et actions en masse.
+
+- **Modes de difficulté :** Normal / Difficile / Cauchemar modifiant pools d'ennemis, HP et loot; ajouter un sélecteur dans les options.
+
+- **Outils dev & debug :** Affiner `godMod`, activer/désactiver logs verbeux, bouton visuel pour marquer le démarrage d'un donjon (pour repros sans console).
+
+- **Télémétrie & analytics (optionnel) :** Événements clés (activations de donjon, morts, boss spawn) pour faciliter équilibrage et debug.
+
+- **Accessibilité et paramètres :** Ajustements UI (taille du texte, palettes daltoniennes, remapping clavier), volume et mute global.
+
+- **Localisation :** Préparer i18n (FR/EN) pour textes UI, logs et tutoriels.
+
+- **Onboarding / Tutoriel :** Courte séquence interactive expliquant mécaniques de base (combat, inventaire, donjons) visible au premier lancement.
+
+- **Performance & prod hardening :** Réduction des logs en production, lazy-load des templates, profiling mem/CPU.
+
+Remarque : je peux convertir chaque point en ticket individuel (titre, description, critères d'acceptation, estimation) si tu veux — dis-moi le format souhaité.

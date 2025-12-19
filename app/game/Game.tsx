@@ -82,6 +82,8 @@ export default function Game() {
   const encounterSessionRef = useRef<number>(0);
   const lastEncounterKeyRef = useRef<string | null>(null);
   const lastEncounterTimestampRef = useRef<number>(0);
+  const consecWinsRef = useRef<number | undefined>(consecWins);
+  useEffect(() => { consecWinsRef.current = consecWins; }, [consecWins]);
   const startEncounterRef = useRef<() => void>(() => {});
 
   // useLogs hook will be used below (extracted)
@@ -190,6 +192,24 @@ export default function Game() {
 
     // spawn enemies according to count and dungeon rules, but only if templates explicitly belong to this map
     let spawned = 0;
+
+    // if inside a dungeon non-boss floor, prepare a non-repeating pool for deterministic room spawns
+    let roomSpawnCandidates: string[] | null = null;
+    let roomObjGlobal: any | undefined = undefined;
+    if (isDungeonActive && dungeonProgressRef.current.activeDungeonId) {
+      const dungeonId = dungeonProgressRef.current.activeDungeonId;
+      const remaining = dungeonProgressRef.current.remaining || 0;
+      const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
+      const def = (idx !== null && selectedMap?.dungeons) ? selectedMap.dungeons[idx] : undefined;
+      const currentFloor = def ? (def.floors - remaining + 1) : remaining;
+      const roomId = `${dungeonId}_floor_${currentFloor}`;
+      roomObjGlobal = getRoomsForMap(selectedMapId ?? undefined).find((r) => r.id === roomId) as any | undefined;
+      if (roomObjGlobal && Array.isArray(roomObjGlobal.enemyPool) && roomObjGlobal.enemyPool.length > 0) {
+        // clone to avoid modifying original
+        roomSpawnCandidates = [...roomObjGlobal.enemyPool];
+      }
+    }
+
     for (let i = 0; i < count; i++) {
       if (isDungeonActive && (dungeonProgressRef.current.remaining || 0) === 1) {
         // boss floor: spawn boss once
@@ -210,46 +230,54 @@ export default function Game() {
             console.log('[DEBUG] boss template not found, skipping boss spawn', { bossId, selectedMapId, pool: selectedMap?.enemyPool });
           }
         }
-      } else {
-          // If inside a dungeon (non-boss floor), prefer room-based deterministic spawns
-          if (isDungeonActive && dungeonProgressRef.current.activeDungeonId) {
-            const dungeonId = dungeonProgressRef.current.activeDungeonId;
-            const remaining = dungeonProgressRef.current.remaining || 0;
-            const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
-            const def = (idx !== null && selectedMap?.dungeons) ? selectedMap.dungeons[idx] : undefined;
-            const currentFloor = def ? (def.floors - remaining + 1) : remaining;
-            const roomId = `${dungeonId}_floor_${currentFloor}`;
-            const tid = pickEnemyFromRoom(selectedMapId ?? undefined, roomId);
-            if (tid) {
-              // If this room is defined, allow it even if not present in map.enemyPool
-              const roomObj = getRoomsForMap(selectedMapId ?? undefined).find((r) => r.id === roomId) as any | undefined;
-              const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid);
-              const tplBelongs = roomObj ? true : (selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid)) : !!tpl);
-              if (tplBelongs) {
-                spawnEnemy(tid, undefined, { isBoss: !!roomObj?.isBossRoom, roomId });
-                spawned++;
+          } else {
+            // If inside a dungeon (non-boss floor), prefer room-based deterministic spawns
+            if (isDungeonActive && dungeonProgressRef.current.activeDungeonId) {
+              const dungeonId = dungeonProgressRef.current.activeDungeonId;
+              const remaining = dungeonProgressRef.current.remaining || 0;
+              const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
+              const def = (idx !== null && selectedMap?.dungeons) ? selectedMap.dungeons[idx] : undefined;
+              const currentFloor = def ? (def.floors - remaining + 1) : remaining;
+              const roomId = `${dungeonId}_floor_${currentFloor}`;
+              // If we have a prepared non-repeating candidate list, draw from it without replacement
+              let tid: string | undefined = undefined;
+              if (roomSpawnCandidates && roomSpawnCandidates.length > 0) {
+                // pick a random index from candidates and remove it
+                const ri = Math.floor(Math.random() * roomSpawnCandidates.length);
+                tid = roomSpawnCandidates.splice(ri, 1)[0];
               } else {
-                console.log('[DEBUG] resolved room template not allowed for map - skipping spawn', { selectedMapId, tid, tpl, pool: selectedMap?.enemyPool, roomId });
+                // fallback to old behavior
+                tid = pickEnemyFromRoom(selectedMapId ?? undefined, roomId);
               }
-            } else {
-              // fallback to area pool
-              const tid2 = pickEnemyFromMap(selectedMapId ?? undefined);
-              if (tid2) {
-                const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid2);
-                const areaName = selectedMap?.name ?? 'Spawn';
-                const tplBelongs = selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid2)) : !!tpl;
+              if (tid) {
+                const roomObj = roomObjGlobal || getRoomsForMap(selectedMapId ?? undefined).find((r) => r.id === roomId) as any | undefined;
+                const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid);
+                const tplBelongs = roomObj ? true : (selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid)) : !!tpl);
                 if (tplBelongs) {
-                  spawnEnemy(tid2);
+                  spawnEnemy(tid, undefined, { isBoss: !!roomObj?.isBossRoom, roomId });
                   spawned++;
                 } else {
-                  console.log('[DEBUG] resolved template not in selectedMap.enemyPool - skipping spawn', { selectedMapId, tid2, tpl, pool: selectedMap?.enemyPool });
+                  console.log('[DEBUG] resolved room template not allowed for map - skipping spawn', { selectedMapId, tid, tpl, pool: selectedMap?.enemyPool, roomId });
                 }
               } else {
-                const areaName = selectedMap?.name ?? 'Spawn';
-                console.log('[DEBUG] no enemy templates belong to this area, skipping spawn', { selectedMapId, areaName });
+                // fallback to area pool
+                const tid2 = pickEnemyFromMap(selectedMapId ?? undefined);
+                if (tid2) {
+                  const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid2);
+                  const areaName = selectedMap?.name ?? 'Spawn';
+                  const tplBelongs = selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid2)) : !!tpl;
+                  if (tplBelongs) {
+                    spawnEnemy(tid2);
+                    spawned++;
+                  } else {
+                    console.log('[DEBUG] resolved template not in selectedMap.enemyPool - skipping spawn', { selectedMapId, tid2, tpl, pool: selectedMap?.enemyPool });
+                  }
+                } else {
+                  const areaName = selectedMap?.name ?? 'Spawn';
+                  console.log('[DEBUG] no enemy templates belong to this area, skipping spawn', { selectedMapId, areaName });
+                }
               }
-            }
-          } else {
+            } else {
             const tid = pickEnemyFromMap(selectedMapId ?? undefined);
             if (tid) {
               // extra guard: ensure the resolved template is inside the map's enemyPool
