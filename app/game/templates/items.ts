@@ -62,6 +62,7 @@ export const ITEM_POOL: ItemTemplate[] = [
 
 export const rarityMultiplier: Record<Rarity, number> = {
   common: 1,
+  uncommon: 1.15,
   rare: 1.3,
   epic: 1.6,
   legendary: 2.2,
@@ -70,6 +71,7 @@ export const rarityMultiplier: Record<Rarity, number> = {
 
 export const priceMultiplier: Record<Rarity, number> = {
   common: 1,
+  uncommon: 1.3,
   rare: 1.6,
   epic: 2.6,
   legendary: 5,
