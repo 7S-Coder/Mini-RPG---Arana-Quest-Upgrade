@@ -65,11 +65,11 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
 
   return (
     <Modal title="Store" onClose={onClose}>
-      <div style={{ minWidth: 800, minHeight: 400 }}>
+      <div style={{ minWidth: 800, minHeight: 350 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {/* Potions Section */}
           <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
-            <h3>Healing Potions</h3>
+            <h3 style={{ margin: '0 0 8px 0' }}>Healing Potions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 320 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
                 <div>
@@ -130,7 +130,7 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
 
           {/* Loot Boxes Section */}
           <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
-            <h3>Loot Boxes</h3>
+            <h3 style={{ margin: '0 0 8px 0' }}>Loot Boxes</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 320 }}>
               {(['uncommon', 'rare', 'epic', 'legendary', 'mythic'] as Rarity[]).map((rarity) => {
                 const cost = LOOT_BOX_PRICES[rarity];
