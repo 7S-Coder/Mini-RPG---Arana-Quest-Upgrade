@@ -89,11 +89,11 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
   const COSTS: Record<string, number> = { hp: 1, dmg: 2, def: 3, crit: 3, dodge: 3 };
 
   // debug wrappers for allocate/deallocate to log events
-  const _allocate = (stat: string) => {
+  const _allocate = (stat: AllocationStat) => {
     try { console.log('[InventoryModal] allocate requested ->', stat, 'remainingPoints', remainingPoints); } catch (e) {}
     try { return allocate && allocate(stat); } catch (e) { try { console.error(e); } catch (e) {} }
   };
-  const _deallocate = (stat: string) => {
+  const _deallocate = (stat: AllocationStat) => {
     try { console.log('[InventoryModal] deallocate requested ->', stat, 'allocated', (allocated as any)[stat]); } catch (e) {}
     try { return deallocate && deallocate(stat); } catch (e) { try { console.error(e); } catch (e) {} }
   };
