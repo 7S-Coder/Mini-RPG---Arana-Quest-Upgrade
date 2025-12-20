@@ -3,10 +3,12 @@
 import React from "react";
 import Modal from "./Modal";
 
+type AllocationStat = 'hp' | 'dmg' | 'def' | 'crit' | 'dodge';
+
 type Props = {
   progression: any;
-  allocate: (stat: string) => void;
-  deallocate?: (stat: string) => void;
+  allocate: (stat: AllocationStat) => void;
+  deallocate?: (stat: AllocationStat) => void;
   onClose: () => void;
 };
 

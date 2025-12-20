@@ -3,6 +3,8 @@
 import React from "react";
 import Modal from "./Modal";
 
+type AllocationStat = 'hp' | 'dmg' | 'def' | 'crit' | 'dodge';
+
 type Props = {
   inventory: any[];
   equipment: Record<string, any>;
@@ -14,8 +16,8 @@ type Props = {
   onForge?: (itemId: string) => { ok: boolean; msg: string } | Promise<{ ok: boolean; msg: string }>;
   onClose: () => void;
   progression?: any;
-  allocate?: (stat: string) => void;
-  deallocate?: (stat: string) => void;
+  allocate?: (stat: AllocationStat) => void;
+  deallocate?: (stat: AllocationStat) => void;
 };
 
 const RARITY_COLOR: Record<string, string> = {

@@ -918,10 +918,10 @@ export default function Game() {
                       if (idx > highestIdx) highestIdx = idx;
                     }
                     const target = RARITY_ORDER[highestIdx];
-                    if (target && target !== 'common' && !(player.unlockedTiers && player.unlockedTiers.includes(target))) {
+                    if (target && target !== 'common' && !(player.unlockedTiers && player.unlockedTiers.includes(target as Rarity))) {
                       const threshold = mm?.dungeonThreshold ?? mm?.minLevel ?? 0;
                       if ((player.level ?? 0) >= (threshold || 0)) {
-                        setPlayer((p) => ({ ...p, unlockedTiers: [...(p.unlockedTiers ?? ['common']), target as any] }));
+                        setPlayer((p) => ({ ...p, unlockedTiers: [...(p.unlockedTiers ?? ['common']), target as Rarity] }));
                         try { saveCoreGame && saveCoreGame(null, 'auto_unlock_map_tier'); } catch (e) {}
                         try { pushLog && pushLog(`Unlocked tier: ${target} (map ${mm?.name})`); } catch (e) {}
                         try { addToast && addToast(`Unlocked tier: ${target}`, 'ok'); } catch (e) {}
