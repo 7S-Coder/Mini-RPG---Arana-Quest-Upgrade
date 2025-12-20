@@ -83,7 +83,7 @@ export function useDungeon(opts: {
       // Handle death in dungeon
       if (isInsideDungeon && resultType === 'death') {
         try {
-          dungeonProgressRef.current.activeMapId = null;
+          // Keep activeMapId so the system knows we're still farming on this map
           dungeonProgressRef.current.activeDungeonIndex = null;
           dungeonProgressRef.current.activeDungeonId = null;
           dungeonProgressRef.current.remaining = 0;
@@ -105,6 +105,19 @@ export function useDungeon(opts: {
         return false;
       }
 
+      // Log why farming phase didn't trigger
+      if (resultType === 'clear' && !isInsideDungeon) {
+        try { 
+          console.log('[useDungeon] FARMING phase not triggered:', { 
+            hasDungeons: !!currentMap?.dungeons,
+            isInsideDungeon,
+            resultType,
+            mapName: currentMap?.name,
+            mapId: currentMap?.id
+          }); 
+        } catch(e) {}
+      }
+
       // FARMING PHASE: Count down to dungeon activation
       if (currentMap?.dungeons && 
           !isInsideDungeon && 
@@ -114,7 +127,7 @@ export function useDungeon(opts: {
         const after = dungeonProgressRef.current.fightsRemainingBeforeDungeon || 0;
         syncDungeonUI();
 
-        try { console.debug('[useDungeon] farming decrement:', { before, after }); } catch(e) {}
+        try { console.log('[useDungeon] FARMING: decrement from ' + before + ' to ' + after); } catch(e) {}
 
         // Activate dungeon
         if (after <= 0) {

@@ -594,7 +594,8 @@ export default function Game() {
     }
     else if (opts?.type !== 'flee') {
       // Only increment streak during farming (not in dungeon)
-      const inDungeonActive = dungeonUI.activeMapId === selectedMapId && dungeonUI.activeDungeonIndex != null;
+      // Use dungeonProgressRef directly to avoid race conditions with state updates
+      const inDungeonActive = dungeonProgressRef.current.activeDungeonIndex != null && dungeonProgressRef.current.activeMapId === selectedMapId;
       if (!inDungeonActive) {
         try { incMapStreak(selectedMapId); console.debug('[Game] incremented map streak', { mapId: selectedMapId, streak: getMapStreak(selectedMapId) }); } catch (e) {}
       }

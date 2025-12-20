@@ -339,7 +339,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                               <div style={{ display: 'flex', gap: 8 }}>
                                 {it.category === 'consumable' ? (
                                   <button type="button" onClick={(e) => { e.stopPropagation(); if (!onUse) return; setTimeout(() => { try { const res = onUse(it.id); Promise.resolve(res).then(() => {}); } catch {} }, 0); }}>Use</button>
-                                ) : (
+                                ) : it.slot === 'key' ? null : (
                                   <button type="button" onClick={(e) => { e.stopPropagation(); if (!onEquip) return; setTimeout(() => { try { onEquip(it); } catch {} }, 0); }}>Equip ({SLOT_LABELS[it.slot] ?? it.slot})</button>
                                 )}
                                 <button type="button" onClick={(e) => { e.stopPropagation(); if (!onSell) return; setTimeout(() => { try { onSell(it.id); } catch {} }, 0); }}>Sell ({priceFor(it)} g)</button>
