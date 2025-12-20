@@ -908,7 +908,7 @@ export default function Game() {
       {modalName === 'store' && (
         <StoreModal onClose={closeModal} buyPotion={storeBuy} buyLootBox={storeBuyLootBox} playerGold={player.gold ?? 0} unlockedRarities={getUnlockedRarities()} />
       )}
-      {modalName === 'catalogue' && (
+      {modalName === 'catalog' && (
         <CatalogModal onClose={closeModal} />
       )}
       {modalName === 'bestiary' && (
