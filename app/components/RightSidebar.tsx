@@ -5,7 +5,7 @@ export default function RightSidebar({ onOpenModal }: { onOpenModal?: (name: str
     <aside>
       <div className="right-buttons">
         <button className="btn" onClick={() => onOpenModal?.("store")}>Store</button>
-        <button className="btn" onClick={() => onOpenModal?.("catalogue")}>Catalog</button>
+        <button className="btn" onClick={() => onOpenModal?.("catalog")}>Catalog</button>
         <button className="btn" onClick={() => onOpenModal?.("bestiary")}>Bestiary</button>
         <button className="btn" onClick={() => onOpenModal?.("maps")}>Maps</button>
       </div>
