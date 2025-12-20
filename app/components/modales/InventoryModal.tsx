@@ -51,6 +51,14 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
   const [activeTab, setActiveTab] = React.useState<'inventory' | 'equipment' | 'forge' | 'statistics'>('inventory');
   const [filterSlot, setFilterSlot] = React.useState<string>('all');
   const [selectedItemForAction, setSelectedItemForAction] = React.useState<any>(null);
+  const [hoveredTooltip, setHoveredTooltip] = React.useState<string | null>(null);
+
+  const TOOLTIPS: Record<string, string> = {
+    upgradeStat: 'Increase a random stat by 1-3. Costs 500 gold.',
+    lockStat: 'Prevent a stat from being rerolled on future upgrades. Costs 300 gold + 1 Mithril Ore.',
+    // infusion: 'Mark an item with essence, improving its appearance. Costs 50 essence.',
+    mythicEvolution: 'Transform a Legendary item into a Mythic rarity item with +2 to all stats. Costs 150 essence.',
+  };
 
   const MAX_CARRY_WEIGHT = 200;
   const currentWeight = React.useMemo(() => {
@@ -142,7 +150,16 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                         
                         <div style={{ display: 'grid', gap: 10 }}>
                         {/* Upgrade Stat */}
-                        <div style={{ padding: 12, background: '#1a1a1a', borderRadius: 10 }}>
+                        <div 
+                          style={{ padding: 12, background: '#1a1a1a', borderRadius: 10, position: 'relative' }}
+                          onMouseEnter={() => setHoveredTooltip('upgradeStat')}
+                          onMouseLeave={() => setHoveredTooltip(null)}
+                        >
+                          {hoveredTooltip === 'upgradeStat' && (
+                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+                              {TOOLTIPS.upgradeStat}
+                            </div>
+                          )}
                           <div style={{ fontWeight: 700, marginBottom: 8 }}>⬆ Upgrade Stat (500g)</div>
                           {selectedItemForAction.stats && Object.entries(selectedItemForAction.stats).map(([stat, val]: [string, any]) => (
                             <button key={stat} onClick={() => {
@@ -158,7 +175,16 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                         </div>
 
                         {/* Lock Stat */}
-                        <div style={{ padding: 12, background: '#1a1a1a', borderRadius: 10 }}>
+                        <div 
+                          style={{ padding: 12, background: '#1a1a1a', borderRadius: 10, position: 'relative' }}
+                          onMouseEnter={() => setHoveredTooltip('lockStat')}
+                          onMouseLeave={() => setHoveredTooltip(null)}
+                        >
+                          {hoveredTooltip === 'lockStat' && (
+                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+                              {TOOLTIPS.lockStat}
+                            </div>
+                          )}
                           <div style={{ fontWeight: 700, marginBottom: 8 }}>Lock Stat (300g + 1 Ore)</div>
                           {selectedItemForAction.stats && Object.entries(selectedItemForAction.stats).map(([stat, val]: [string, any]) => {
                             const isLocked = selectedItemForAction.lockedStats?.includes(stat);
@@ -177,7 +203,16 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                         </div>
 
                         {/* Infusion */}
-                        <div style={{ padding: 12, background: '#1a1a1a', borderRadius: 10 }}>
+                        {/* <div 
+                          style={{ padding: 12, background: '#1a1a1a', borderRadius: 10, position: 'relative' }}
+                          onMouseEnter={() => setHoveredTooltip('infusion')}
+                          onMouseLeave={() => setHoveredTooltip(null)}
+                        >
+                          {hoveredTooltip === 'infusion' && (
+                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+                              {TOOLTIPS.infusion}
+                            </div>
+                          )}
                           <div style={{ fontWeight: 700, marginBottom: 8 }}>Infusion (50e)</div>
                           <button onClick={() => {
                             if (onInfuse) {
@@ -188,11 +223,20 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                           }} style={{ width: '100%', fontSize: 11 }} disabled={selectedItemForAction.infused || (player?.essence ?? 0) < 50}>
                             {selectedItemForAction.infused ? 'Already infused' : (player?.essence ?? 0) < 50 ? '❌ Not enough essence' : 'Infuse'}
                           </button>
-                        </div>
+                        </div> */}
 
                         {/* Mythic Evolution */}
                         {selectedItemForAction.rarity === 'legendary' && (
-                          <div style={{ padding: 12, background: '#1a1a1a', borderRadius: 10 }}>
+                          <div 
+                            style={{ padding: 12, background: '#1a1a1a', borderRadius: 10, position: 'relative' }}
+                            onMouseEnter={() => setHoveredTooltip('mythicEvolution')}
+                            onMouseLeave={() => setHoveredTooltip(null)}
+                          >
+                            {hoveredTooltip === 'mythicEvolution' && (
+                              <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+                                {TOOLTIPS.mythicEvolution}
+                              </div>
+                            )}
                             <div style={{ fontWeight: 700, marginBottom: 8 }}>Mythic Evolution (150e)</div>
                             <button onClick={() => {
                               if (onMythicEvolution) {
