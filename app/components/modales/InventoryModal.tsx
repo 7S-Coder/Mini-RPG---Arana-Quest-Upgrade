@@ -358,7 +358,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                       for (const s of stats) {
                         const count = (allocated as any)[s] || 0;
                         for (let i = 0; i < count; i++) {
-                          try { deallocate && deallocate(s); } catch (e) {}
+                          try { deallocate && deallocate(s as AllocationStat); } catch (e) {}
                         }
                       }
                     }}
