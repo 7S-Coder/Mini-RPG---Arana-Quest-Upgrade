@@ -142,22 +142,34 @@ export default function useCombat({
         try { console.log('[useCombat] calling addXp ->', xpGain); } catch (e) {}
         if (typeof addXp === 'function') addXp(xpGain);
         
-        // Boss rewards: essence and materials
+        // Boss rewards: essence and materials (dungeon only)
         if (killed.isBoss) {
           const essenceReward = Math.floor(Math.random() * 3) + 1; // 1-3 essences
-          const materials = ['essence_dust', 'mithril_ore', 'star_fragment', 'void_shard'] as const;
-          const randomMaterial = materials[Math.floor(Math.random() * materials.length)];
+          const isDungeonRoom = !!killed.roomId;
           
           try {
-            setPlayer((p: any) => ({
-              ...p,
-              essence: (p.essence ?? 0) + essenceReward,
-              materials: {
+            let logMsg = `Boss drops: +${essenceReward}✨`;
+            const updateObj: any = {
+              essence: (p: any) => (p.essence ?? 0) + essenceReward,
+            };
+            
+            // Materials only drop in dungeon
+            if (isDungeonRoom) {
+              const materials = ['essence_dust', 'mithril_ore', 'star_fragment', 'void_shard'] as const;
+              const randomMaterial = materials[Math.floor(Math.random() * materials.length)];
+              updateObj.materials = (p: any) => ({
                 ...p.materials,
                 [randomMaterial]: (p.materials?.[randomMaterial] ?? 0) + 1
-              }
+              });
+              logMsg += ` and +1 ${randomMaterial}`;
+            }
+            
+            setPlayer((p: any) => ({
+              ...p,
+              essence: updateObj.essence(p),
+              materials: updateObj.materials ? updateObj.materials(p) : p.materials,
             }));
-            pushLog(`Boss drops: +${essenceReward}✨ and +1 ${randomMaterial}`);
+            pushLog(logMsg);
           } catch (e) {}
         }
         
