@@ -26,7 +26,7 @@ import { useNarration } from "../hooks/useNarration";
 import { getMapNarration, getCombatNarration, TUTORIAL_MESSAGES } from "./templates/narration";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, createItemFromTemplate, forgeThreeIdentical, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, createItemFromTemplate, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins } = useGameState();
 
   // streak per map (instead of global streak)
   const [mapStreaks, setMapStreaks] = useState<Record<string, number>>({});
@@ -924,6 +924,30 @@ export default function Game() {
                 return r;
               }
             } catch (e) { console.error('onForge handler error', e); return { ok: false, msg: 'Forge error' }; }
+          }}
+          onUpgradeStat={(itemId: string, statKey: string) => {
+            const res = upgradeStat(itemId, statKey);
+            try { pushLog(res.msg); } catch (e) {}
+            try { addToast(res.msg, res.ok ? 'ok' : 'error'); } catch (e) {}
+            return res;
+          }}
+          onLockStat={(itemId: string, statKey: string) => {
+            const res = lockStat(itemId, statKey);
+            try { pushLog(res.msg); } catch (e) {}
+            try { addToast(res.msg, res.ok ? 'ok' : 'error'); } catch (e) {}
+            return res;
+          }}
+          onInfuse={(itemId: string) => {
+            const res = infuseItem(itemId);
+            try { pushLog(res.msg); } catch (e) {}
+            try { addToast(res.msg, res.ok ? 'ok' : 'error'); } catch (e) {}
+            return res;
+          }}
+          onMythicEvolution={(itemId: string) => {
+            const res = mythicEvolution(itemId);
+            try { pushLog(res.msg); } catch (e) {}
+            try { addToast(res.msg, res.ok ? 'ok' : 'error'); } catch (e) {}
+            return res;
           }}
           onClose={closeModal}
         />

@@ -18,9 +18,15 @@ type Props = {
 	onOpenModal?: (name: string) => void;
 	gold?: number;
 	essence?: number;
+	materials?: {
+		essence_dust?: number;
+		mithril_ore?: number;
+		star_fragment?: number;
+		void_shard?: number;
+	};
 };
 
-export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, crit, speed, lastLevelUpAt, onOpenModal, gold, essence }: Props) {
+export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, crit, speed, lastLevelUpAt, onOpenModal, gold, essence, materials }: Props) {
 	const [showLevelUp, setShowLevelUp] = useState(false);
 	const [damageFlash, setDamageFlash] = useState<{ amount: number; key: string } | null>(null);
 	const prevHpRef = useRef<number>(hp);
@@ -74,6 +80,12 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 					<div style={{ color: '#ffd700' }}>{(typeof gold === 'number' ? gold.toFixed(2) : (gold ?? 0))} g</div>
 					 
 					<div style={{ color: '#6eb3ff' }}>{(essence ?? 0).toFixed(0)} e</div>
+				</div>
+				<div style={{ fontSize: 11, marginTop: 6, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+					<div style={{ color: '#a389d9' }}>⚪ {materials?.essence_dust ?? 0}</div>
+					<div style={{ color: '#c0a080' }}>⬜ {materials?.mithril_ore ?? 0}</div>
+					<div style={{ color: '#ffc100' }}>✨ {materials?.star_fragment ?? 0}</div>
+					<div style={{ color: '#4a4a6a' }}>◆ {materials?.void_shard ?? 0}</div>
 				</div>
 				</div>
 			</div>

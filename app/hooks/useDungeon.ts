@@ -172,8 +172,9 @@ export function useDungeon(opts: {
               const floors = d?.floors ?? 0;
               const goldReward = Math.round(100 + (player.level || 1) * 10 + floors * 25);
               const xpReward = Math.round(50 + (player.level || 1) * 5 + floors * 20);
+              const essenceReward = Math.floor(Math.random() * 3) + 1; // 1-3 essences
               
-              try { setPlayer && setPlayer((p: any) => ({ ...p, gold: +(((p.gold ?? 0) + goldReward).toFixed(2)) })); } catch (e) {}
+              try { setPlayer && setPlayer((p: any) => ({ ...p, gold: +(((p.gold ?? 0) + goldReward).toFixed(2)), essence: (p.essence ?? 0) + essenceReward })); } catch (e) {}
               try { addXp && addXp(xpReward); } catch (e) {}
               try {
                 const rarity = Math.random() < 0.08 ? 'legendary' : Math.random() < 0.25 ? 'epic' : 'rare';
@@ -181,8 +182,8 @@ export function useDungeon(opts: {
                 createCustomItem && createCustomItem({ slot: 'weapon' as any, name: itemName, rarity: rarity as any, category: 'weapon', stats: { dmg: Math.max(1, Math.round((player.dmg || 1) * (rarity === 'legendary' ? 1.6 : rarity === 'epic' ? 1.2 : 1))) } }, true);
               } catch (e) { console.error('[useDungeon] reward error:', e); }
               
-              pushLog(`Dungeon complete! Earned +${goldReward} g and +${xpReward} XP!`);
-              try { addToast && addToast(`Dungeon cleared! +${goldReward} g, +${xpReward} XP!`, 'ok', 6000); } catch (e) {}
+              pushLog(`Dungeon complete! Earned +${goldReward} g, +${xpReward} XP and +${essenceReward}✨!`);
+              try { addToast && addToast(`Dungeon cleared! +${goldReward} g, +${xpReward} XP, +${essenceReward}✨!`, 'ok', 6000); } catch (e) {}
               try { addEffect && addEffect({ type: 'pickup', text: `+${goldReward} g`, target: 'player' }); } catch (e) {}
             } catch (e) { console.error('[useDungeon] completion error:', e); }
 

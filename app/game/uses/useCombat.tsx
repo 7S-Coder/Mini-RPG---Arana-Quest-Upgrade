@@ -141,6 +141,26 @@ export default function useCombat({
         pushLog(`Gain XP: ${xpGain}`);
         try { console.log('[useCombat] calling addXp ->', xpGain); } catch (e) {}
         if (typeof addXp === 'function') addXp(xpGain);
+        
+        // Boss rewards: essence and materials
+        if (killed.isBoss) {
+          const essenceReward = Math.floor(Math.random() * 3) + 1; // 1-3 essences
+          const materials = ['essence_dust', 'mithril_ore', 'star_fragment', 'void_shard'] as const;
+          const randomMaterial = materials[Math.floor(Math.random() * materials.length)];
+          
+          try {
+            setPlayer((p: any) => ({
+              ...p,
+              essence: (p.essence ?? 0) + essenceReward,
+              materials: {
+                ...p.materials,
+                [randomMaterial]: (p.materials?.[randomMaterial] ?? 0) + 1
+              }
+            }));
+            pushLog(`Boss drops: +${essenceReward}✨ and +1 ${randomMaterial}`);
+          } catch (e) {}
+        }
+        
         // try drop
         try {
           const dropped = typeof onDrop === 'function' ? onDrop(killed) : null;

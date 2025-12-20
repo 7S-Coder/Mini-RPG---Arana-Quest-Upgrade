@@ -775,6 +775,292 @@ export function useGameState() {
     }
   };
 
+  // Upgrade Stat: Increase one stat by +1 to +3 (costs Gold)
+  const upgradeStat = (itemId: string, statKey: string): { ok: boolean; msg: string } => {
+    try {
+      let item: Item | undefined = undefined;
+      let isEquipped = false;
+      
+      // Check equipment first
+      const equipmentKeys = Object.keys((equipmentRef.current || {})) as EquipmentSlot[];
+      for (const slot of equipmentKeys) {
+        if ((equipmentRef.current?.[slot])?.id === itemId) {
+          item = equipmentRef.current[slot]!;
+          isEquipped = true;
+          break;
+        }
+      }
+      
+      // If not equipped, check inventory
+      if (!item) {
+        item = inventoryRef.current?.find((i) => i.id === itemId);
+      }
+      
+      if (!item) return { ok: false, msg: 'Item not found' };
+
+      const GOLD_COST = 500;
+      if ((playerRef.current.gold ?? 0) < GOLD_COST) {
+        return { ok: false, msg: `Not enough gold (need ${GOLD_COST}g, have ${playerRef.current.gold ?? 0}g)` };
+      }
+
+      const statValue = item.stats?.[statKey] ?? 0;
+      const boost = Math.floor(Math.random() * 3) + 1; // +1 to +3
+
+      const updatedItem: Item = {
+        ...item,
+        stats: { ...(item.stats || {}), [statKey]: statValue + boost },
+      };
+
+      // Update in inventory or equipment
+      if (isEquipped) {
+        const equipmentKeys = Object.keys((equipmentRef.current || {})) as EquipmentSlot[];
+        for (const slot of equipmentKeys) {
+          if ((equipmentRef.current?.[slot])?.id === itemId) {
+            setEquipment((prev) => ({ ...prev, [slot]: updatedItem }));
+            equipmentRef.current[slot] = updatedItem;
+            break;
+          }
+        }
+      } else {
+        setInventory((prev) =>
+          prev.map((i) => (i.id === itemId ? updatedItem : i))
+        );
+        inventoryRef.current = inventoryRef.current.map((i) => (i.id === itemId ? updatedItem : i));
+      }
+
+      // Deduct gold
+      setPlayer((prev) => ({ ...prev, gold: (prev.gold ?? 0) - GOLD_COST }));
+      playerRef.current.gold = (playerRef.current.gold ?? 0) - GOLD_COST;
+
+      try { saveCoreGame({ player: pickPlayerData(playerRef.current), inventory: inventoryRef.current, equipment: equipmentRef.current }); } catch (e) {}
+      return { ok: true, msg: `Upgraded ${statKey} by +${boost}!` };
+    } catch (e) {
+      console.error('upgradeStat error', e);
+      return { ok: false, msg: 'Upgrade failed' };
+    }
+  };
+
+  // Lock Stat: Prevent a stat from being rerolled (costs Gold + Material)
+  const lockStat = (itemId: string, statKey: string): { ok: boolean; msg: string } => {
+    try {
+      let item: Item | undefined = undefined;
+      let isEquipped = false;
+      
+      // Check equipment first
+      const equipmentKeys = Object.keys((equipmentRef.current || {})) as EquipmentSlot[];
+      for (const slot of equipmentKeys) {
+        if ((equipmentRef.current?.[slot])?.id === itemId) {
+          item = equipmentRef.current[slot]!;
+          isEquipped = true;
+          break;
+        }
+      }
+      
+      // If not equipped, check inventory
+      if (!item) {
+        item = inventoryRef.current?.find((i) => i.id === itemId);
+      }
+      
+      if (!item) return { ok: false, msg: 'Item not found' };
+
+      const GOLD_COST = 300;
+      const MATERIAL_COST = 1;
+      const materials = playerRef.current.materials ?? {};
+
+      if ((playerRef.current.gold ?? 0) < GOLD_COST) {
+        return { ok: false, msg: `Not enough gold (need ${GOLD_COST}g)` };
+      }
+
+      if ((materials.mithril_ore ?? 0) < MATERIAL_COST) {
+        return { ok: false, msg: `Not enough Mithril Ore (need ${MATERIAL_COST})` };
+      }
+
+      const lockedStats = item.lockedStats ?? [];
+      if (lockedStats.includes(statKey)) {
+        return { ok: false, msg: `${statKey} is already locked` };
+      }
+
+      const updatedItem: Item = {
+        ...item,
+        lockedStats: [...lockedStats, statKey],
+      };
+
+      // Update in inventory or equipment
+      if (isEquipped) {
+        const equipmentKeys = Object.keys((equipmentRef.current || {})) as EquipmentSlot[];
+        for (const slot of equipmentKeys) {
+          if ((equipmentRef.current?.[slot])?.id === itemId) {
+            setEquipment((prev) => ({ ...prev, [slot]: updatedItem }));
+            equipmentRef.current[slot] = updatedItem;
+            break;
+          }
+        }
+      } else {
+        setInventory((prev) =>
+          prev.map((i) => (i.id === itemId ? updatedItem : i))
+        );
+        inventoryRef.current = inventoryRef.current.map((i) => (i.id === itemId ? updatedItem : i));
+      }
+
+      // Deduct costs
+      const newMaterials = { ...materials, mithril_ore: (materials.mithril_ore ?? 0) - MATERIAL_COST };
+      setPlayer((prev) => ({
+        ...prev,
+        gold: (prev.gold ?? 0) - GOLD_COST,
+        materials: newMaterials,
+      }));
+      playerRef.current.gold = (playerRef.current.gold ?? 0) - GOLD_COST;
+      playerRef.current.materials = newMaterials;
+
+      try { saveCoreGame({ player: pickPlayerData(playerRef.current), inventory: inventoryRef.current, equipment: equipmentRef.current }); } catch (e) {}
+      return { ok: true, msg: `${statKey} locked!` };
+    } catch (e) {
+      console.error('lockStat error', e);
+      return { ok: false, msg: 'Lock failed' };
+    }
+  };
+
+  // Infusion: Imbue the item with essence (costs Essence)
+  const infuseItem = (itemId: string): { ok: boolean; msg: string } => {
+    try {
+      let item: Item | undefined = undefined;
+      let isEquipped = false;
+      
+      // Check equipment first
+      const equipmentKeys = Object.keys((equipmentRef.current || {})) as EquipmentSlot[];
+      for (const slot of equipmentKeys) {
+        if ((equipmentRef.current?.[slot])?.id === itemId) {
+          item = equipmentRef.current[slot]!;
+          isEquipped = true;
+          break;
+        }
+      }
+      
+      // If not equipped, check inventory
+      if (!item) {
+        item = inventoryRef.current?.find((i) => i.id === itemId);
+      }
+      
+      if (!item) return { ok: false, msg: 'Item not found' };
+
+      const ESSENCE_COST = 50;
+      if ((playerRef.current.essence ?? 0) < ESSENCE_COST) {
+        return { ok: false, msg: `Not enough essence (need ${ESSENCE_COST}✨, have ${playerRef.current.essence ?? 0}✨)` };
+      }
+
+      if (item.infused) {
+        return { ok: false, msg: 'Item is already infused' };
+      }
+
+      const updatedItem: Item = {
+        ...item,
+        infused: true,
+        name: item.name.includes('✨') ? item.name : `${item.name} ✨`,
+      };
+
+      // Update in inventory or equipment
+      if (isEquipped) {
+        const equipmentKeys = Object.keys((equipmentRef.current || {})) as EquipmentSlot[];
+        for (const slot of equipmentKeys) {
+          if ((equipmentRef.current?.[slot])?.id === itemId) {
+            setEquipment((prev) => ({ ...prev, [slot]: updatedItem }));
+            equipmentRef.current[slot] = updatedItem;
+            break;
+          }
+        }
+      } else {
+        setInventory((prev) =>
+          prev.map((i) => (i.id === itemId ? updatedItem : i))
+        );
+        inventoryRef.current = inventoryRef.current.map((i) => (i.id === itemId ? updatedItem : i));
+      }
+
+      // Deduct essence
+      setPlayer((prev) => ({ ...prev, essence: (prev.essence ?? 0) - ESSENCE_COST }));
+      playerRef.current.essence = (playerRef.current.essence ?? 0) - ESSENCE_COST;
+
+      try { saveCoreGame({ player: pickPlayerData(playerRef.current), inventory: inventoryRef.current, equipment: equipmentRef.current }); } catch (e) {}
+      return { ok: true, msg: 'Item infused with essence!' };
+    } catch (e) {
+      console.error('infuseItem error', e);
+      return { ok: false, msg: 'Infusion failed' };
+    }
+  };
+
+  // Mythic Evolution: Transform legendary to mythic (costs 3x Essence)
+  const mythicEvolution = (itemId: string): { ok: boolean; msg: string } => {
+    try {
+      let item: Item | undefined = undefined;
+      let isEquipped = false;
+      
+      // Check equipment first
+      const equipmentKeys = Object.keys((equipmentRef.current || {})) as EquipmentSlot[];
+      for (const slot of equipmentKeys) {
+        if ((equipmentRef.current?.[slot])?.id === itemId) {
+          item = equipmentRef.current[slot]!;
+          isEquipped = true;
+          break;
+        }
+      }
+      
+      // If not equipped, check inventory
+      if (!item) {
+        item = inventoryRef.current?.find((i) => i.id === itemId);
+      }
+      
+      if (!item) return { ok: false, msg: 'Item not found' };
+
+      if (item.rarity !== 'legendary') {
+        return { ok: false, msg: 'Only legendary items can evolve to mythic' };
+      }
+
+      const ESSENCE_COST = 150; // 3x 50
+      if ((playerRef.current.essence ?? 0) < ESSENCE_COST) {
+        return { ok: false, msg: `Not enough essence (need ${ESSENCE_COST}✨, have ${playerRef.current.essence ?? 0}✨)` };
+      }
+
+      // Boost all stats by +2 for mythic transformation
+      const boostedStats: Record<string, number> = {};
+      for (const [key, val] of Object.entries(item.stats ?? {})) {
+        boostedStats[key] = (val ?? 0) + 2;
+      }
+
+      const updatedItem: Item = {
+        ...item,
+        rarity: 'mythic',
+        stats: boostedStats,
+        name: item.name.includes('Mythic') ? item.name : `${item.name} (Mythic)`,
+      };
+
+      // Update in inventory or equipment
+      if (isEquipped) {
+        const equipmentKeys = Object.keys((equipmentRef.current || {})) as EquipmentSlot[];
+        for (const slot of equipmentKeys) {
+          if ((equipmentRef.current?.[slot])?.id === itemId) {
+            setEquipment((prev) => ({ ...prev, [slot]: updatedItem }));
+            equipmentRef.current[slot] = updatedItem;
+            break;
+          }
+        }
+      } else {
+        setInventory((prev) =>
+          prev.map((i) => (i.id === itemId ? updatedItem : i))
+        );
+        inventoryRef.current = inventoryRef.current.map((i) => (i.id === itemId ? updatedItem : i));
+      }
+
+      // Deduct essence
+      setPlayer((prev) => ({ ...prev, essence: (prev.essence ?? 0) - ESSENCE_COST }));
+      playerRef.current.essence = (playerRef.current.essence ?? 0) - ESSENCE_COST;
+
+      try { saveCoreGame({ player: pickPlayerData(playerRef.current), inventory: inventoryRef.current, equipment: equipmentRef.current }); } catch (e) {}
+      return { ok: true, msg: 'Item evolved to Mythic!' };
+    } catch (e) {
+      console.error('mythicEvolution error', e);
+      return { ok: false, msg: 'Evolution failed' };
+    }
+  };
+
   // Equip / Unequip helpers to keep logic centralized and avoid race conditions
   const equipItem = (item: Item): boolean => {
     try { console.log('equipItem called', item && item.id, item && item.slot); } catch (e) {}
@@ -1174,6 +1460,6 @@ export function useGameState() {
 
   const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, saveCoreGame, loadGame, isInCombat, progression, allocate: allocate, deallocate: deallocate, consecWins, incConsecWins, resetConsecWins } as const;
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, saveCoreGame, loadGame, isInCombat, progression, allocate: allocate, deallocate: deallocate, consecWins, incConsecWins, resetConsecWins } as const;
 }
 

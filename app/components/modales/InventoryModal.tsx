@@ -14,6 +14,10 @@ type Props = {
   onSell: (itemId: string) => void;
   onUse?: (itemId: string) => boolean | Promise<boolean> | void;
   onForge?: (itemId: string) => { ok: boolean; msg: string } | Promise<{ ok: boolean; msg: string }>;
+  onUpgradeStat?: (itemId: string, statKey: string) => { ok: boolean; msg: string };
+  onLockStat?: (itemId: string, statKey: string) => { ok: boolean; msg: string };
+  onInfuse?: (itemId: string) => { ok: boolean; msg: string };
+  onMythicEvolution?: (itemId: string) => { ok: boolean; msg: string };
   onClose: () => void;
   progression?: any;
   allocate?: (stat: AllocationStat) => void;
@@ -41,11 +45,12 @@ const SLOT_LABELS: Record<string, string> = {
 
 const SLOT_ORDER = ['hat', 'chestplate', 'belt', 'weapon', 'ring', 'familiar','boots' ];
 
-export default function InventoryModal({ inventory, equipment, player, onEquip, onUnequip, onSell, onUse, onForge, onClose, progression, allocate, deallocate }: Props) {
+export default function InventoryModal({ inventory, equipment, player, onEquip, onUnequip, onSell, onUse, onForge, onUpgradeStat, onLockStat, onInfuse, onMythicEvolution, onClose, progression, allocate, deallocate }: Props) {
   React.useEffect(() => { try { console.log('[InventoryModal] progression changed ->', progression); } catch (e) {} }, [progression]);
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
   const [activeTab, setActiveTab] = React.useState<'inventory' | 'equipment' | 'forge' | 'statistics'>('inventory');
   const [filterSlot, setFilterSlot] = React.useState<string>('all');
+  const [selectedItemForAction, setSelectedItemForAction] = React.useState<any>(null);
 
   const MAX_CARRY_WEIGHT = 200;
   const currentWeight = React.useMemo(() => {
@@ -105,7 +110,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: 8 }}>
               <button className={activeTab === 'inventory' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('inventory')}>Inventory</button>
-              <button className={activeTab === 'forge' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('forge')}>Forge</button>
+              <button className={activeTab === 'forge' ? 'btn primary' : 'btn'} onClick={() => { setActiveTab('forge'); setSelectedItemForAction(null); }}>Forge</button>
               <button className={activeTab === 'statistics' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('statistics')}>Statistics</button>
             </div>
             <div>
@@ -118,35 +123,95 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
           {activeTab !== 'statistics' ? (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 12, alignItems: 'stretch', minHeight: 320 }}>
 
-              <div style={{ minWidth: 340, minHeight: 320, position: 'relative' }}>
+              <div style={{ minWidth: 340, minHeight: 320, position: 'relative', display: 'flex', flexDirection: 'column' }}>
                 {activeTab === 'forge' ? (
                   <>
-                    <h2 style={{ marginTop: 0 }}>Forge</h2>
-                    <div style={{ display: 'grid', gap: 10, maxHeight: 420, overflow: 'auto' }}>
-                      {forgeGroups.length === 0 ? (
-                        <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>No items to forge.</div>
-                      ) : forgeGroups.map((g) => {
-                        const RARITY_ORDER = ['common','rare','epic','legendary','mythic'];
-                        const idx = RARITY_ORDER.indexOf(g.rarity);
-                        const target = idx >= 0 && idx < RARITY_ORDER.length - 1 ? RARITY_ORDER[idx + 1] : null;
-                        const unlocked = target && player && Array.isArray(player.unlockedTiers) && player.unlockedTiers.includes(target);
-                        return (
-                          <div key={g.name + '::' + g.slot} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10 }}>
-                            <div>
-                              <div style={{ color: RARITY_COLOR[g.rarity] || '#fff', fontWeight: 700 }}>{g.name} <small style={{ color: '#999' }}>({g.slot})</small></div>
-                              <div style={{ fontSize: 12, color: '#999' }}>{g.ids.length}x</div>
-                            </div>
-                            <div>
-                              {idx === -1 && <button disabled style={{ opacity: 0.5 }}>Not forgeable</button>}
-                              {idx >= RARITY_ORDER.length - 1 && <button disabled style={{ opacity: 0.5 }}>Max rarity</button>}
-                              {idx >= 0 && idx < RARITY_ORDER.length - 1 && g.ids.length < 3 && <button disabled style={{ opacity: 0.5 }}>{`Need ${3 - g.ids.length} more`}</button>}
-                              {idx >= 0 && idx < RARITY_ORDER.length - 1 && g.ids.length >= 3 && !unlocked && <button disabled style={{ opacity: 0.5 }}>{`Locked (unlock ${target})`}</button>}
-                              {idx >= 0 && idx < RARITY_ORDER.length - 1 && g.ids.length >= 3 && unlocked && <button onClick={(e) => { e.stopPropagation(); handleForge(g.ids); }}>Forge → {target}</button>}
-                            </div>
+                    <h2 style={{ marginTop: 0, marginBottom: 0, flexShrink: 0 }}>Forge</h2>
+                    {selectedItemForAction ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 350, overflow: 'auto', flex: 1 }}>
+                        <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 10, flexShrink: 0 }}>
+                          <div style={{ color: RARITY_COLOR[selectedItemForAction.rarity] || '#fff', fontWeight: 700, marginBottom: 8 }}>{selectedItemForAction.name}</div>
+                          <div style={{ fontSize: 12, color: '#999', marginBottom: 8 }}>
+                            {selectedItemForAction.infused && <div>Infused</div>}
+                            {selectedItemForAction.lockedStats && selectedItemForAction.lockedStats.length > 0 && (
+                              <div>Locked: {selectedItemForAction.lockedStats.join(', ')}</div>
+                            )}
                           </div>
-                        );
-                      })}
-                    </div>
+                          <button onClick={() => setSelectedItemForAction(null)} style={{ marginTop: 8 }}>← Back</button>
+                        </div>
+                        
+                        <div style={{ display: 'grid', gap: 10 }}>
+                        {/* Upgrade Stat */}
+                        <div style={{ padding: 12, background: '#1a1a1a', borderRadius: 10 }}>
+                          <div style={{ fontWeight: 700, marginBottom: 8 }}>⬆ Upgrade Stat (500g)</div>
+                          {selectedItemForAction.stats && Object.entries(selectedItemForAction.stats).map(([stat, val]: [string, any]) => (
+                            <button key={stat} onClick={() => {
+                              if (onUpgradeStat) {
+                                const res = onUpgradeStat(selectedItemForAction.id, stat);
+                                setStatus({ ok: res.ok, text: res.msg });
+                                setTimeout(() => setStatus(null), 3000);
+                              }
+                            }} style={{ width: '100%', marginBottom: 4, fontSize: 11 }} disabled={(player?.gold ?? 0) < 500}>
+                              {stat}: {val} {(player?.gold ?? 0) < 500 ? '❌' : '→'}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Lock Stat */}
+                        <div style={{ padding: 12, background: '#1a1a1a', borderRadius: 10 }}>
+                          <div style={{ fontWeight: 700, marginBottom: 8 }}>Lock Stat (300g + 1 Ore)</div>
+                          {selectedItemForAction.stats && Object.entries(selectedItemForAction.stats).map(([stat, val]: [string, any]) => {
+                            const isLocked = selectedItemForAction.lockedStats?.includes(stat);
+                            return (
+                              <button key={stat} onClick={() => {
+                                if (onLockStat) {
+                                  const res = onLockStat(selectedItemForAction.id, stat);
+                                  setStatus({ ok: res.ok, text: res.msg });
+                                  setTimeout(() => setStatus(null), 3000);
+                                }
+                              }} style={{ width: '100%', marginBottom: 4, fontSize: 11 }} disabled={isLocked || (player?.gold ?? 0) < 300 || (player?.materials?.mithril_ore ?? 0) < 1}>
+                                {stat}{isLocked ? ' ✓' : ''} {(player?.gold ?? 0) < 300 || (player?.materials?.mithril_ore ?? 0) < 1 ? '❌' : '→'}
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Infusion */}
+                        <div style={{ padding: 12, background: '#1a1a1a', borderRadius: 10 }}>
+                          <div style={{ fontWeight: 700, marginBottom: 8 }}>Infusion (50e)</div>
+                          <button onClick={() => {
+                            if (onInfuse) {
+                              const res = onInfuse(selectedItemForAction.id);
+                              setStatus({ ok: res.ok, text: res.msg });
+                              setTimeout(() => setStatus(null), 3000);
+                            }
+                          }} style={{ width: '100%', fontSize: 11 }} disabled={selectedItemForAction.infused || (player?.essence ?? 0) < 50}>
+                            {selectedItemForAction.infused ? 'Already infused' : (player?.essence ?? 0) < 50 ? '❌ Not enough essence' : 'Infuse'}
+                          </button>
+                        </div>
+
+                        {/* Mythic Evolution */}
+                        {selectedItemForAction.rarity === 'legendary' && (
+                          <div style={{ padding: 12, background: '#1a1a1a', borderRadius: 10 }}>
+                            <div style={{ fontWeight: 700, marginBottom: 8 }}>Mythic Evolution (150e)</div>
+                            <button onClick={() => {
+                              if (onMythicEvolution) {
+                                const res = onMythicEvolution(selectedItemForAction.id);
+                                setStatus({ ok: res.ok, text: res.msg });
+                                setTimeout(() => setStatus(null), 3000);
+                              }
+                            }} style={{ width: '100%', fontSize: 11 }} disabled={(player?.essence ?? 0) < 150}>
+                              {(player?.essence ?? 0) < 150 ? '❌ Not enough essence' : 'Evolve to Mythic'}
+                            </button>
+                          </div>
+                        )}
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p style={{ color: '#999', fontSize: 12 }}>Select an item to see available actions</p>
+                      </>
+                    )}
                   </>
                 ) : (
                   <>
@@ -158,7 +223,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                           const spanStyle: React.CSSProperties = slot === 'hat' ? { gridColumn: '1 / -1' } : {};
                           return (
                             <div key={slot} style={{ boxSizing: 'border-box', ...spanStyle }}>
-                              <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.04)', padding: 8, borderRadius: 8, textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden' }}>
+                              <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.04)', padding: 8, borderRadius: 8, textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer' }} onClick={() => it && (setActiveTab('forge'), setSelectedItemForAction(it))}>
                                 <div style={{ fontSize: 11, color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
                                 <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 4, overflowWrap: 'anywhere', fontSize: 12 }}>{it ? it.name : 'empty'}</div>
                                 {it ? (
@@ -180,7 +245,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
               </div>
 
               <div style={{ width: 360, position: 'relative', minHeight: 320, maxHeight: 420, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                {activeTab === 'inventory' || activeTab === 'forge' ? (
+                {activeTab === 'inventory' ? (
                   <>
                     <h2 style={{ marginTop: 0, marginBottom: 8, flexShrink: 0 }}>Inventory</h2>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexShrink: 0 }}>
@@ -239,6 +304,18 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                           ))}
                         </div>
                       )}
+                    </div>
+                  </>
+                ) : activeTab === 'forge' ? (
+                  <>
+                    <h2 style={{ marginTop: 0, marginBottom: 8, flexShrink: 0 }}>Items</h2>
+                    <div style={{ display: 'grid', gap: 8, overflow: 'auto', flex: 1, alignContent: 'start' }}>
+                      {[...equipment ? Object.values(equipment).filter(Boolean) : [], ...inventory].map((it) => (
+                        <div key={it?.id} onClick={() => it && setSelectedItemForAction(it)} style={{ padding: 12, background: selectedItemForAction?.id === it?.id ? '#1a3a2e' : '#0d0d0d', borderRadius: 8, cursor: 'pointer', border: selectedItemForAction?.id === it?.id ? '1px solid #2ecc71' : '1px solid transparent' }}>
+                          <div style={{ color: RARITY_COLOR[it?.rarity] || '#fff', fontWeight: 700, fontSize: 12 }}>{it?.name}</div>
+                          <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{it?.slot || 'item'}</div>
+                        </div>
+                      ))}
                     </div>
                   </>
                 ) : (

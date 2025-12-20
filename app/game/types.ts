@@ -12,6 +12,8 @@ export type Item = {
   stats?: Record<string, number>;
   weight?: number;
   quantity?: number; // for stackable items like potions
+  lockedStats?: string[]; // stats that won't change during upgrades
+  infused?: boolean; // has essence infusion
 };
 
 export type Enemy = {
@@ -52,6 +54,13 @@ export type Player = {
   unlockedTiers?: Rarity[];
   // consecutive wins without dying
   consecWins?: number;
+  // forge materials
+  materials?: {
+    essence_dust?: number;
+    mithril_ore?: number;
+    star_fragment?: number;
+    void_shard?: number;
+  };
 };
 
 export type ItemTemplate = Omit<Item, "id" | "rarity"> & { weight?: number; rarity?: Rarity };
