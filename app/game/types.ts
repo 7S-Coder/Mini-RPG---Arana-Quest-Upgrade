@@ -47,6 +47,7 @@ export type Player = {
   speed: number; // px per second
   lastLevelUpAt?: number | null;
   gold?: number;
+  essence?: number; // new currency for future essences
   // unlocked item tiers for crafting/forge and other gating (e.g. ['common','rare'])
   unlockedTiers?: Rarity[];
   // consecutive wins without dying

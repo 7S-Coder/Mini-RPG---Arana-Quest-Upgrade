@@ -33,6 +33,7 @@ export function useGameState() {
     def: 2,
     speed: 120, // default 120 px/s
     gold: 0,
+    essence: 0, // new currency for future essences
     // player starts with 'common' tier unlocked for drops/forge
     unlockedTiers: ['common'],
   });

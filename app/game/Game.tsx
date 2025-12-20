@@ -693,7 +693,7 @@ export default function Game() {
     return Array.from(rarities);
   };
 
-  const storeBuyLootBox = useCallback((rarity: Rarity) => {
+  const storeBuyLootBox = useCallback((rarity: Rarity, currency: 'gold' | 'essence' = 'gold') => {
     try {
       const { ITEM_POOL } = require('../game/templates/items');
       // Filtrer les items de la rareté demandée
@@ -706,8 +706,8 @@ export default function Game() {
       // Choisir un item aléatoire
       const randomItem = itemsOfRarity[Math.floor(Math.random() * itemsOfRarity.length)];
       
-      // Définir le prix basé sur la rareté
-      const LOOT_BOX_PRICES: Record<Rarity, number> = {
+      // Définir les prix basés sur la rareté et la devise
+      const LOOT_BOX_PRICES_GOLD: Record<Rarity, number> = {
         common: 10,
         uncommon: 20,
         rare: 35,
@@ -715,18 +715,41 @@ export default function Game() {
         legendary: 250,
         mythic: 500,
       };
-      const price = LOOT_BOX_PRICES[rarity];
-      const currentGold = player.gold ?? 0;
-      
-      if (currentGold < price) {
-        const msg = 'Not enough gold';
-        pushLog(msg);
-        return { ok: false, msg };
+      const LOOT_BOX_PRICES_ESSENCE: Record<Rarity, number> = {
+        common: 1,
+        uncommon: 3,
+        rare: 8,
+        epic: 20,
+        legendary: 50,
+        mythic: 120,
+      };
+
+      if (currency === 'gold') {
+        const price = LOOT_BOX_PRICES_GOLD[rarity];
+        const currentGold = player.gold ?? 0;
+        
+        if (currentGold < price) {
+          const msg = 'Not enough gold';
+          pushLog(msg);
+          return { ok: false, msg };
+        }
+        
+        const nextPlayer = { ...player, gold: +((currentGold - price).toFixed(2)) } as PlayerType;
+        setPlayer(nextPlayer);
+      } else if (currency === 'essence') {
+        const price = LOOT_BOX_PRICES_ESSENCE[rarity];
+        const currentEssence = player.essence ?? 0;
+        
+        if (currentEssence < price) {
+          const msg = 'Not enough essence';
+          pushLog(msg);
+          return { ok: false, msg };
+        }
+        
+        const nextPlayer = { ...player, essence: (currentEssence - price) } as PlayerType;
+        setPlayer(nextPlayer);
       }
-      
-      const nextPlayer = { ...player, gold: +((currentGold - price).toFixed(2)) } as PlayerType;
-      setPlayer(nextPlayer);
-      
+
       // Créer l'item dans l'inventaire
       createItemFromTemplate(randomItem.name, rarity, true);
       const msg = `Loot box opened! You got: ${randomItem.name}.`;
@@ -752,7 +775,7 @@ export default function Game() {
       {/* debug overlay removed in production */}
       <header className="app-header">
         <h1>Arena Quest</h1>
-        <p className="subtitle">Adventure mmorp</p>
+        <p className="subtitle">Adventure mmorpg - v0.22</p>
       </header>
 
       <div className="main-grid">
@@ -906,7 +929,7 @@ export default function Game() {
         />
       )}
       {modalName === 'store' && (
-        <StoreModal onClose={closeModal} buyPotion={storeBuy} buyLootBox={storeBuyLootBox} playerGold={player.gold ?? 0} unlockedRarities={getUnlockedRarities()} />
+        <StoreModal onClose={closeModal} buyPotion={storeBuy} buyLootBox={storeBuyLootBox} playerGold={player.gold ?? 0} playerEssence={player.essence ?? 0} playerLevel={player.level} unlockedRarities={getUnlockedRarities()} />
       )}
       {modalName === 'catalog' && (
         <CatalogModal onClose={closeModal} />

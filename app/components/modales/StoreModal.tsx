@@ -7,8 +7,10 @@ import type { Rarity } from "@/app/game/types";
 type Props = {
   onClose: () => void;
   buyPotion: (type: 'small' | 'medium' | 'large' | 'huge' | 'giant') => { ok: boolean; msg: string } | string;
-  buyLootBox?: (rarity: Rarity) => { ok: boolean; msg: string } | string;
+  buyLootBox?: (rarity: Rarity, currency?: 'gold' | 'essence') => { ok: boolean; msg: string } | string;
   playerGold: number;
+  playerEssence?: number;
+  playerLevel?: number;
   unlockedRarities?: Rarity[];
 };
 
@@ -21,8 +23,8 @@ const RARITY_COLOR: Record<Rarity, string> = {
   mythic: '#ff7b7b',
 };
 
-// Prix des boites par rareté
-const LOOT_BOX_PRICES: Record<Rarity, number> = {
+// Prix des boites par rareté (or)
+const LOOT_BOX_PRICES_GOLD: Record<Rarity, number> = {
   common: 10,
   uncommon: 20,
   rare: 35,
@@ -31,7 +33,17 @@ const LOOT_BOX_PRICES: Record<Rarity, number> = {
   mythic: 500,
 };
 
-export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold, unlockedRarities = [] }: Props) {
+// Prix des boites par rareté (essence)
+const LOOT_BOX_PRICES_ESSENCE: Record<Rarity, number> = {
+  common: 1,
+  uncommon: 3,
+  rare: 8,
+  epic: 20,
+  legendary: 50,
+  mythic: 120,
+};
+
+export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold, playerEssence = 0, playerLevel = 1, unlockedRarities = [] }: Props) {
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
 
   const handleBuy = (type: 'small' | 'medium' | 'large' | 'huge' | 'giant') => {
@@ -48,10 +60,10 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
     }
   };
 
-  const handleBuyLootBox = (rarity: Rarity) => {
+  const handleBuyLootBox = (rarity: Rarity, currency: 'gold' | 'essence' = 'gold') => {
     if (!buyLootBox) return;
     try {
-      const res = (buyLootBox as any)(rarity);
+      const res = (buyLootBox as any)(rarity, currency);
       let msgObj: { ok: boolean; msg: string };
       if (typeof res === 'string') msgObj = { ok: true, msg: res };
       else msgObj = res ?? { ok: false, msg: 'Error' };
@@ -65,12 +77,12 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
 
   return (
     <Modal title="Store" onClose={onClose}>
-      <div style={{ minWidth: 800, minHeight: 350 }}>
+      <div style={{ minWidth: 800, minHeight: 300 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {/* Potions Section */}
           <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
             <h3 style={{ margin: '0 0 8px 0' }}>Healing Potions</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 320 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 0, maxHeight: 240, overflowY: 'auto', paddingRight: 8 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
                 <div>
                   <div style={{ fontWeight: 700 }}>Small potion</div>
@@ -129,32 +141,50 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
           </div>
 
           {/* Loot Boxes Section */}
-          <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
+          <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8, display: 'flex', flexDirection: 'column' }}>
             <h3 style={{ margin: '0 0 8px 0' }}>Loot Boxes</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 320 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 0, maxHeight: 240, overflowY: 'auto', paddingRight: 8 }}>
               {(['uncommon', 'rare', 'epic', 'legendary', 'mythic'] as Rarity[]).map((rarity) => {
-                const cost = LOOT_BOX_PRICES[rarity];
+                const costGold = LOOT_BOX_PRICES_GOLD[rarity];
+                const costEssence = LOOT_BOX_PRICES_ESSENCE[rarity];
                 const boxLabel = rarity.charAt(0).toUpperCase() + rarity.slice(1) + ' Box';
-                const canAfford = playerGold >= cost;
+                const canAffordGold = playerGold >= costGold;
+                const canAffordEssence = playerEssence && playerEssence >= costEssence;
                 const isUnlocked = unlockedRarities.includes(rarity);
-                const canBuy = canAfford && isUnlocked;
-                const disabledReason = !isUnlocked ? 'Locked' : !canAfford ? 'Poor' : '';
+                const canBuyWithGold = canAffordGold && isUnlocked;
+                const canBuyWithEssence = canAffordEssence && isUnlocked;
+                
                 return (
-                  <div key={rarity} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
-                    <div>
-                      <div style={{ fontWeight: 700, color: RARITY_COLOR[rarity] }}>{boxLabel}</div>
-                      <div style={{ fontSize: 12, color: '#bbb' }}>{isUnlocked ? `Random ${rarity} item` : 'Locked - Get an item of this rarity first'}</div>
-                    </div>
+                  <div key={rarity} style={{ padding: 8, borderRadius: 8, background: '#111' }}>
+                    <div style={{ fontWeight: 700, color: RARITY_COLOR[rarity], marginBottom: 6 }}>{boxLabel}</div>
+                    <div style={{ fontSize: 12, color: '#bbb', marginBottom: 8 }}>{isUnlocked ? `Random ${rarity} item` : 'Locked - Get an item of this rarity first'}</div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <div style={{ color: '#ffd96b', fontWeight: 800 }}>{cost} g</div>
                       <button 
                         className="btn" 
-                        onClick={() => handleBuyLootBox(rarity)}
-                        disabled={!canBuy}
-                        title={disabledReason}
-                        style={{ opacity: canBuy ? 1 : 0.5, cursor: canBuy ? 'pointer' : 'not-allowed' }}
+                        onClick={() => handleBuyLootBox(rarity, 'gold')}
+                        disabled={!canBuyWithGold}
+                        title={!isUnlocked ? 'Locked' : !canAffordGold ? 'Not enough gold' : ''}
+                        style={{ 
+                          opacity: canBuyWithGold ? 1 : 0.5, 
+                          cursor: canBuyWithGold ? 'pointer' : 'not-allowed',
+                          fontSize: 12
+                        }}
                       >
-                        Buy
+                        {costGold}g
+                      </button>
+                      <button 
+                        className="btn" 
+                        onClick={() => handleBuyLootBox(rarity, 'essence')}
+                        disabled={!canBuyWithEssence}
+                        title={!isUnlocked ? 'Locked' : !canAffordEssence ? 'Not enough essence' : ''}
+                        style={{ 
+                          opacity: canBuyWithEssence ? 1 : 0.5, 
+                          cursor: canBuyWithEssence ? 'pointer' : 'not-allowed',
+                          fontSize: 12,
+                          color: '#6eb3ff'
+                        }}
+                      >
+                        {costEssence}✨
                       </button>
                     </div>
                   </div>
@@ -165,7 +195,7 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
         </div>
 
         {/* Status Message and Balance */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 16, marginTop: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16, marginTop: 16 }}>
           <div style={{ height: 44 }}>
             {status ? (
               <div style={{ height: '100%', padding: 8, borderRadius: 8, background: status.ok ? 'rgba(34,139,34,0.09)' : 'rgba(255,0,0,0.06)', color: status.ok ? '#9ee6a6' : '#ffb3b3', fontWeight: 700 }}>
@@ -176,8 +206,12 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
             )}
           </div>
           <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
-            <h4 style={{ marginTop: 0, marginBottom: 8 }}>Your balance</h4>
+            <h4 style={{ marginTop: 0, marginBottom: 8 }}>Gold</h4>
             <div style={{ fontSize: 18, fontWeight: 800, color: '#ffd96b' }}>{(playerGold || 0).toFixed(2)} g</div>
+          </div>
+          <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
+            <h4 style={{ marginTop: 0, marginBottom: 8 }}>Essence</h4>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#6eb3ff' }}>{(playerEssence || 0).toFixed(0)}</div>
           </div>
         </div>
       </div>

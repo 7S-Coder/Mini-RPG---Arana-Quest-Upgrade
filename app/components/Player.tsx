@@ -17,9 +17,10 @@ type Props = {
 	lastLevelUpAt?: number | null;
 	onOpenModal?: (name: string) => void;
 	gold?: number;
+	essence?: number;
 };
 
-export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, crit, speed, lastLevelUpAt, onOpenModal, gold }: Props) {
+export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, crit, speed, lastLevelUpAt, onOpenModal, gold, essence }: Props) {
 	const [showLevelUp, setShowLevelUp] = useState(false);
 	const [damageFlash, setDamageFlash] = useState<{ amount: number; key: string } | null>(null);
 	const prevHpRef = useRef<number>(hp);
@@ -69,7 +70,11 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 				<div className="avatar" />
 				<div>
 					<h3>Player</h3>
-					<div style={{ fontSize: 12, color: '#ffd700', fontWeight: 700, marginTop: 4 }}>{(typeof gold === 'number' ? gold.toFixed(2) : (gold ?? 0))} g</div>
+				<div style={{ fontSize: 12, fontWeight: 700, marginTop: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
+					<div style={{ color: '#ffd700' }}>{(typeof gold === 'number' ? gold.toFixed(2) : (gold ?? 0))} g</div>
+					 
+					<div style={{ color: '#6eb3ff' }}>{(essence ?? 0).toFixed(0)} e</div>
+				</div>
 				</div>
 			</div>
 
