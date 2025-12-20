@@ -59,16 +59,37 @@ export default function Game() {
 
   const closeModal = useCallback(() => { setModalName(null); setModalProps(null); }, []);
 
-  // Keyboard shortcut: Ctrl/Cmd + I opens the inventory modal (unless typing in input)
+  // Keyboard shortcuts for modals
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       try {
-        if ((e.ctrlKey || e.metaKey) && (e.key === 'i' || e.key === 'I')) {
-          const active = document.activeElement as HTMLElement | null;
-          if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as any).isContentEditable)) return;
-          e.preventDefault();
-          if (modalName === 'inventory') closeModal();
-          else openModal('inventory');
+        const active = document.activeElement as HTMLElement | null;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as any).isContentEditable)) return;
+        
+        if (e.ctrlKey || e.metaKey) {
+          const key = e.key.toLowerCase();
+          
+          if (key === 'i') {
+            e.preventDefault();
+            if (modalName === 'inventory') closeModal();
+            else openModal('inventory');
+          } else if (key === 'b') {
+            e.preventDefault();
+            if (modalName === 'bestiary') closeModal();
+            else openModal('bestiary');
+          } else if (key === 's') {
+            e.preventDefault();
+            if (modalName === 'store') closeModal();
+            else openModal('store');
+          } else if (key === 'm') {
+            e.preventDefault();
+            if (modalName === 'maps') closeModal();
+            else openModal('maps');
+          } else if (key === 'c') {
+            e.preventDefault();
+            if (modalName === 'catalog') closeModal();
+            else openModal('catalog');
+          }
         }
       } catch (err) {}
     };
@@ -639,6 +660,7 @@ export default function Game() {
 
   // wrapper used by store modal so it returns a result message usable by the modal
   const storeBuy = useCallback((type: 'small' | 'medium' | 'large' | 'huge' | 'giant') => {
+    
     try {
       const ok = buyPotion(type);
       if (ok) {

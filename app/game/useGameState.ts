@@ -49,6 +49,8 @@ export function useGameState() {
     chestplate: null,
     ring: null,
     weapon: null,
+    key: null,
+    consumable: null,
   });
   const [inventory, setInventory] = useState<Item[]>([]);
   const [pickups, setPickups] = useState<Pickup[]>([]);
@@ -236,6 +238,8 @@ export function useGameState() {
       belt: "armor",
       ring: "accessory",
       familiar: "pet",
+      key: undefined,
+      consumable: "consumable",
     };
 
     const scaled = scaleStats(stats, rarity);
@@ -463,11 +467,12 @@ export function useGameState() {
 
   // Tier unlock costs (purchaseable or granted by events)
   const TIER_UNLOCK_COSTS: Record<Rarity, number> = {
+    common: 0,
+    uncommon: 25,
     rare: 100,
     epic: 500,
     legendary: 2000,
     mythic: 10000,
-    common: 0
   };
 
   // Unlock a tier for the player (deducts gold). Returns a result object with message.
