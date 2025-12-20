@@ -34,19 +34,19 @@ export interface MapNarration {
 export const NPC_DATA: Record<NPCName, { name: string; title: string; }> = {
   eldran: {
     name: 'Eldran',
-    title: 'Le Veilleur',
+    title: 'The Watcher',
   },
   lya: {
     name: 'Lya',
-    title: "L'Éclaireuse",
+    title: 'The Scout',
   },
   brak: {
     name: 'Brak',
-    title: 'Le Forgeron',
+    title: 'The Smith',
   },
   messenger: {
-    name: 'Le Messager Masqué',
-    title: 'Énigmatique',
+    name: 'The Masked Messenger',
+    title: 'Enigmatic',
   },
 };
 
@@ -54,23 +54,23 @@ export const NARRATIONS: MapNarration[] = [
   // MAP 0 - Initiation
   {
     mapId: 0,
-    mapName: 'Arène',
+    mapName: 'Arena',
     npcIntro: ['eldran'],
     events: {
       arrival: {
         npc: 'eldran',
         emoji: '🎭',
-        text: "L'arène n'est pas un lieu. C'est une épreuve.",
+        text: "The arena is not a place. It is a trial.",
       },
       firstCombat: {
         npc: 'eldran',
         emoji: '⚔️',
-        text: 'Observe. Chaque coup raconte une histoire.',
+        text: 'Watch carefully. Each strike tells a story.',
       },
       playerDeath: {
         npc: 'eldran',
         emoji: '✨',
-        text: "Tu n'as pas échoué. Tu as appris.",
+        text: "You haven't failed. You have learned.",
       },
     },
   },
@@ -78,13 +78,13 @@ export const NARRATIONS: MapNarration[] = [
   // MAP 1 - Forest
   {
     mapId: 1,
-    mapName: 'Forêt',
+    mapName: 'Forest',
     npcIntro: ['eldran', 'lya'],
     events: {
       arrival: {
         npc: 'lya',
         emoji: '🌲',
-        text: 'Les arbres regardent. Ne les provoque pas.',
+        text: 'The trees are watching. Do not provoke them.',
       },
       afterNCombats: [
         {
@@ -92,7 +92,7 @@ export const NARRATIONS: MapNarration[] = [
           message: {
             npc: 'eldran',
             emoji: '🧘',
-            text: 'La forêt teste ta patience, pas ta force.',
+            text: 'The forest tests your patience, not your strength.',
           },
         },
       ],
@@ -101,7 +101,7 @@ export const NARRATIONS: MapNarration[] = [
         message: {
           npc: 'lya',
           emoji: '👑',
-          text: 'Elle protège la ruche… comme un royaume.',
+          text: 'She protects the hive... like a kingdom.',
         },
       },
       bossVictory: {
@@ -109,13 +109,13 @@ export const NARRATIONS: MapNarration[] = [
         message: {
           npc: 'eldran',
           emoji: '🌙',
-          text: 'La reine est tombée. Mais la ruche survit.',
+          text: 'The queen has fallen. But the hive endures.',
         },
       },
       dungeonEntry: {
         npc: 'lya',
         emoji: '🌳',
-        text: 'Certains arbres ne donnent pas de fruits. Ils jugent.',
+        text: 'Some trees bear no fruit. They judge.',
       },
     },
   },
@@ -123,13 +123,13 @@ export const NARRATIONS: MapNarration[] = [
   // MAP 2 - Caves
   {
     mapId: 2,
-    mapName: 'Cavernes',
+    mapName: 'Caves',
     npcIntro: ['brak'],
     events: {
       arrival: {
         npc: 'brak',
         emoji: '⛏️',
-        text: 'Ici, la lumière ment. Fie-toi à ton acier.',
+        text: 'Here, light deceives. Trust your steel.',
       },
       afterNCombats: [
         {
@@ -137,7 +137,7 @@ export const NARRATIONS: MapNarration[] = [
           message: {
             npc: 'brak',
             emoji: '🔨',
-            text: 'Trois objets identiques… ou rien de solide.',
+            text: 'Three identical objects... or nothing solid.',
           },
         },
       ],
@@ -146,7 +146,7 @@ export const NARRATIONS: MapNarration[] = [
         message: {
           npc: 'brak',
           emoji: '🐕',
-          text: "Elles n'attaquent pas pour manger. Elles attaquent pour survivre.",
+          text: "They don't attack to eat. They attack to survive.",
         },
       },
       bossVictory: {
@@ -154,7 +154,7 @@ export const NARRATIONS: MapNarration[] = [
         message: {
           npc: 'eldran',
           emoji: '🔇',
-          text: 'La meute est brisée. Le silence revient.',
+          text: 'The pack is broken. Silence returns.',
         },
       },
     },
@@ -163,13 +163,13 @@ export const NARRATIONS: MapNarration[] = [
   // MAP 3 - Ruins
   {
     mapId: 3,
-    mapName: 'Ruines',
+    mapName: 'Ruins',
     npcIntro: ['messenger'],
     events: {
       arrival: {
         npc: 'messenger',
         emoji: '👁️',
-        text: 'Mélethor t\'observe depuis longtemps.',
+        text: 'Mélethor has been watching you for a long time.',
       },
       afterNCombats: [
         {
@@ -177,24 +177,24 @@ export const NARRATIONS: MapNarration[] = [
           message: {
             npc: 'messenger',
             emoji: '🎭',
-            text: 'Tu crois choisir ton chemin… adorable.',
+            text: 'You believe you choose your path... how adorable.',
           },
         },
       ],
       bossBefore: {
-        bossName: 'Gardien des Ruines',
+        bossName: 'Guardian of the Ruins',
         message: {
           npc: 'messenger',
           emoji: '🏛️',
-          text: 'Je garde ce qui reste. Pas ce qui doit renaître.',
+          text: 'I guard what remains. Not what must be reborn.',
         },
       },
       bossVictory: {
-        bossName: 'Gardien des Ruines',
+        bossName: 'Guardian of the Ruins',
         message: {
           npc: 'messenger',
           emoji: '🌀',
-          text: 'Les ruines se souviennent de toi.',
+          text: 'The ruins remember you.',
         },
       },
     },
@@ -203,20 +203,20 @@ export const NARRATIONS: MapNarration[] = [
   // MAP 4 - Volcano
   {
     mapId: 4,
-    mapName: 'Volcan',
+    mapName: 'Volcano',
     npcIntro: ['eldran', 'brak', 'messenger'],
     events: {
       arrival: {
         npc: 'eldran',
         emoji: '🌋',
-        text: 'Si tu continues… tu ne pourras plus revenir.',
+        text: 'If you continue... you will not be able to return.',
       },
       bossBefore: {
         bossName: 'Mélethor',
         message: {
           npc: 'messenger',
           emoji: '👑',
-          text: 'Mélethor ne règne pas. Il prépare.',
+          text: 'Mélethor does not reign. He prepares.',
         },
       },
       bossVictory: {
@@ -224,7 +224,7 @@ export const NARRATIONS: MapNarration[] = [
         message: {
           npc: 'messenger',
           emoji: '⚡',
-          text: "Tu n'as détruit qu'un fragment.",
+          text: "You have destroyed only a fragment.",
         },
       },
     },
@@ -255,36 +255,36 @@ export const TUTORIAL_MESSAGES: Record<string, NarrativeMessage> = {
   firstCombatTutorial: {
     npc: 'eldran',
     emoji: '⚔️',
-    text: 'Clique sur "Attack" pour frapper. Chaque coup teste tes réflexes.',
+    text: 'Click "Attack" to strike. Every blow tests your reflexes.',
   },
   firstVictoryTutorial: {
     npc: 'eldran',
     emoji: '🎉',
-    text: 'Victoire ! Tu as vaincu ton premier ennemi. Le loot tombe automatiquement.',
+    text: 'Victory! You have defeated your first enemy. Loot drops automatically.',
   },
   firstLootTutorial: {
     npc: 'eldran',
     emoji: '✨',
-    text: 'Les objets tombent au combat. Ramasse-les ou équipe-les pour progresser.',
+    text: 'Items drop during combat. Collect them or equip them to grow stronger.',
   },
   firstInventoryTutorial: {
     npc: 'eldran',
     emoji: '📦',
-    text: 'Ctrl+I ouvre l\'inventaire. Équipe tes armes et armures pour devenir plus fort.',
+    text: 'Ctrl+I opens your inventory. Equip weapons and armor to become more powerful.',
   },
   firstBossTutorial: {
     npc: 'eldran',
     emoji: '👑',
-    text: 'Un boss arrive... bien plus puissant. Les boss testent ta stratégie, pas juste ta force.',
+    text: 'A boss arrives... far more powerful. Bosses test your strategy, not just your strength.',
   },
   firstLevelUpTutorial: {
     npc: 'eldran',
     emoji: '📈',
-    text: 'Level up ! Tu peux maintenant allouer des points de stats. Sois stratégique.',
+    text: 'Level up! You can now allocate stat points. Be strategic.',
   },
   mapUnlockTutorial: {
     npc: 'eldran',
     emoji: '🗺️',
-    text: 'Tu as déverrouillé une nouvelle map. Chaque région cache ses secrets et ses dangers.',
+    text: 'You have unlocked a new map. Each region hides its secrets and dangers.',
   },
 };
