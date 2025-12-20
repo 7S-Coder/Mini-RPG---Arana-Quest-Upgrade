@@ -1127,12 +1127,12 @@ export function useGameState() {
         for (const [slot, item] of Object.entries(save.equipment)) {
           if (item && typeof item === 'object') {
             // If item already has weight and it's correct, keep it
-            if (item.weight && item.weight > 1) {
+            if ((item as any).weight && (item as any).weight > 1) {
               migratedEquip[slot] = item;
               continue;
             }
             // Extract base name without rarity
-            let templateName = item.name || '';
+            let templateName = (item as any).name || '';
             if (templateName.includes('(')) {
               templateName = templateName.split('(')[0].trim();
             }

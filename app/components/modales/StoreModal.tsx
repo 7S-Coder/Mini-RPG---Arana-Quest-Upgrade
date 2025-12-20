@@ -2,14 +2,36 @@
 
 import React from "react";
 import Modal from "./Modal";
+import type { Rarity } from "@/app/game/types";
 
 type Props = {
   onClose: () => void;
   buyPotion: (type: 'small' | 'medium' | 'large' | 'huge' | 'giant') => { ok: boolean; msg: string } | string;
+  buyLootBox?: (rarity: Rarity) => { ok: boolean; msg: string } | string;
   playerGold: number;
+  unlockedRarities?: Rarity[];
 };
 
-export default function StoreModal({ onClose, buyPotion, playerGold }: Props) {
+const RARITY_COLOR: Record<Rarity, string> = {
+  common: '#ddd',
+  uncommon: '#2ecc71',
+  rare: '#6fb3ff',
+  epic: '#b47cff',
+  legendary: '#ffd16b',
+  mythic: '#ff7b7b',
+};
+
+// Prix des boites par rareté
+const LOOT_BOX_PRICES: Record<Rarity, number> = {
+  common: 10,
+  uncommon: 20,
+  rare: 35,
+  epic: 100,
+  legendary: 250,
+  mythic: 500,
+};
+
+export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold, unlockedRarities = [] }: Props) {
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
 
   const handleBuy = (type: 'small' | 'medium' | 'large' | 'huge' | 'giant') => {
@@ -19,7 +41,21 @@ export default function StoreModal({ onClose, buyPotion, playerGold }: Props) {
       if (typeof res === 'string') msgObj = { ok: true, msg: res };
       else msgObj = res ?? { ok: false, msg: 'Error' };
       setStatus({ ok: !!msgObj.ok, text: msgObj.msg });
-      // clear after 3s
+      window.setTimeout(() => setStatus(null), 3000);
+    } catch (e) {
+      setStatus({ ok: false, text: 'Error during purchase' });
+      window.setTimeout(() => setStatus(null), 3000);
+    }
+  };
+
+  const handleBuyLootBox = (rarity: Rarity) => {
+    if (!buyLootBox) return;
+    try {
+      const res = (buyLootBox as any)(rarity);
+      let msgObj: { ok: boolean; msg: string };
+      if (typeof res === 'string') msgObj = { ok: true, msg: res };
+      else msgObj = res ?? { ok: false, msg: 'Error' };
+      setStatus({ ok: !!msgObj.ok, text: msgObj.msg });
       window.setTimeout(() => setStatus(null), 3000);
     } catch (e) {
       setStatus({ ok: false, text: 'Error during purchase' });
@@ -29,11 +65,12 @@ export default function StoreModal({ onClose, buyPotion, playerGold }: Props) {
 
   return (
     <Modal title="Store" onClose={onClose}>
-      <div style={{ minWidth: 480, minHeight: 260 }}>
-        <div style={{ display: 'flex', gap: 16 }}>
-          <div style={{ flex: 1, padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
+      <div style={{ minWidth: 800, minHeight: 400 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          {/* Potions Section */}
+          <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
             <h3>Healing Potions</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 140 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 320 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
                 <div>
                   <div style={{ fontWeight: 700 }}>Small potion</div>
@@ -45,7 +82,6 @@ export default function StoreModal({ onClose, buyPotion, playerGold }: Props) {
                 </div>
               </div>
 
-
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
                 <div>
                   <div style={{ fontWeight: 700 }}>Medium potion</div>
@@ -56,8 +92,6 @@ export default function StoreModal({ onClose, buyPotion, playerGold }: Props) {
                   <button className="btn" onClick={() => handleBuy('medium')}>Buy</button>
                 </div>
               </div>
-
-              
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
                 <div>
@@ -91,23 +125,59 @@ export default function StoreModal({ onClose, buyPotion, playerGold }: Props) {
                   <button className="btn" onClick={() => handleBuy('giant')}>Buy</button>
                 </div>
               </div>
-              </div>
-              {/* reserved message area - fixed height so modal doesn't resize when showing messages */}
-              <div style={{ height: 44, marginTop: 12 }}>
-                {status ? (
-                  <div style={{ height: '100%', padding: 8, borderRadius: 8, background: status.ok ? 'rgba(34,139,34,0.09)' : 'rgba(255,0,0,0.06)', color: status.ok ? '#9ee6a6' : '#ffb3b3', fontWeight: 700 }}>
-                    {status.text}
-                  </div>
-                ) : (
-                  <div style={{ height: '100%' }} />
-                )}
-              </div>
+            </div>
           </div>
-          <div style={{ width: 220, padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
-            <h4 style={{ marginTop: 0 }}>Your balance</h4>
-            <div style={{ fontSize: 20, fontWeight: 800, color: '#ffd96b' }}>{(playerGold || 0).toFixed(2)} g</div>
-            <div style={{ height: 12 }} />
-            <div style={{ fontSize: 12, color: '#bbb' }}>Potions are added to your inventory and can be used from there.</div>
+
+          {/* Loot Boxes Section */}
+          <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
+            <h3>Loot Boxes</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 320 }}>
+              {(['uncommon', 'rare', 'epic', 'legendary', 'mythic'] as Rarity[]).map((rarity) => {
+                const cost = LOOT_BOX_PRICES[rarity];
+                const boxLabel = rarity.charAt(0).toUpperCase() + rarity.slice(1) + ' Box';
+                const canAfford = playerGold >= cost;
+                const isUnlocked = unlockedRarities.includes(rarity);
+                const canBuy = canAfford && isUnlocked;
+                const disabledReason = !isUnlocked ? 'Locked' : !canAfford ? 'Poor' : '';
+                return (
+                  <div key={rarity} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
+                    <div>
+                      <div style={{ fontWeight: 700, color: RARITY_COLOR[rarity] }}>{boxLabel}</div>
+                      <div style={{ fontSize: 12, color: '#bbb' }}>{isUnlocked ? `Random ${rarity} item` : 'Locked - Get an item of this rarity first'}</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                      <div style={{ color: '#ffd96b', fontWeight: 800 }}>{cost} g</div>
+                      <button 
+                        className="btn" 
+                        onClick={() => handleBuyLootBox(rarity)}
+                        disabled={!canBuy}
+                        title={disabledReason}
+                        style={{ opacity: canBuy ? 1 : 0.5, cursor: canBuy ? 'pointer' : 'not-allowed' }}
+                      >
+                        Buy
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Status Message and Balance */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 220px', gap: 16, marginTop: 16 }}>
+          <div style={{ height: 44 }}>
+            {status ? (
+              <div style={{ height: '100%', padding: 8, borderRadius: 8, background: status.ok ? 'rgba(34,139,34,0.09)' : 'rgba(255,0,0,0.06)', color: status.ok ? '#9ee6a6' : '#ffb3b3', fontWeight: 700 }}>
+                {status.text}
+              </div>
+            ) : (
+              <div style={{ height: '100%' }} />
+            )}
+          </div>
+          <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
+            <h4 style={{ marginTop: 0, marginBottom: 8 }}>Your balance</h4>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#ffd96b' }}>{(playerGold || 0).toFixed(2)} g</div>
           </div>
         </div>
       </div>

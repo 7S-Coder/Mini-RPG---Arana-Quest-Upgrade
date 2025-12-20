@@ -31,26 +31,22 @@ export interface MapNarration {
 }
 
 // NPC descriptions
-export const NPC_DATA: Record<NPCName, { name: string; title: string; color: string }> = {
+export const NPC_DATA: Record<NPCName, { name: string; title: string; }> = {
   eldran: {
     name: 'Eldran',
     title: 'Le Veilleur',
-    color: '#9370DB', // Purple
   },
   lya: {
     name: 'Lya',
     title: "L'Éclaireuse",
-    color: '#52B788', // Green
   },
   brak: {
     name: 'Brak',
     title: 'Le Forgeron',
-    color: '#D4A574', // Brown/Bronze
   },
   messenger: {
     name: 'Le Messager Masqué',
     title: 'Énigmatique',
-    color: '#8B7355', // Dark brown
   },
 };
 

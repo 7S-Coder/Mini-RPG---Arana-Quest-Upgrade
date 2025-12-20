@@ -45,7 +45,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
   const [activeTab, setActiveTab] = React.useState<'inventory' | 'equipment' | 'forge' | 'statistics'>('inventory');
   const [filterSlot, setFilterSlot] = React.useState<string>('all');
 
-  const MAX_CARRY_WEIGHT = 100;
+  const MAX_CARRY_WEIGHT = 200;
   const currentWeight = React.useMemo(() => {
     let w = 0;
     for (const it of inventory) w += Number((it && (it.weight ?? 1)) || 1);

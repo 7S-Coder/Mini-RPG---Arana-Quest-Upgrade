@@ -8,6 +8,7 @@ import RightSidebar from "../components/RightSidebar";
 import InventoryModal from "../components/modales/InventoryModal";
 import Modal from "../components/modales/Modal";
 import StoreModal from "../components/modales/StoreModal";
+import type { Rarity, Player as PlayerType } from "@/app/game/types";
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
 import useCombat from "./uses/useCombat";
 import EffectsLayer from "../components/EffectsLayer";
@@ -25,7 +26,7 @@ import { useNarration } from "../hooks/useNarration";
 import { getMapNarration, getCombatNarration, TUTORIAL_MESSAGES } from "./templates/narration";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, forgeThreeIdentical, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, createItemFromTemplate, forgeThreeIdentical, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins } = useGameState();
 
   // streak per map (instead of global streak)
   const [mapStreaks, setMapStreaks] = useState<Record<string, number>>({});
@@ -657,6 +658,66 @@ export default function Game() {
     }
   }, [buyPotion, pushLog]);
 
+  const getUnlockedRarities = (): Rarity[] => {
+    const rarities = new Set<Rarity>();
+    // Check inventory
+    for (const item of inventory) {
+      if (item.rarity) rarities.add(item.rarity);
+    }
+    // Check equipment
+    for (const item of Object.values(equipment)) {
+      if (item && item.rarity) rarities.add(item.rarity);
+    }
+    return Array.from(rarities);
+  };
+
+  const storeBuyLootBox = useCallback((rarity: Rarity) => {
+    try {
+      const { ITEM_POOL } = require('../game/templates/items');
+      // Filtrer les items de la rareté demandée
+      const itemsOfRarity = ITEM_POOL.filter((item: any) => (item.rarity ?? 'common') === rarity);
+      if (itemsOfRarity.length === 0) {
+        const msg = 'No items available for this rarity';
+        pushLog(msg);
+        return { ok: false, msg };
+      }
+      // Choisir un item aléatoire
+      const randomItem = itemsOfRarity[Math.floor(Math.random() * itemsOfRarity.length)];
+      
+      // Définir le prix basé sur la rareté
+      const LOOT_BOX_PRICES: Record<Rarity, number> = {
+        common: 10,
+        uncommon: 20,
+        rare: 35,
+        epic: 100,
+        legendary: 250,
+        mythic: 500,
+      };
+      const price = LOOT_BOX_PRICES[rarity];
+      const currentGold = player.gold ?? 0;
+      
+      if (currentGold < price) {
+        const msg = 'Not enough gold';
+        pushLog(msg);
+        return { ok: false, msg };
+      }
+      
+      const nextPlayer = { ...player, gold: +((currentGold - price).toFixed(2)) } as PlayerType;
+      setPlayer(nextPlayer);
+      
+      // Créer l'item dans l'inventaire
+      createItemFromTemplate(randomItem.name, rarity, true);
+      const msg = `Loot box opened! You got: ${randomItem.name}.`;
+      pushLog(msg);
+      try { saveCoreGame && saveCoreGame(null, 'buy_lootbox'); } catch (e) {}
+      return { ok: true, msg };
+    } catch (e) {
+      const msg = 'Error during purchase';
+      pushLog(msg);
+      return { ok: false, msg };
+    }
+  }, [player, createItemFromTemplate, pushLog, saveCoreGame]);
+
   return (
     <div className="app-shell">
       {/* debug badge: shows current modalName (temporary) */}
@@ -823,7 +884,7 @@ export default function Game() {
         />
       )}
       {modalName === 'store' && (
-        <StoreModal onClose={closeModal} buyPotion={storeBuy} playerGold={player.gold ?? 0} />
+        <StoreModal onClose={closeModal} buyPotion={storeBuy} buyLootBox={storeBuyLootBox} playerGold={player.gold ?? 0} unlockedRarities={getUnlockedRarities()} />
       )}
       {modalName === 'catalogue' && (
         <CatalogModal onClose={closeModal} />
