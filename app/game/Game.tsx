@@ -52,7 +52,9 @@ export default function Game() {
     // compute final props (apply defaults for inventory modal)
     const resolved = name === "inventory" ? (props ?? { inventory, equipment, player, progression, allocate, deallocate }) : (props ?? null);
     // debug log to help verify clicks and show resolved props
-    try { console.log("openModal ->", name, resolved); } catch (e) {}
+    try { 
+
+    } catch (e) {}
     setModalName(name);
     setModalProps(resolved);
   }, [inventory, equipment, player, progression, allocate, deallocate]);
@@ -111,7 +113,17 @@ export default function Game() {
 
   useGameLoop((delta: number) => {
     const seconds = delta / 1000;
-    setPlayer((p) => ({ ...p, x: p.x + p.speed * seconds }));
+    setPlayer((p) => {
+      let updated = { ...p, x: p.x + p.speed * seconds };
+      
+      // Out-of-combat regeneration
+      if (!inCombatRef.current && (p.regen ?? 0) > 0) {
+        const hpRegen = (p.regen ?? 0) * seconds;
+        updated.hp = Math.min(p.maxHp, p.hp + hpRegen);
+      }
+      
+      return updated;
+    });
     setEnemies((prev) => prev.map((e) => ({ ...e, x: e.x - e.speed * seconds })));
   });
 
@@ -339,7 +351,7 @@ export default function Game() {
     window.setTimeout(() => setEffects((s) => s.filter((x) => x.id !== id)), 1800);
   }, []);
 
-  const { dungeonProgressRef, dungeonUI, processEndEncounter } = useDungeon({ selectedMapId, pushLog, addEffect: addEffect, addToast: (text: string, type?: string, ttl?: number) => addToast(text, type as "ok" | "error" | undefined, ttl), createCustomItem, addXp, setPlayer, encounterSessionRef, startEncounterRef });
+  const { dungeonProgressRef, dungeonUI, processEndEncounter } = useDungeon({ selectedMapId, pushLog, addEffect: addEffect, addToast: (text: string, type?: string, ttl?: number) => addToast(text, type as "ok" | "error" | undefined, ttl), createCustomItem, addXp, setPlayer, encounterSessionRef, startEncounterRef, player, inventory, equipment });
   // toast/log hooks used instead of local state
 
   // Reset streak when dungeon is activated
@@ -348,7 +360,9 @@ export default function Game() {
     if (dungeonUI.remaining && dungeonUI.remaining > 0 && prevDungeonRemainingRef.current === 0) {
       // Dungeon just activated
       resetMapStreak(dungeonUI.activeMapId ?? null);
-      try { console.log('[Game] dungeon activated, streak reset for map:', dungeonUI.activeMapId); } catch (e) {}
+      try { 
+
+       } catch (e) {}
     }
     prevDungeonRemainingRef.current = dungeonUI.remaining ?? 0;
   }, [dungeonUI.remaining, dungeonUI.activeMapId]);
@@ -381,7 +395,7 @@ export default function Game() {
     try { setEnemies([]); } catch (e) {}
     // bump encounter session id so endEncounter can know which encounter finished
     encounterSessionRef.current = (encounterSessionRef.current || 0) + 1;
-    console.log('[DEBUG] startEncounter - entering', { session: encounterSessionRef.current, selectedMapId, dungeonProgress: dungeonProgressRef.current });
+  
     // spawn 1-3 enemies
     // clear pending log clear timeout if any
     if (logClearRef.current) {
@@ -410,15 +424,9 @@ export default function Game() {
       const def = (idx !== null && selectedMap?.dungeons) ? selectedMap.dungeons[idx] : undefined;
       dungeonCurrentFloor = def ? (def.floors - dungeonRemaining + 1) : dungeonRemaining;
       
-      try { console.log('[DEBUG] startEncounter dungeon capture:', { 
-        mapId: selectedMapId,
-        dungeonId, 
-        remaining: dungeonRemaining, 
-        dungeonIndex: idx, 
-        totalFloors: def?.floors, 
-        calculatedFloor: dungeonCurrentFloor,
-        session: encounterSessionRef.current 
-      }); } catch (e) {}
+      try { 
+
+       } catch (e) {}
     }
     // we'll set actual spawned count after attempting to spawn available templates
     // dungeon initialization is handled by useDungeon
@@ -462,8 +470,7 @@ export default function Game() {
             spawnEnemy(bossId, undefined, { isBoss: true, roomId });
             spawned++;
           } else {
-            console.log('[DEBUG] boss template not found, skipping boss spawn', { bossId, selectedMapId, pool: selectedMap?.enemyPool });
-          }
+            }
         }
           } else {
             // If inside a dungeon (non-boss floor), prefer room-based deterministic spawns (use captured floor)
@@ -489,8 +496,7 @@ export default function Game() {
                   spawnEnemy(tid, undefined, { isBoss: !!roomObj?.isBossRoom, roomId });
                   spawned++;
                 } else {
-                  console.log('[DEBUG] resolved room template not allowed for map - skipping spawn', { selectedMapId, tid, tpl, pool: selectedMap?.enemyPool, roomId });
-                }
+                  }
               } else {
                 // fallback to area pool
                 const tid2 = pickEnemyFromMap(selectedMapId ?? undefined);
@@ -502,12 +508,10 @@ export default function Game() {
                     spawnEnemy(tid2);
                     spawned++;
                   } else {
-                    console.log('[DEBUG] resolved template not in selectedMap.enemyPool - skipping spawn', { selectedMapId, tid2, tpl, pool: selectedMap?.enemyPool });
-                  }
+                    }
                 } else {
                   const areaName = selectedMap?.name ?? 'Spawn';
-                  console.log('[DEBUG] no enemy templates belong to this area, skipping spawn', { selectedMapId, areaName });
-                }
+                 }
               }
             } else {
             const tid = pickEnemyFromMap(selectedMapId ?? undefined);
@@ -520,12 +524,10 @@ export default function Game() {
                 spawnEnemy(tid);
                 spawned++;
               } else {
-                console.log('[DEBUG] resolved template not in selectedMap.enemyPool - skipping spawn', { selectedMapId, tid, tpl, pool: selectedMap?.enemyPool });
-              }
+               }
             } else {
               const areaName = selectedMap?.name ?? 'Spawn';
-              console.log('[DEBUG] no enemy templates belong to this area, skipping spawn', { selectedMapId, areaName });
-            }
+              }
           }
       }
     }
@@ -534,13 +536,11 @@ export default function Game() {
     if (spawned === 0) {
       const areaName = selectedMap?.name ?? 'Spawn';
       pushLog(`No enemies available for ${areaName}.`);
-      console.log('[DEBUG] spawned encounter - none', { session: encounterSessionRef.current, isDungeonActive, dungeonProgress: dungeonProgressRef.current });
       return;
     }
 
     const areaName = selectedMap?.name ?? 'Spawn';
     pushLog(`New encounter in ${areaName}: ${spawned} enemy(s) appeared.`);
-    console.log('[DEBUG] spawned encounter', { session: encounterSessionRef.current, requested: count, spawned, isDungeonActive, dungeonProgress: dungeonProgressRef.current });
     
     // record start time for this encounter
     lastEncounterTimestampRef.current = Date.now();
@@ -630,6 +630,8 @@ export default function Game() {
         const handled = processEndEncounter({ currentMap, player, opts, msg });
         if (handled) return;
       } catch (e) { console.error('[DEBUG] endEncounter error', e); }
+    // Save the game state after encounter ends (including any HP changes)
+    try { saveCoreGame && saveCoreGame(null, 'end_encounter'); } catch (e) {}
     // schedule clearing the logs after a short delay so player can read result
     if (logClearRef.current) clearTimeout(logClearRef.current);
     logClearRef.current = window.setTimeout(() => {
@@ -781,7 +783,7 @@ export default function Game() {
 
       <div className="main-grid">
         <aside className="sidebar-left" >
-          <Player {...player} onOpenModal={openModal} />
+          <Player {...player} inCombat={inCombat} onOpenModal={openModal} />
         </aside>
 
         <main className="center-area">
@@ -862,7 +864,7 @@ export default function Game() {
           allocate={allocate}
           deallocate={deallocate}
           onEquip={(item: any) => {
-            try { console.log('equip requested', item && item.id, item && item.slot); } catch (e) {}
+            try {  } catch (e) {}
             try {
               const ok = equipItem(item);
               if (ok) pushLog(`Equipped: ${item.name} (${item.slot})`);
@@ -876,11 +878,11 @@ export default function Game() {
             }
           }}
           onUnequip={(slot: string) => {
-            try { console.log('unequip requested', slot); } catch (e) {}
+            try {  } catch (e) {}
             unequipItem(slot as any);
           }}
           onSell={(itemId: string) => {
-            try { console.log('sell requested', itemId); } catch (e) {}
+            try {  } catch (e) {}
             const it = inventory.find((i) => i.id === itemId);
             if (!it) { pushLog('Unable to sell.'); return; }
             const high = ['epic', 'legendary', 'mythic'];
@@ -895,7 +897,7 @@ export default function Game() {
             else pushLog('Unable to sell.');
           }}
           onUse={(itemId: string) => {
-            try { console.log('use requested', itemId); } catch (e) {}
+            try {  } catch (e) {}
             const ok = consumeItem(itemId);
             if (ok) pushLog('Potion used. HP restored.');
             else pushLog("Unable to use this item.");

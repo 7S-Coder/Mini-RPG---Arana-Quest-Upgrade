@@ -33,6 +33,7 @@ export function useGameState() {
     crit: 3,
     def: 2,
     speed: 120, // default 120 px/s
+    regen: 3, // hp regeneration per second (out of combat)
     gold: 0,
     // ensure unlockedTiers always present so gating logic works
     unlockedTiers: ['common'],
@@ -110,7 +111,6 @@ export function useGameState() {
         pendingXpRef.current = 0;
         processingRef.current = false;
         const cur = playerRef.current || player;
-        try { console.log('[useGameState] addXp processed ->', amt, 'curLevel', cur.level, 'curXp', cur.xp, 'need', xpToNextLevel(cur.level)); } catch (e) {}
         if (cur.level >= MAX_LEVEL) return;
 
         let totalXp = (cur.xp || 0) + amt;
@@ -131,6 +131,10 @@ export function useGameState() {
           const newDodge = BASE_DODGE + Math.floor((lvl - 1) * 0.03);
           const newCrit = BASE_CRIT + Math.floor((lvl - 1) * 0.02);
 
+          // Preserve current HP but cap at new max
+          const currentHp = cur.hp ?? cur.maxHp ?? 0;
+          const nextHp = Math.min(currentHp, newMaxHp);
+
           const nextPlayer: Player = {
             ...cur,
             xp: totalXp,
@@ -141,13 +145,13 @@ export function useGameState() {
             dodge: newDodge,
             crit: newCrit,
             lastLevelUpAt: Date.now(),
-            hp: newMaxHp,
+            hp: nextHp,
           } as Player;
 
           // update ref synchronously so other rapid addXp calls see the new state
           try { playerRef.current = nextPlayer; } catch (e) {}
           setPlayer(nextPlayer);
-          try { console.log('[useGameState] level gained ->', gained, 'awarding', gained * 5, 'points'); } catch (e) {}
+          try { } catch (e) {}
           try { addPoints && addPoints(gained * 5); } catch (e) {}
           try { record && (record as any).levelUp && (record as any).levelUp(gained); } catch (e) {}
         } else {
@@ -281,6 +285,20 @@ export function useGameState() {
     const dropChance = getDropChance(selectedMapId);
     if (Math.random() > dropChance) return null;
 
+    // Get unlocked rarities from player inventory and equipment
+    const unlockedRarities = new Set<Rarity>();
+    unlockedRarities.add('common'); // Always unlock common
+    
+    // Check inventory
+    for (const item of inventory) {
+      if (item.rarity) unlockedRarities.add(item.rarity);
+    }
+    
+    // Check equipment
+    for (const item of Object.values(equipment)) {
+      if (item && (item as any).rarity) unlockedRarities.add((item as any).rarity);
+    }
+
     // Determine which loot table to use
     const lootConfig = getLootConfigForMap(selectedMapId || undefined);
     let selectedTable = lootConfig.trashLootTable;
@@ -348,8 +366,39 @@ export function useGameState() {
       finalRarity = rarityOrder[idx];
     }
 
-    // Pick template first (weighted)
-    const poolForPick = !selectedMapId ? ITEM_POOL.filter((t) => (t.rarity ?? 'common') === 'common') : ITEM_POOL;
+    // Clamp to unlocked rarities by player
+    if (!unlockedRarities.has(finalRarity)) {
+      // Find the closest lower rarity that is unlocked
+      let idx = rarityOrder.indexOf(finalRarity);
+      while (idx >= 0 && !unlockedRarities.has(rarityOrder[idx] as Rarity)) {
+        idx--;
+      }
+      if (idx < 0) {
+        // No unlocked rarity found, cancel drop
+        try {
+          console.debug('[DROP] No unlocked rarity, cancelling drop', { selectedMapId, finalRarity, unlockedRarities: Array.from(unlockedRarities) });
+        } catch (e) {}
+        return null;
+      }
+      finalRarity = rarityOrder[idx] as Rarity;
+    }
+
+    // Pick template first (weighted) - Filter by unlocked rarities
+    let poolForPick = !selectedMapId ? ITEM_POOL.filter((t) => (t.rarity ?? 'common') === 'common') : ITEM_POOL;
+    // Only include items with unlocked rarity templates
+    poolForPick = poolForPick.filter(t => {
+      const itemRarity = (t.rarity ?? 'common') as Rarity;
+      return unlockedRarities.has(itemRarity);
+    });
+    
+    // If pool is empty after filtering, don't drop
+    if (poolForPick.length === 0) {
+      try {
+        console.debug('[DROP] No templates available with unlocked rarity', { finalRarity, unlockedRarities: Array.from(unlockedRarities) });
+      } catch (e) {}
+      return null;
+    }
+    
     const totalWeight = poolForPick.reduce((s, t) => s + (t.weight ?? 1), 0);
     let chosen: ItemTemplate;
 
@@ -437,7 +486,7 @@ export function useGameState() {
   };
 
   // collect a pickup (gold or item). returns true if collected
-  const MAX_CARRY_WEIGHT = 100;
+  const MAX_CARRY_WEIGHT = 200;
 
   const computeTotalWeight = (inv: any[], equip: Record<string, any>) => {
     let w = 0;
@@ -1063,17 +1112,17 @@ export function useGameState() {
 
   // Equip / Unequip helpers to keep logic centralized and avoid race conditions
   const equipItem = (item: Item): boolean => {
-    try { console.log('equipItem called', item && item.id, item && item.slot); } catch (e) {}
+    try {  } catch (e) {}
     // ensure item is actually in inventory before equipping (use ref to avoid stale closure)
     const invNow = inventoryRef.current || [];
     const has = invNow.find((i) => i.id === item.id);
     if (!has) {
-      try { console.warn('equipItem: item not found in inventory', item && item.id); } catch (e) {}
+      try {  } catch (e) {}
       return false;
     }
     // prevent equipping during combat
     if (enemiesRef.current && enemiesRef.current.length > 0) {
-      try { console.warn('equipItem blocked during combat'); } catch (e) {}
+      try {  } catch (e) {}
       return false;
     }
     // read current equipped for this slot from ref (avoid stale closure values)
@@ -1119,7 +1168,7 @@ export function useGameState() {
   };
 
   const unequipItem = (slot: EquipmentSlot) => {
-    try { console.log('unequipItem called', slot); } catch (e) {}
+    try {  } catch (e) {}
     // read current equipped from ref (avoid stale closure values)
     const current = (equipmentRef.current || {})[slot];
     // remove equipment entry
@@ -1212,11 +1261,11 @@ export function useGameState() {
     let template = undefined as any;
     if (templateOverride) {
       template = ENEMY_TEMPLATES.find((t) => t.templateId === templateOverride);
-      try { console.log('[DEBUG] spawnEnemy - templateOverride provided', { templateOverride, resolved: template && template.templateId }); } catch (e) {}
+      try {  } catch (e) {}
     }
     if (!template) {
       template = ENEMY_TEMPLATES[Math.floor(Math.random() * ENEMY_TEMPLATES.length)];
-      try { console.log('[DEBUG] spawnEnemy - fallback random template', { chosen: template.templateId }); } catch (e) {}
+      try {  } catch (e) {}
     }
 
     // choose level near the player (dynamic delta) unless overridden
@@ -1273,7 +1322,7 @@ export function useGameState() {
   // helper to apply or remove item stats to player
   const applyItemStatsToPlayer = (stats: Record<string, number> | undefined, sign: number) => {
     if (!stats) return;
-    try { console.log('applyItemStatsToPlayer', { stats, sign }); console.trace(); } catch (e) {}
+    try {  } catch (e) {}
     setPlayer((p) => {
       const next: any = { ...p } as any;
       for (const [k, v] of Object.entries(stats)) {
@@ -1314,7 +1363,10 @@ export function useGameState() {
     crit: p.crit,
     def: p.def,
     speed: p.speed,
+    regen: p.regen ?? 3,
     gold: p.gold,
+    essence: p.essence ?? 0,
+    materials: p.materials,
     // Do NOT persist current consecutive wins across page reloads — always reset on load
     consecWins: 0,
     unlockedTiers: p.unlockedTiers ?? ['common'],
@@ -1365,7 +1417,10 @@ export function useGameState() {
       if (save.player) {
         // Apply saved player data but reset transient fields like consecutive wins
         const sp = { ...save.player, consecWins: 0 };
-        setPlayer((p) => ({ ...p, ...sp } as Player));
+        // Completely replace the player, don't merge with defaults
+        setPlayer(sp as Player);
+        // Update ref immediately for synchronous access
+        playerRef.current = sp as Player;
         try { setConsecWins(0); } catch (e) {}
       }
       if (Array.isArray(save.inventory)) {
@@ -1450,7 +1505,7 @@ export function useGameState() {
     try {
       const s = loadGame();
       if (s) {
-        try { console.log('[SAVE] loaded save from localStorage'); } catch (e) {}
+        try {  } catch (e) {}
       }
     } catch (e) {}
     // eslint-disable-next-line react-hooks/exhaustive-deps

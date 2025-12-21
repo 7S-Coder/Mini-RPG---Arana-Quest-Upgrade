@@ -14,10 +14,12 @@ type Props = {
 	dodge?: number;
 	crit?: number;
 	speed?: number;
+	regen?: number;
 	lastLevelUpAt?: number | null;
 	onOpenModal?: (name: string) => void;
 	gold?: number;
 	essence?: number;
+	inCombat?: boolean;
 	materials?: {
 		essence_dust?: number;
 		mithril_ore?: number;
@@ -26,7 +28,7 @@ type Props = {
 	};
 };
 
-export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, crit, speed, lastLevelUpAt, onOpenModal, gold, essence, materials }: Props) {
+export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, crit, speed, regen, lastLevelUpAt, onOpenModal, gold, essence, inCombat, materials }: Props) {
 	const [showLevelUp, setShowLevelUp] = useState(false);
 	const [damageFlash, setDamageFlash] = useState<{ amount: number; key: string } | null>(null);
 	const prevHpRef = useRef<number>(hp);
@@ -42,10 +44,10 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 		return () => clearTimeout(t);
 	}, [lastLevelUpAt]);
 
-	// detect hp loss and trigger damage flash
+	// detect hp loss and trigger damage flash (only in combat)
 	useEffect(() => {
 		const prev = prevHpRef.current;
-		if (hp < prev) {
+		if (inCombat && hp < prev) {
 			const amount = prev - hp;
 			const gen = () => {
 				try {
@@ -64,7 +66,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 			return () => clearTimeout(t);
 		}
 		prevHpRef.current = hp;
-	}, [hp]);
+	}, [hp, inCombat]);
 
 	return (
 		<div className="player-card" style={{ position: "relative" }}>
@@ -107,9 +109,11 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 			</div>
 
 			<div className="player-stats">
-				<div>HP: {hp} / {maxHp}</div>
+			<div>HP: {Math.round(hp)} / {Math.round(maxHp)}</div>
 				<div>Level: {level ?? 1} XP: {xp ?? 0}/{xpToNext(level ?? 1)}</div>
-				<div>Damage: {dmg ?? 0} Defense: {def ?? 0} Dodge: {dodge ?? 0}% Crit: {crit ?? 0}%</div>
+				<div>Damage: {dmg ?? 0} - Defense: {def ?? 0}</div>
+				<div>Dodge: {dodge ?? 0} - Crit: {crit ?? 0}%</div>
+				<div>Regen: {regen ?? 0} - Speed: {speed ?? 0}</div>
 			</div>
 
 			<div className="player-actions">

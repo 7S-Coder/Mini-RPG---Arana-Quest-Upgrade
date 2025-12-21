@@ -41,11 +41,11 @@ export const ITEM_POOL: ItemTemplate[] = [
   { slot: "chestplate", name: "Basic Cuirass", category: "armor", stats: { hp: 2, def: 1 }, weight: 6, rarity: "common" },
   { slot: "chestplate", name: "Leather Vest", category: "armor", stats: { hp: 4, def: 2 }, weight: 6, rarity: "uncommon" },
   { slot: "chestplate", name: "Reinforced Tunic", category: "armor", stats: { hp: 5, def: 3, dodge: 1 }, weight: 6, rarity: "uncommon" },
-  { slot: "chestplate", name: "Light Breastplate", category: "armor", stats: { hp: 12, def: 6, dodge: 3 }, weight: 6, rarity: "rare" },
-  { slot: "chestplate", name: "Combat Armor", category: "armor", stats: { hp: 10, def: 6, crit: 3 }, weight: 6, rarity: "rare" },
-  { slot: "chestplate", name: "Sturdy Cuirass", category: "armor", stats: { hp: 24, def: 12, dodge: 6 }, weight: 6, rarity: "epic" },
-  { slot: "chestplate", name: "Heavy Armor", category: "armor", stats: { hp: 40, def: 12 }, weight: 6, rarity: "legendary" },
-  { slot: "chestplate", name: "Titanic Armor", category: "armor", stats: { hp: 70, def: 28, crit: 12, dodge: 10 }, weight: 6, rarity: "mythic" },
+  { slot: "chestplate", name: "Light Breastplate", category: "armor", stats: { hp: 12, def: 6, dodge: 3, regen: 4 }, weight: 6, rarity: "rare" },
+  { slot: "chestplate", name: "Combat Armor", category: "armor", stats: { hp: 10, def: 6, crit: 3, regen: 4 }, weight: 6, rarity: "rare" },
+  { slot: "chestplate", name: "Sturdy Cuirass", category: "armor", stats: { hp: 24, def: 12, dodge: 6, regen: 8 }, weight: 6, rarity: "epic" },
+  { slot: "chestplate", name: "Heavy Armor", category: "armor", stats: { hp: 40, def: 12, regen: 20 }, weight: 6, rarity: "legendary" },
+  { slot: "chestplate", name: "Titanic Armor", category: "armor", stats: { hp: 70, def: 28, crit: 12, dodge: 10, regen: 80 }, weight: 6, rarity: "mythic" },
     // Ceintures
   { slot: "belt", name: "Rope Belt", category: "armor", stats: { hp: 2, def: 1 }, weight: 7, rarity: "common" },
   { slot: "belt", name: "Leather Belt", category: "armor", stats: { hp: 3, def: 1 }, weight: 7, rarity: "common" },
@@ -67,9 +67,9 @@ export const ITEM_POOL: ItemTemplate[] = [
   { slot: "weapon", name: "Colossus Blade", category: "weapon", stats: { dmg: 40, crit: 8 }, weight: 5, rarity: "legendary" },
   { slot: "weapon", name: "Excalibur", category: "weapon", stats: { dmg: 64, crit: 14, dodge: 8, speed: 18 }, weight: 5, rarity: "mythic" },
     // Familiers
-  { slot: "familiar", name: "Small Dragon", category: "pet", stats: { dmg: 12, hp: 8 }, weight: 2, rarity: "epic" },
-  { slot: "familiar", name: "Luminous Fairy", category: "pet", stats: { hp: 28, dodge: 10 }, weight: 2, rarity: "legendary" },
-  { slot: "familiar", name: "Eternal Phoenix", category: "pet", stats: { dmg: 36, hp: 35, crit: 14, dodge: 6 }, weight: 2, rarity: "mythic" },
+  { slot: "familiar", name: "Small Dragon", category: "pet", stats: { dmg: 12, hp: 8, regen: 2 }, weight: 2, rarity: "epic" },
+  { slot: "familiar", name: "Luminous Fairy", category: "pet", stats: { hp: 28, dodge: 10, regen: 4 }, weight: 2, rarity: "legendary" },
+  { slot: "familiar", name: "Eternal Phoenix", category: "pet", stats: { dmg: 36, hp: 35, crit: 14, dodge: 6, regen: 8 }, weight: 2, rarity: "mythic" },
 ];
 
 export const rarityMultiplier: Record<Rarity, number> = {

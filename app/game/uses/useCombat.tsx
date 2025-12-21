@@ -92,7 +92,10 @@ export default function useCombat({
     let playerSnap = { ...player };
     if (fastEnemies.length > 0) {
       playerSnap = applyEnemyAttacksToPlayer(fastEnemies, playerSnap);
-      setPlayer(() => playerSnap);
+      setPlayer((currentPlayer) => ({
+        ...currentPlayer,
+        hp: playerSnap.hp,
+      }));
       if (playerSnap.hp <= 0) {
         pushLog('You are dead...');
         endEncounter('You died. Respawned at the tavern.', { type: 'death' });
@@ -209,7 +212,10 @@ export default function useCombat({
     const slowToAct = postEnemies.filter((e) => (e.speed ?? 0) <= pSpeed);
     if (slowToAct.length > 0) {
       playerSnap = applyEnemyAttacksToPlayer(slowToAct, playerSnap);
-      setPlayer(() => playerSnap);
+      setPlayer((currentPlayer) => ({
+        ...currentPlayer,
+        hp: playerSnap.hp,
+      }));
       if (playerSnap.hp <= 0) {
         pushLog('You are dead...');
         endEncounter('You died. Respawned at the tavern.', { type: 'death' });

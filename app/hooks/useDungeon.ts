@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getMaps } from "../game/templates/maps";
+import { ITEM_POOL, scaleStats, computeItemCost } from "../game/templates/items";
+import type { Rarity } from "../game/types";
 
 type DungeonProgress = {
   activeMapId?: string | null;
@@ -20,8 +22,11 @@ export function useDungeon(opts: {
   setPlayer?: (updater: any) => void;
   encounterSessionRef: React.MutableRefObject<number>;
   startEncounterRef: React.MutableRefObject<(() => void) | null>;
+  player?: any;
+  inventory?: any[];
+  equipment?: any;
 }) {
-  const { selectedMapId, pushLog, addEffect, addToast, createCustomItem, addXp, setPlayer, encounterSessionRef, startEncounterRef } = opts;
+  const { selectedMapId, pushLog, addEffect, addToast, createCustomItem, addXp, setPlayer, encounterSessionRef, startEncounterRef, player, inventory, equipment } = opts;
 
   const dungeonProgressRef = useRef<DungeonProgress>({
     activeMapId: null,
@@ -108,13 +113,7 @@ export function useDungeon(opts: {
       // Log why farming phase didn't trigger
       if (resultType === 'clear' && !isInsideDungeon) {
         try { 
-          console.log('[useDungeon] FARMING phase not triggered:', { 
-            hasDungeons: !!currentMap?.dungeons,
-            isInsideDungeon,
-            resultType,
-            mapName: currentMap?.name,
-            mapId: currentMap?.id
-          }); 
+          
         } catch(e) {}
       }
 
@@ -127,7 +126,7 @@ export function useDungeon(opts: {
         const after = dungeonProgressRef.current.fightsRemainingBeforeDungeon || 0;
         syncDungeonUI();
 
-        try { console.log('[useDungeon] FARMING: decrement from ' + before + ' to ' + after); } catch(e) {}
+        try {  } catch(e) {}
 
         // Activate dungeon
         if (after <= 0) {
@@ -190,9 +189,59 @@ export function useDungeon(opts: {
               try { setPlayer && setPlayer((p: any) => ({ ...p, gold: +(((p.gold ?? 0) + goldReward).toFixed(2)), essence: (p.essence ?? 0) + essenceReward })); } catch (e) {}
               try { addXp && addXp(xpReward); } catch (e) {}
               try {
-                const rarity = Math.random() < 0.08 ? 'legendary' : Math.random() < 0.25 ? 'epic' : 'rare';
-                const itemName = `${dungeonName} Reward ${rarity.charAt(0).toUpperCase() + rarity.slice(1)}`;
-                createCustomItem && createCustomItem({ slot: 'weapon' as any, name: itemName, rarity: rarity as any, category: 'weapon', stats: { dmg: Math.max(1, Math.round((player.dmg || 1) * (rarity === 'legendary' ? 1.6 : rarity === 'epic' ? 1.2 : 1))) } }, true);
+                // Get unlocked rarities from player inventory and equipment
+                const unlockedRarities = new Set<Rarity>();
+                unlockedRarities.add('common'); // Always unlock common
+                
+                // Check inventory
+                if (inventory) {
+                  for (const item of inventory) {
+                    if (item.rarity) unlockedRarities.add(item.rarity);
+                  }
+                }
+                
+                // Check equipment
+                if (equipment) {
+                  for (const item of Object.values(equipment)) {
+                    if (item && (item as any).rarity) unlockedRarities.add((item as any).rarity);
+                  }
+                }
+                
+                // Roll rarity from unlocked ones
+                let rarity: Rarity = 'common';
+                const rarityRoll = Math.random() * 100;
+                const unlockedArray = Array.from(unlockedRarities).sort((a, b) => {
+                  const order = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'];
+                  return order.indexOf(a) - order.indexOf(b);
+                });
+                
+                if (unlockedArray.includes('mythic') && rarityRoll < 8) rarity = 'mythic';
+                else if (unlockedArray.includes('legendary') && rarityRoll < 15) rarity = 'legendary';
+                else if (unlockedArray.includes('epic') && rarityRoll < 30) rarity = 'epic';
+                else if (unlockedArray.includes('rare') && rarityRoll < 50) rarity = 'rare';
+                else if (unlockedArray.includes('uncommon') && rarityRoll < 70) rarity = 'uncommon';
+                else rarity = unlockedArray[unlockedArray.length - 1] || 'common';
+                
+                // Pick random item from pool with the rolled rarity and unlocked
+                const poolWithRarity = ITEM_POOL.filter(t => {
+                  const itemRarity = (t.rarity ?? 'common') as Rarity;
+                  return itemRarity === rarity && unlockedRarities.has(itemRarity);
+                });
+                
+                if (poolWithRarity.length > 0) {
+                  const chosen = poolWithRarity[Math.floor(Math.random() * poolWithRarity.length)];
+                  const displayName = (chosen.name || '').replace(/\b(common|rare|epic|legendary|mythic)\b/gi, '').trim();
+                  const itemName = displayName.length > 0 ? displayName : chosen.name;
+                  const scaledStats = scaleStats(chosen.stats, rarity);
+                  
+                  createCustomItem && createCustomItem({
+                    slot: chosen.slot,
+                    name: itemName,
+                    rarity: rarity,
+                    category: chosen.category,
+                    stats: scaledStats
+                  }, true);
+                }
               } catch (e) { console.error('[useDungeon] reward error:', e); }
               
               pushLog(`Dungeon complete! Earned +${goldReward} g, +${xpReward} XP and +${essenceReward}✨!`);
@@ -200,8 +249,7 @@ export function useDungeon(opts: {
               try { addEffect && addEffect({ type: 'pickup', text: `+${goldReward} g`, target: 'player' }); } catch (e) {}
             } catch (e) { console.error('[useDungeon] completion error:', e); }
 
-            // Reset
-            dungeonProgressRef.current.activeMapId = null;
+            // Reset - Keep activeMapId so we can farm again
             dungeonProgressRef.current.activeDungeonIndex = null;
             dungeonProgressRef.current.activeDungeonId = null;
             dungeonProgressRef.current.remaining = 0;

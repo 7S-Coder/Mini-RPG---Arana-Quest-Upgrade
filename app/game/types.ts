@@ -47,6 +47,7 @@ export type Player = {
   crit: number;
   def: number;
   speed: number; // px per second
+  regen?: number; // hp regeneration per second (out of combat)
   lastLevelUpAt?: number | null;
   gold?: number;
   essence?: number; // new currency for future essences
