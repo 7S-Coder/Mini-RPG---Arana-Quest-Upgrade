@@ -203,11 +203,11 @@ export function pickEnemyFromMap(mapId?: string) {
   if (!map) {
     const poolTemplates = ENEMY_TEMPLATES.filter((t) => SPAWN_POOL.includes(t.templateId));
     if (poolTemplates.length === 0) {
-      try { console.log('[DEBUG] pickEnemyFromMap - spawn pool empty', { SPAWN_POOL }); } catch(e) {}
+      try { } catch(e) {}
       return undefined;
     }
     const chosen = poolTemplates[Math.floor(Math.random() * poolTemplates.length)].templateId;
-    try { console.log('[DEBUG] pickEnemyFromMap - chose from SPAWN_POOL', { chosen, SPAWN_POOL }); } catch(e) {}
+    try { } catch(e) {}
     return chosen;
   }
 
@@ -216,14 +216,14 @@ export function pickEnemyFromMap(mapId?: string) {
     const poolTemplates = ENEMY_TEMPLATES.filter((t) => map.enemyPool.includes(t.templateId));
     if (poolTemplates.length > 0) {
       const chosen = poolTemplates[Math.floor(Math.random() * poolTemplates.length)].templateId;
-      try { console.log('[DEBUG] pickEnemyFromMap - chose from enemyPool (STRICT)', { mapId, chosen, poolTemplates: poolTemplates.map(p=>p.templateId) }); } catch(e) {}
+      try { } catch(e) {}
       return chosen;
     }
-    try { console.log('[DEBUG] pickEnemyFromMap - enemyPool defined but no templates found', { mapId, pool: map.enemyPool }); } catch(e) {}
+    try {  } catch(e) {}
     return undefined;
   }
 
-  try { console.log('[DEBUG] pickEnemyFromMap - no enemyPool for map, returning undefined', { mapId }); } catch(e) {}
+  try { } catch(e) {}
   return undefined;
 }
 

@@ -92,7 +92,7 @@ export default function useCombat({
     let playerSnap = { ...player };
     if (fastEnemies.length > 0) {
       playerSnap = applyEnemyAttacksToPlayer(fastEnemies, playerSnap);
-      setPlayer((currentPlayer) => ({
+      setPlayer((currentPlayer: Player) => ({
         ...currentPlayer,
         hp: playerSnap.hp,
       }));
@@ -212,7 +212,7 @@ export default function useCombat({
     const slowToAct = postEnemies.filter((e) => (e.speed ?? 0) <= pSpeed);
     if (slowToAct.length > 0) {
       playerSnap = applyEnemyAttacksToPlayer(slowToAct, playerSnap);
-      setPlayer((currentPlayer) => ({
+      setPlayer((currentPlayer: Player) => ({
         ...currentPlayer,
         hp: playerSnap.hp,
       }));
