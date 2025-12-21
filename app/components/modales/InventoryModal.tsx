@@ -3,7 +3,7 @@
 import React from "react";
 import Modal from "./Modal";
 
-type AllocationStat = 'hp' | 'dmg' | 'def' | 'crit' | 'dodge';
+type AllocationStat = 'hp' | 'dmg' | 'def' | 'crit' | 'dodge' | 'regen';
 
 type Props = {
   inventory: any[];
@@ -98,8 +98,8 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
 
   // progression helpers for Statistics view
   const remainingPoints = (progression && (progression as any).points) || 0;
-  const allocated = (progression && (progression as any).allocated) || { hp: 0, dmg: 0, def: 0, crit: 0, dodge: 0 };
-  const COSTS: Record<string, number> = { hp: 1, dmg: 2, def: 3, crit: 3, dodge: 3 };
+  const allocated = (progression && (progression as any).allocated) || { hp: 0, dmg: 0, def: 0, crit: 0, dodge: 0, regen: 0 };
+  const COSTS: Record<string, number> = { hp: 1, dmg: 2, def: 3, crit: 3, dodge: 3, regen: 7 };
 
   // debug wrappers for allocate/deallocate to log events
   const _allocate = (stat: AllocationStat) => {
@@ -408,11 +408,18 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                           <button disabled={remainingPoints < COSTS.dodge} onClick={() => allocate && allocate('dodge')}>+1 (cost 3)</button>
                           {deallocate ? <button disabled={(allocated.dodge || 0) <= 0} onClick={() => deallocate && deallocate('dodge')} style={{ marginLeft: 6 }}>-</button> : null}
                         </div>
+
+                        <div>Regen (+1)</div>
+                        <div style={{ textAlign: 'center' }}>{(progression && progression.allocated && progression.allocated.regen) || 0}</div>
+                        <div style={{ textAlign: 'center' }}>
+                          <button disabled={remainingPoints < COSTS.regen} onClick={() => allocate && allocate('regen')}>+1 (cost 7)</button>
+                          {deallocate ? <button disabled={(allocated.regen || 0) <= 0} onClick={() => deallocate && deallocate('regen')} style={{ marginLeft: 6 }}>-</button> : null}
+                        </div>
                       </div>
 
                       <div style={{ marginTop: 8, color: '#999', fontSize: 12 }}>
                         Points sauvegardés dans la progression — s'ajoutent aux stats et à l'équipement.
-                        Coûts : HP+5 (1), DMG+1 (2), DEF+1 (3), Crit/Dodge +0,5% (3).
+                        Coûts : HP+5 (1), DMG+1 (2), DEF+1 (3), Crit/Dodge +0,5% (3), Regen +1 (7).
                       </div>
                     </div>
                   </div>
@@ -466,33 +473,38 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                   <div style={{ textAlign: 'center' }}>
                     <button disabled={remainingPoints < COSTS.dodge} onClick={() => allocate && allocate('dodge')}>+1 (cost 3)</button>
                     {deallocate ? <button disabled={(allocated.dodge || 0) <= 0} onClick={() => deallocate && deallocate('dodge')} style={{ marginLeft: 6 }}>-</button> : null}
-                  
-                  <button
-                    id="resetPoints"
-                    disabled={!deallocate || Object.values(allocated).reduce((s: number, v: any) => s + (Number(v || 0)), 0) <= 0}
-                    onClick={() => {
-                      if (!deallocate) return;
-                      try {
-                        if (!confirm('Reset all allocated points?')) return;
-                      } catch (e) {}
-                      const stats = ['hp', 'dmg', 'def', 'crit', 'dodge'];
-                      for (const s of stats) {
-                        const count = (allocated as any)[s] || 0;
-                        for (let i = 0; i < count; i++) {
-                          try { deallocate && deallocate(s as AllocationStat); } catch (e) {}
-                        }
-                      }
-                    }}
-                  >Reset Points</button>
                   </div>
 
-                  
+                  <div>Regen (+1)</div>
+                  <div style={{ textAlign: 'center' }}>{(progression && progression.allocated && progression.allocated.regen) || 0}</div>
+                  <div style={{ textAlign: 'center' }}>
+                    <button disabled={remainingPoints < COSTS.regen} onClick={() => allocate && allocate('regen')}>+1 (cost 7)</button>
+                    {deallocate ? <button disabled={(allocated.regen || 0) <= 0} onClick={() => deallocate && deallocate('regen')} style={{ marginLeft: 6 }}>-</button> : null}
+                  </div>
                 </div>
 
+                <button className="align-end btn secondary"
+                  id="resetPoints"
+                  style={{ marginTop: 12 }}
+                  disabled={!deallocate || Object.values(allocated).reduce((s: number, v: any) => s + (Number(v || 0)), 0) <= 0}
+                  onClick={() => {
+                    if (!deallocate) return;
+                    try {
+                      if (!confirm('Reset all allocated points?')) return;
+                    } catch (e) {}
+                    const stats = ['hp', 'dmg', 'def', 'crit', 'dodge'];
+                    for (const s of stats) {
+                      const count = (allocated as any)[s] || 0;
+                      for (let i = 0; i < count; i++) {
+                        try { deallocate && deallocate(s as AllocationStat); } catch (e) {}
+                      }
+                    }
+                  }}
+                >Reset Points</button>
 
                 <div style={{ marginTop: 8, color: '#999', fontSize: 12 }}>
                   Points sauvegardés dans la progression — s'ajoutent aux stats et à l'équipement.
-                  Coûts : HP+5 (1), DMG+1 (2), DEF+1 (3), Crit/Dodge +0,5% (3).
+                  Coûts : HP+5 (1), DMG+1 (2), DEF+1 (3), Crit/Dodge +0,5% (3), Regen +1 (7).
                 </div>
               </div>
             </div>

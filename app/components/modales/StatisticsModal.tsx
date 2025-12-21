@@ -3,7 +3,7 @@
 import React from "react";
 import Modal from "./Modal";
 
-type AllocationStat = 'hp' | 'dmg' | 'def' | 'crit' | 'dodge';
+type AllocationStat = 'hp' | 'dmg' | 'def' | 'crit' | 'dodge' | 'regen';
 
 type Props = {
   progression: any;
@@ -12,20 +12,20 @@ type Props = {
   onClose: () => void;
 };
 
-const COSTS: Record<string, number> = { hp: 1, dmg: 2, def: 3, crit: 3, dodge: 3 };
+const COSTS: Record<string, number> = { hp: 1, dmg: 2, def: 3, crit: 3, dodge: 3, regen: 7 };
 
 export default function StatisticsModal({ progression, allocate, deallocate, onClose }: Props) {
-  const p = progression || { points: 0, allocated: { hp: 0, dmg: 0, def: 0, crit: 0, dodge: 0 } };
+  const p = progression || { points: 0, allocated: { hp: 0, dmg: 0, def: 0, crit: 0, dodge: 0, regen: 0 } };
 
   return (
     <Modal title="Statistics" onClose={onClose}>
-      <div style={{ minWidth: 420, minHeight: 240, display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div style={{ minWidth: 420, minHeight: 500, display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: 14 }}>Stat Points: <strong style={{ fontSize: 16 }}>{p.points}</strong></div>
           <div style={{ fontSize: 12, color: '#aaa' }}>Each level grants 5 points</div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 120px', gap: 8 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 120px', gap: 8, overflowY: 'auto', maxHeight: '400px' }}>
           <div style={{ fontWeight: 700 }}>Stat</div>
           <div style={{ textAlign: 'center', fontWeight: 700 }}>Allocated</div>
           <div style={{ textAlign: 'center', fontWeight: 700 }}>Action</div>
@@ -63,6 +63,13 @@ export default function StatisticsModal({ progression, allocate, deallocate, onC
           <div style={{ textAlign: 'center' }}>
             <button onClick={() => allocate('dodge')}>+1 (cost {COSTS.dodge})</button>
             {deallocate ? <button onClick={() => deallocate('dodge')} style={{ marginLeft: 6 }}>-</button> : null}
+          </div>
+
+          <div>Regen (+1)</div>
+          <div style={{ textAlign: 'center' }}>{p.allocated.regen}</div>
+          <div style={{ textAlign: 'center' }}>
+            <button onClick={() => allocate('regen')}>+1 (cost {COSTS.regen})</button>
+            {deallocate ? <button onClick={() => deallocate('regen')} style={{ marginLeft: 6 }}>-</button> : null}
           </div>
         </div>
 

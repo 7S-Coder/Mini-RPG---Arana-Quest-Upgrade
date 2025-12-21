@@ -6,6 +6,7 @@ type Allocated = {
   def: number;
   crit: number;
   dodge: number;
+  regen: number;
 };
 
 type ProgressionState = {
@@ -18,7 +19,7 @@ const PROGRESSION_KEY = "arenaquest_progression_v1";
 export default function useProgression() {
   const [state, setState] = useState<ProgressionState>({
     points: 0,
-    allocated: { hp: 0, dmg: 0, def: 0, crit: 0, dodge: 0 },
+    allocated: { hp: 0, dmg: 0, def: 0, crit: 0, dodge: 0, regen: 0 },
   });
 
   useEffect(() => {
@@ -41,7 +42,7 @@ export default function useProgression() {
     }
   }, [state]);
 
-  const COSTS: Record<keyof Allocated, number> = { hp: 1, dmg: 2, def: 3, crit: 3, dodge: 3 };
+  const COSTS: Record<keyof Allocated, number> = { hp: 1, dmg: 2, def: 3, crit: 3, dodge: 3, regen: 7 };
 
   const addPoints = useCallback((n: number) => {
     if (!n || n <= 0) return;
@@ -69,7 +70,7 @@ export default function useProgression() {
     });
   }, []);
 
-  const reset = useCallback(() => setState({ points: 0, allocated: { hp: 0, dmg: 0, def: 0, crit: 0, dodge: 0 } }), []);
+  const reset = useCallback(() => setState({ points: 0, allocated: { hp: 0, dmg: 0, def: 0, crit: 0, dodge: 0, regen: 0 } }), []);
 
   return {
     progression: state,
