@@ -2,21 +2,19 @@ import type { EnemyTemplate } from '../types';
 
 export const ENEMY_TEMPLATES: EnemyTemplate[] = [
   // ============================================
-  // TIER: COMMON (Level 1-9)
+  // TIER: COMMON (Level 1-5)
   // ============================================
   // MAP 0 — Spawn / Initiation (Level 1-5)
   { templateId: "slime", name: "Slime", hp: 20, dmg: 2, def: 0, dodge: 0, crit: 50, speed: 100, rarity: 'common' },
   { templateId: "rat_spawn", name: "Rat", hp: 15, dmg: 4, def: 2, dodge: 5, crit: 20, speed: 12, rarity: 'common' },
   { templateId: "butterfly_spawn", name: "Butterfly", hp: 12, dmg: 3, def: 1, dodge: 10, crit: 10, speed: 15, rarity: 'common' },
 
-  // MAP 1 — Forest Common (Level 6-9)
-  { templateId: "rat", name: "Rat", hp: 22, dmg: 6, def: 3, dodge: 8, crit: 15, speed: 14, rarity: 'common' },
-  { templateId: "butterfly", name: "Butterfly", hp: 18, dmg: 5, def: 2, dodge: 12, crit: 12, speed: 16, rarity: 'common' },
-
   // ============================================
   // TIER: UNCOMMON (Level 6-15)
   // ============================================
   // Forest Uncommon (Level 6-15)
+  { templateId: "rat", name: "Rat", hp: 22, dmg: 6, def: 3, dodge: 8, crit: 15, speed: 14, rarity: 'uncommon' },
+  { templateId: "butterfly", name: "Butterfly", hp: 18, dmg: 5, def: 2, dodge: 12, crit: 12, speed: 16, rarity: 'uncommon' },
   { templateId: "giant_spider", name: "Giant Spider", hp: 28, dmg: 9, def: 4, dodge: 10, crit: 14, speed: 18, rarity: 'uncommon' },
   { templateId: "forest_goblin", name: "Forest Goblin", hp: 26, dmg: 8, def: 3, dodge: 9, crit: 13, speed: 16, rarity: 'uncommon' },
   { templateId: "wild_boar", name: "Wild Boar", hp: 32, dmg: 11, def: 6, dodge: 7, crit: 11, speed: 14, rarity: 'uncommon' },

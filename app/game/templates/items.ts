@@ -6,7 +6,7 @@ export const ITEM_POOL: ItemTemplate[] = [
     //Chapeaux
   { slot: "hat", name: "Straw Hat", category: "armor", stats: { hp: 1 }, weight: 4, rarity: "common", allowedMaps: ["spawn", "forest", "caves", "ruins", "volcano"] },
   { slot: "hat", name: "Chef's Hat", category: "armor", stats: { hp: 1, dodge: 1 }, weight: 4, rarity: "common", allowedMaps: ["spawn", "forest", "caves", "ruins", "volcano"] },
-  { slot: "hat", name: "Padded Cap", category: "armor", stats: { hp: 2, def: 1 }, weight: 4, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins"] },
+  { slot: "hat", name: "Padded Cap", category: "armor", stats: { hp: 3, def: 2 }, weight: 4, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins"] },
   { slot: "hat", name: "Leather Helmet", category: "armor", stats: { hp: 3, def: 2 }, weight: 4, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins"] },
   { slot: "hat", name: "Wool Cap", category: "armor", stats: { hp: 5, dodge: 3 }, weight: 4, rarity: "rare", allowedMaps: ["forest", "caves", "ruins", "volcano"] },
   { slot: "hat", name: "Iron Helmet", category: "armor", stats: { hp: 4, def: 5 }, weight: 4, rarity: "rare", allowedMaps: ["forest", "caves", "ruins", "volcano"] },
@@ -18,8 +18,8 @@ export const ITEM_POOL: ItemTemplate[] = [
   // Bottes
   { slot: "boots", name: "Leather Boots", category: "armor", stats: { dodge: 1 }, weight: 3, rarity: "common", allowedMaps: ["spawn", "forest", "caves", "ruins", "volcano"] },
   { slot: "boots", name: "Rider Boots", category: "armor", stats: { dmg: 1 }, weight: 3, rarity: "common", allowedMaps: ["spawn", "forest", "caves", "ruins", "volcano"] },
-  { slot: "boots", name: "Traveler Boots", category: "armor", stats: { dodge: 2, speed: 2 }, weight: 3, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins"] },
-  { slot: "boots", name: "Scout Boots", category: "armor", stats: { dmg: 1, speed: 3 }, weight: 3, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins"] },
+  { slot: "boots", name: "Traveler Boots", category: "armor", stats: { dodge: 3, speed: 2 }, weight: 3, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins"] },
+  { slot: "boots", name: "Scout Boots", category: "armor", stats: { dmg: 2, speed: 3 }, weight: 3, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins"] },
   { slot: "boots", name: "Agile Boots", category: "armor", stats: { dodge: 4, dmg: 2, speed: 3 }, weight: 3, rarity: "rare", allowedMaps: ["forest", "caves", "ruins", "volcano"] },
   { slot: "boots", name: "Hunter Boots", category: "armor", stats: { dodge: 5, speed: 8 }, weight: 3, rarity: "rare", allowedMaps: ["forest", "caves", "ruins", "volcano"] },
   { slot: "boots", name: "Swift Boots", category: "armor", stats: { dodge: 10, speed: 14 }, weight: 3, rarity: "epic", allowedMaps: ["caves", "ruins", "volcano"] },
@@ -29,8 +29,8 @@ export const ITEM_POOL: ItemTemplate[] = [
   // Anneaux
   { slot: "ring", name: "Simple Ring", category: "accessory", stats: { hp: 1 }, weight: 3, rarity: "common", allowedMaps: ["spawn", "forest", "caves", "ruins", "volcano"] },
   { slot: "ring", name: "Copper Ring", category: "accessory", stats: { dmg: 1 }, weight: 3, rarity: "common", allowedMaps: ["spawn", "forest", "caves", "ruins", "volcano"] },
-  { slot: "ring", name: "Bronze Ring", category: "accessory", stats: { hp: 2, dmg: 1 }, weight: 3, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins"] },
-  { slot: "ring", name: "Silver Ring", category: "accessory", stats: { def: 2, dodge: 1 }, weight: 3, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins"] },
+  { slot: "ring", name: "Bronze Ring", category: "accessory", stats: { hp: 3, dmg: 1 }, weight: 3, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins"] },
+  { slot: "ring", name: "Silver Ring", category: "accessory", stats: { def: 3, dodge: 1 }, weight: 3, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins"] },
   { slot: "ring", name: "Modest Ring", category: "accessory", stats: { crit: 2, hp: 5 }, weight: 3, rarity: "rare", allowedMaps: ["forest", "caves", "ruins", "volcano"] },
   { slot: "ring", name: "Rooster Ring", category: "accessory", stats: { dodge: 6, crit: 3, def: 4 }, weight: 3, rarity: "rare", allowedMaps: ["forest", "caves", "ruins", "volcano"] },
   { slot: "ring", name: "Precision Ring", category: "accessory", stats: { crit: 6, dmg: 10, def: 6 }, weight: 3, rarity: "epic", allowedMaps: ["caves", "ruins", "volcano"] },

@@ -25,6 +25,8 @@ export type MapTemplate = {
   dungeonThreshold?: number;
   // minimum level allowed on this map (inclusive). If absent, map has no minimum.
   minLevel?: number;
+  // maximum level allowed on this map (inclusive). Enemies cannot spawn above this level.
+  maxLevel?: number;
   // allowed item tiers that may drop on this map (controls rarity visibility)
   allowedTiers?: string[];
   // human-friendly loot label for UI (example: "loot epic - rare")
@@ -46,8 +48,9 @@ const defaultMaps: MapTemplate[] = [
     logColor: '#cccccc',
     dungeonThreshold: 999, // No dungeons
     minLevel: 1,
-    allowedTiers: ['common', 'uncommon'],
-    loot: 'loot: Common - Uncommon',
+    maxLevel: 5,
+    allowedTiers: ['common'],
+    loot: 'loot: Common',
     enemyPool: ['slime', 'rat_spawn', 'butterfly_spawn'],
   },
 
@@ -59,6 +62,7 @@ const defaultMaps: MapTemplate[] = [
     logColor: '#2ecc71',
     dungeonThreshold: 15,
     minLevel: 6,
+    maxLevel: 29,
     allowedTiers: ['common', 'uncommon', 'rare'],
     loot: 'loot: Common - Uncommon - Rare',
     enemyPool: ['rat', 'butterfly', 'giant_spider', 'forest_goblin', 'wild_boar', 'wolf', 'ant', 'bee', 'mushroom', 'crow', 'monkey', 'big_bee'],
@@ -91,6 +95,7 @@ const defaultMaps: MapTemplate[] = [
     logColor: '#95a5a6',
     dungeonThreshold: 20,
     minLevel: 16,
+    maxLevel: 59,
     allowedTiers: ['uncommon', 'rare', 'epic'],
     loot: 'loot: Uncommon - Rare - Epic',
     enemyPool: ['stone_golem', 'crystal_bug', 'cave_troll', 'bat', 'snail', 'salamander', 'snake', 'wood_fairy', 'bear', 'batwan', 'rabid_hyenas'],
@@ -115,6 +120,7 @@ const defaultMaps: MapTemplate[] = [
     logColor: '#9b59b6',
     dungeonThreshold: 20,
     minLevel: 30,
+    maxLevel: 89,
     allowedTiers: ['rare', 'epic', 'legendary'],
     loot: 'loot: Rare - Epic - Legendary',
     enemyPool: ['skeleton', 'tomb_guardian', 'ghost_knight', 'cursed_statue', 'cursed_knight', 'shadow_mage', 'gargoyle', 'wraith', 'ancient_sentinel'],
@@ -147,6 +153,7 @@ const defaultMaps: MapTemplate[] = [
     logColor: '#e74c3c',
     dungeonThreshold: 20,
     minLevel: 50,
+    maxLevel: 120,
     allowedTiers: ['legendary', 'mythic'],
     loot: 'loot: Legendary - Mythic',
     enemyPool: ['fire_imp', 'lava_golem', 'magma_serpent', 'ash_phoenix', 'flame_titan'],

@@ -467,7 +467,7 @@ export default function Game() {
             const mapId = selectedMapId ?? 'unknown';
             const dungeonId = (selectedMap?.dungeons && typeof idx === 'number') ? selectedMap.dungeons[idx].id : undefined;
             const roomId = dungeonId ? `${mapId}_${dungeonId}_floor_${dungeonCurrentFloor}` : undefined;
-            spawnEnemy(bossId, undefined, { isBoss: true, roomId });
+            spawnEnemy(bossId, undefined, { isBoss: true, roomId, mapId: selectedMapId ?? undefined });
             spawned++;
           } else {
             }
@@ -493,7 +493,7 @@ export default function Game() {
                 const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid);
                 const tplBelongs = roomObj ? true : (selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid)) : !!tpl);
                 if (tplBelongs) {
-                  spawnEnemy(tid, undefined, { isBoss: !!roomObj?.isBossRoom, roomId });
+                  spawnEnemy(tid, undefined, { isBoss: !!roomObj?.isBossRoom, roomId, mapId: selectedMapId ?? undefined });
                   spawned++;
                 } else {
                   }
@@ -505,7 +505,7 @@ export default function Game() {
                   const areaName = selectedMap?.name ?? 'Spawn';
                   const tplBelongs = selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid2)) : !!tpl;
                   if (tplBelongs) {
-                    spawnEnemy(tid2);
+                    spawnEnemy(tid2, undefined, { mapId: selectedMapId ?? undefined });
                     spawned++;
                   } else {
                     }
@@ -521,7 +521,7 @@ export default function Game() {
               const areaName = selectedMap?.name ?? 'Spawn';
               const tplBelongs = selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid)) : !!tpl;
               if (tplBelongs) {
-                spawnEnemy(tid);
+                spawnEnemy(tid, undefined, { mapId: selectedMapId ?? undefined });
                 spawned++;
               } else {
                }

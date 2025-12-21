@@ -299,6 +299,13 @@ export function useGameState() {
       if (item && (item as any).rarity) unlockedRarities.add((item as any).rarity);
     }
 
+    // ENHANCEMENT: Also unlock rarity based on enemy tier encountered
+    // If you fight an uncommon enemy, you can get uncommon loot (discovery mechanism)
+    const encounterRarity = (enemy.rarity ?? 'common') as Rarity;
+    if (encounterRarity && encounterRarity !== 'common') {
+      unlockedRarities.add(encounterRarity);
+    }
+
     // Determine which loot table to use
     const lootConfig = getLootConfigForMap(selectedMapId || undefined);
     let selectedTable = lootConfig.trashLootTable;
@@ -1287,7 +1294,7 @@ export function useGameState() {
     enemiesRef.current = enemies;
   }, [enemies]);
 
-  const spawnEnemy = (templateOverride?: string, levelOverride?: number, meta?: { isBoss?: boolean; roomId?: string }) => {
+  const spawnEnemy = (templateOverride?: string, levelOverride?: number, meta?: { isBoss?: boolean; roomId?: string; mapId?: string }) => {
     // pick a template (optionally by templateId)
     let template = undefined as any;
     if (templateOverride) {
@@ -1306,24 +1313,30 @@ export function useGameState() {
     if (typeof levelOverride === "number") {
       level = Math.max(MIN_SPAWN_LEVEL, Math.min(MAX_SPAWN_LEVEL, Math.floor(levelOverride)));
     } else {
+      // Get map constraints if mapId is provided
+      const mapId = meta?.mapId;
+      const map = mapId ? getMapById(mapId) : null;
+      const mapMaxLevel = map?.maxLevel ?? MAX_SPAWN_LEVEL;
+      const mapMinLevel = map?.minLevel ?? MIN_SPAWN_LEVEL;
+      
       // delta grows slowly with player level so higher-level players still face nearby threats
       const delta = Math.max(3, Math.round(player.level * 0.08));
-      const minL = Math.max(MIN_SPAWN_LEVEL, player.level - delta);
-      const maxL = Math.min(MAX_SPAWN_LEVEL, player.level + delta);
+      const minL = Math.max(mapMinLevel, player.level - delta);
+      const maxL = Math.min(mapMaxLevel, player.level + delta);
       level = minL + Math.floor(Math.random() * (maxL - minL + 1));
     }
 
     // rarity by level ranges
-    const rarity = level <= 9 ? "common" : level <= 29 ? "rare" : level <= 59 ? "epic" : level <= 89 ? "legendary" : "mythic";
+    const rarity = level <= 5 ? "common" : level <= 15 ? "uncommon" : level <= 29 ? "rare" : level <= 59 ? "epic" : level <= 89 ? "legendary" : "mythic";
 
     // base random factors
     const r1 = 0.6 + Math.random() * 1.0; // for dmg
     const r2 = 0.9 + Math.random() * 0.4; // for hp multiplier
     const r3 = 0.2 + Math.random() * 0.6; // for def
 
-    const rarityHpMult: Record<string, number> = { common: 1, rare: 1.04, epic: 1.12, legendary: 1.28, mythic: 1.5 };
-    const rarityDmgMult: Record<string, number> = { common: 1, rare: 1.06, epic: 1.15, legendary: 1.3, mythic: 1.7 };
-    const rarityDefMult: Record<string, number> = { common: 1, rare: 1.02, epic: 1.08, legendary: 1.18, mythic: 1.35 };
+    const rarityHpMult: Record<string, number> = { common: 1, uncommon: 1.02, rare: 1.04, epic: 1.12, legendary: 1.28, mythic: 1.5 };
+    const rarityDmgMult: Record<string, number> = { common: 1, uncommon: 1.03, rare: 1.06, epic: 1.15, legendary: 1.3, mythic: 1.7 };
+    const rarityDefMult: Record<string, number> = { common: 1, uncommon: 1.01, rare: 1.02, epic: 1.08, legendary: 1.18, mythic: 1.35 };
 
     const hp = Math.max(6, Math.round(8 + Math.pow(level, 1.2) * (3 + Math.random() * 3) * rarityHpMult[rarity] * r2));
     const dmg = Math.max(1, Math.round(level * (0.6 + Math.random() * 1.0) * rarityDmgMult[rarity] * r1));
