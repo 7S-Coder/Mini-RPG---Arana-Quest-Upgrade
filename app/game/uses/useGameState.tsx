@@ -312,10 +312,29 @@ export function useGameState() {
       allowedRarities = Object.keys(selectedTable) as Rarity[];
     }
 
-    // Roll rarity from the selected table
-    let finalRarity = rollFromLootTable(selectedTable);
-    if (!finalRarity) {
-      finalRarity = lootConfig.allowedRarities[0] || 'common';
+    // ENHANCEMENT: Check if enemy has higher rarity than table suggests
+    // If enemy is rare/epic/legendary, give a chance to drop at enemy rarity level
+    const enemyRarity = (enemy.rarity ?? 'common') as Rarity;
+    const rarityOrder = LOOT_RARITY_ORDER;
+    
+    // Probability of dropping at enemy rarity: scales with rarity (0% for common, 50% for rare, 60% for epic, 70% for legendary, 80% for mythic)
+    let finalRarity: Rarity;
+    if (enemyRarity !== 'common' && !isBoss) {
+      const rarityDropChances: Record<Rarity, number> = { common: 0, uncommon: 20, rare: 50, epic: 60, legendary: 70, mythic: 80 };
+      const dropAtEnemyRarityChance = rarityDropChances[enemyRarity] ?? 0;
+      
+      if (Math.random() < (dropAtEnemyRarityChance / 100)) {
+        // Drop at enemy rarity
+        finalRarity = enemyRarity;
+      } else {
+        // Roll from normal loot table
+        const rolledRarity = rollFromLootTable(selectedTable);
+        finalRarity = rolledRarity || lootConfig.allowedRarities[0] || 'common';
+      }
+    } else {
+      // For common enemies or bosses, roll normally from table
+      const rolledRarity = rollFromLootTable(selectedTable);
+      finalRarity = rolledRarity || lootConfig.allowedRarities[0] || 'common';
     }
 
     try {
@@ -338,7 +357,6 @@ export function useGameState() {
     }
 
     // Clamp rarity to max allowed on this map
-    const rarityOrder = LOOT_RARITY_ORDER;
     const maxIdx = rarityOrder.indexOf(lootConfig.maxRarity);
     const currentIdx = rarityOrder.indexOf(finalRarity);
 
@@ -383,18 +401,31 @@ export function useGameState() {
       finalRarity = rarityOrder[idx] as Rarity;
     }
 
-    // Pick template first (weighted) - Filter by unlocked rarities
+    // Pick template first (weighted) - Filter by unlocked rarities AND map
     let poolForPick = !selectedMapId ? ITEM_POOL.filter((t) => (t.rarity ?? 'common') === 'common') : ITEM_POOL;
-    // Only include items with unlocked rarity templates
+    
+    // Filter by unlocked rarity
     poolForPick = poolForPick.filter(t => {
       const itemRarity = (t.rarity ?? 'common') as Rarity;
       return unlockedRarities.has(itemRarity);
     });
     
+    // ENHANCEMENT: Filter by map - items must be allowed on this map
+    if (selectedMapId) {
+      poolForPick = poolForPick.filter(t => {
+        const allowedMaps = (t as any).allowedMaps;
+        if (!allowedMaps || allowedMaps.length === 0) {
+          // If no specific maps are defined, item is available everywhere (backward compatibility)
+          return true;
+        }
+        return allowedMaps.includes(selectedMapId);
+      });
+    }
+    
     // If pool is empty after filtering, don't drop
     if (poolForPick.length === 0) {
       try {
-        console.debug('[DROP] No templates available with unlocked rarity', { finalRarity, unlockedRarities: Array.from(unlockedRarities) });
+        console.debug('[DROP] No templates available with unlocked rarity and map restrictions', { selectedMapId, finalRarity, unlockedRarities: Array.from(unlockedRarities) });
       } catch (e) {}
       return null;
     }

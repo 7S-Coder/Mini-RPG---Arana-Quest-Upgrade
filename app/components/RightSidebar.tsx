@@ -15,7 +15,11 @@ export default function RightSidebar({ onOpenModal }: { onOpenModal?: (name: str
         <ul>
           <li>
             <span className="dot common"/>
-            <div className="tier-text"><div className="tier-name">common</div><div className="tier-range">lvl 1-9</div></div>
+            <div className="tier-text"><div className="tier-name">common</div><div className="tier-range">lvl 1-5</div></div>
+          </li>
+          <li>
+            <span className="dot uncommon"/>
+            <div className="tier-text"><div className="tier-name">uncommon</div><div className="tier-range">lvl 6-15</div></div>
           </li>
           <li>
             <span className="dot rare"/>

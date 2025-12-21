@@ -64,7 +64,7 @@ export type Player = {
   };
 };
 
-export type ItemTemplate = Omit<Item, "id" | "rarity"> & { weight?: number; rarity?: Rarity };
+export type ItemTemplate = Omit<Item, "id" | "rarity"> & { weight?: number; rarity?: Rarity; allowedMaps?: string[] };
 
 export type Pickup = {
   id: string;

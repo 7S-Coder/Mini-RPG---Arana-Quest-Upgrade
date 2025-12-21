@@ -51,7 +51,7 @@ const defaultMaps: MapTemplate[] = [
     enemyPool: ['slime', 'rat_spawn', 'butterfly_spawn'],
   },
 
-  // MAP 1 — Forest
+  // MAP 1 — Forest (Level 6-29)
   {
     id: 'forest',
     name: 'Forest',
@@ -61,7 +61,7 @@ const defaultMaps: MapTemplate[] = [
     minLevel: 6,
     allowedTiers: ['common', 'uncommon', 'rare'],
     loot: 'loot: Common - Uncommon - Rare',
-    enemyPool: ['rat', 'butterfly', 'wolf', 'ant', 'bee', 'mushroom', 'crow', 'monkey'],
+    enemyPool: ['rat', 'butterfly', 'giant_spider', 'forest_goblin', 'wild_boar', 'wolf', 'ant', 'bee', 'mushroom', 'crow', 'monkey', 'big_bee'],
     requiredKeyFragments: [],
     dungeons: [
       { id: 'beehive', name: 'The Beehive', floors: 5, bossTemplateId: 'queen_bee' },
@@ -69,21 +69,21 @@ const defaultMaps: MapTemplate[] = [
     ],
     rooms: [
       // Beehive
-      { id: 'forest_beehive_floor_1', enemyPool: ['ant', 'mushroom'] },
-      { id: 'forest_beehive_floor_2', enemyPool: ['bee', 'big_bee'] },
-      { id: 'forest_beehive_floor_3', enemyPool: ['big_bee', 'mushroom'] },
+      { id: 'forest_beehive_floor_1', enemyPool: ['ant', 'mushroom', 'forest_goblin'] },
+      { id: 'forest_beehive_floor_2', enemyPool: ['bee', 'big_bee', 'giant_spider'] },
+      { id: 'forest_beehive_floor_3', enemyPool: ['big_bee', 'mushroom', 'wild_boar'] },
       { id: 'forest_beehive_floor_4', enemyPool: ['big_bee', 'mushroom', 'bee'] },
       { id: 'forest_beehive_floor_5', enemyPool: ['queen_bee'], isBossRoom: true },
       // Celestial Tree
-      { id: 'forest_celestial_tree_floor_1', enemyPool: ['ant', 'crow'] },
-      { id: 'forest_celestial_tree_floor_2', enemyPool: ['crow', 'butterfly'] },
-      { id: 'forest_celestial_tree_floor_3', enemyPool: ['monkey', 'butterfly', 'crow'] },
+      { id: 'forest_celestial_tree_floor_1', enemyPool: ['ant', 'crow', 'forest_goblin'] },
+      { id: 'forest_celestial_tree_floor_2', enemyPool: ['crow', 'butterfly', 'giant_spider'] },
+      { id: 'forest_celestial_tree_floor_3', enemyPool: ['monkey', 'butterfly', 'crow', 'wild_boar'] },
       { id: 'forest_celestial_tree_floor_4', enemyPool: ['monkey', 'butterfly'] },
       { id: 'forest_celestial_tree_floor_5', enemyPool: ['quetzal'], isBossRoom: true },
     ],
   },
 
-  // MAP 2 — Caves
+  // MAP 2 — Caves (Level 16-59)
   {
     id: 'caves',
     name: 'Caves',
@@ -93,16 +93,16 @@ const defaultMaps: MapTemplate[] = [
     minLevel: 16,
     allowedTiers: ['uncommon', 'rare', 'epic'],
     loot: 'loot: Uncommon - Rare - Epic',
-    enemyPool: ['bat', 'snail', 'salamander', 'snake', 'wood_fairy', 'bear'],
+    enemyPool: ['stone_golem', 'crystal_bug', 'cave_troll', 'bat', 'snail', 'salamander', 'snake', 'wood_fairy', 'bear', 'batwan', 'rabid_hyenas'],
     requiredKeyFragments: ['Forest Key A', 'Forest Key B'],
     dungeons: [
       { id: 'underground_cave', name: 'The Underground Cave', floors: 5, bossTemplateId: 'rabid_hyenas' },
     ],
     rooms: [
-      { id: 'caves_underground_cave_floor_1', enemyPool: ['bat', 'batwan'] },
-      { id: 'caves_underground_cave_floor_2', enemyPool: ['batwan', 'salamander'] },
-      { id: 'caves_underground_cave_floor_3', enemyPool: ['salamander', 'wood_fairy'] },
-      { id: 'caves_underground_cave_floor_4', enemyPool: ['wood_fairy', 'snake'] },
+      { id: 'caves_underground_cave_floor_1', enemyPool: ['stone_golem', 'crystal_bug'] },
+      { id: 'caves_underground_cave_floor_2', enemyPool: ['cave_troll', 'bat'] },
+      { id: 'caves_underground_cave_floor_3', enemyPool: ['snail', 'salamander'] },
+      { id: 'caves_underground_cave_floor_4', enemyPool: ['snake', 'wood_fairy', 'bear'] },
       { id: 'caves_underground_cave_floor_5', enemyPool: ['rabid_hyenas'], isBossRoom: true },
     ],
   },
@@ -117,7 +117,7 @@ const defaultMaps: MapTemplate[] = [
     minLevel: 30,
     allowedTiers: ['rare', 'epic', 'legendary'],
     loot: 'loot: Rare - Epic - Legendary',
-    enemyPool: ['skeleton', 'cursed_knight', 'shadow_mage', 'gargoyle', 'wraith', 'ancient_sentinel'],
+    enemyPool: ['skeleton', 'tomb_guardian', 'ghost_knight', 'cursed_statue', 'cursed_knight', 'shadow_mage', 'gargoyle', 'wraith', 'ancient_sentinel'],
     requiredKeyFragments: ['Caves Key A', 'Caves Key B'],
     dungeons: [
       { id: 'forgotten_temple', name: 'Forgotten Temple', floors: 5, bossTemplateId: 'ancient_guardian' },
@@ -125,16 +125,16 @@ const defaultMaps: MapTemplate[] = [
     ],
     rooms: [
       // Forgotten Temple
-      { id: 'ruins_forgotten_temple_floor_1', enemyPool: ['skeleton', 'shadow_mage'] },
-      { id: 'ruins_forgotten_temple_floor_2', enemyPool: ['cursed_knight', 'skeleton'] },
-      { id: 'ruins_forgotten_temple_floor_3', enemyPool: ['cursed_knight', 'gargoyle'] },
-      { id: 'ruins_forgotten_temple_floor_4', enemyPool: ['gargoyle', 'wraith'] },
+      { id: 'ruins_forgotten_temple_floor_1', enemyPool: ['skeleton', 'tomb_guardian'] },
+      { id: 'ruins_forgotten_temple_floor_2', enemyPool: ['tomb_guardian', 'ghost_knight'] },
+      { id: 'ruins_forgotten_temple_floor_3', enemyPool: ['ghost_knight', 'cursed_statue'] },
+      { id: 'ruins_forgotten_temple_floor_4', enemyPool: ['cursed_knight', 'shadow_mage', 'gargoyle'] },
       { id: 'ruins_forgotten_temple_floor_5', enemyPool: ['ancient_guardian'], isBossRoom: true },
       // Library of Ashes
-      { id: 'ruins_library_of_ashes_floor_1', enemyPool: ['shadow_mage', 'skeleton'] },
-      { id: 'ruins_library_of_ashes_floor_2', enemyPool: ['shadow_mage', 'wraith'] },
-      { id: 'ruins_library_of_ashes_floor_3', enemyPool: ['wraith', 'ancient_sentinel'] },
-      { id: 'ruins_library_of_ashes_floor_4', enemyPool: ['ancient_sentinel', 'gargoyle'] },
+      { id: 'ruins_library_of_ashes_floor_1', enemyPool: ['shadow_mage', 'wraith'] },
+      { id: 'ruins_library_of_ashes_floor_2', enemyPool: ['ghost_knight', 'cursed_statue'] },
+      { id: 'ruins_library_of_ashes_floor_3', enemyPool: ['cursed_knight', 'gargoyle'] },
+      { id: 'ruins_library_of_ashes_floor_4', enemyPool: ['wraith', 'ancient_sentinel'] },
       { id: 'ruins_library_of_ashes_floor_5', enemyPool: ['forgotten_keeper'], isBossRoom: true },
     ],
   },
@@ -147,8 +147,8 @@ const defaultMaps: MapTemplate[] = [
     logColor: '#e74c3c',
     dungeonThreshold: 20,
     minLevel: 50,
-    allowedTiers: ['epic', 'legendary', 'mythic'],
-    loot: 'loot: Epic - Legendary - Mythic',
+    allowedTiers: ['legendary', 'mythic'],
+    loot: 'loot: Legendary - Mythic',
     enemyPool: ['fire_imp', 'lava_golem', 'magma_serpent', 'ash_phoenix', 'flame_titan'],
     requiredKeyFragments: ['Ruins Key A', 'Ruins Key B'],
     dungeons: [
