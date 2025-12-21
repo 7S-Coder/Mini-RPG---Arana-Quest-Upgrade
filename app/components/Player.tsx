@@ -50,7 +50,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 		regen: 'Health recovered per second out of combat. Removed in battle.',
 		speed: 'Movement and attack speed. Higher is faster combat.',
 		gold: 'Currency earned from battles. Used to purchase items and upgrades.',
-		essence: 'Magical resource for crafting and forging. Obtained from monsters.',
+		essence: 'Magical resource for crafting and forging. Obtained from bosses in dungeons.',
 		essence_dust: 'Common material from weak enemies. Used in basic crafting.',
 		mithril_ore: 'Rare material from stronger foes. Essential for forging equipment.',
 		star_fragment: 'Precious material. Increases item rarity when used in forge.',
@@ -104,7 +104,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 						<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('gold')} onMouseLeave={() => setHoveredResource(null)}>
 							<div style={{ color: '#ffd700' }}>{(typeof gold === 'number' ? gold.toFixed(2) : (gold ?? 0))} g</div>
 							{hoveredResource === 'gold' && (
-								<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+								<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.3 }}>
 									{STAT_TOOLTIPS.gold}
 								</div>
 							)}
@@ -113,7 +113,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 						<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('essence')} onMouseLeave={() => setHoveredResource(null)}>
 							<div style={{ color: '#6eb3ff' }}>{(essence ?? 0).toFixed(0)} e</div>
 							{hoveredResource === 'essence' && (
-								<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+								<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.3 }}>
 									{STAT_TOOLTIPS.essence}
 								</div>
 							)}
@@ -123,7 +123,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 						<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('essence_dust')} onMouseLeave={() => setHoveredResource(null)}>
 							<div style={{ color: '#a389d9' }}>⚪ {materials?.essence_dust ?? 0}</div>
 							{hoveredResource === 'essence_dust' && (
-								<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '140px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.3 }}>
 									{STAT_TOOLTIPS.essence_dust}
 								</div>
 							)}
@@ -131,7 +131,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 						<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('mithril_ore')} onMouseLeave={() => setHoveredResource(null)}>
 							<div style={{ color: '#c0a080' }}>⬜ {materials?.mithril_ore ?? 0}</div>
 							{hoveredResource === 'mithril_ore' && (
-								<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.3 }}>
 									{STAT_TOOLTIPS.mithril_ore}
 								</div>
 							)}
@@ -139,7 +139,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 						<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('star_fragment')} onMouseLeave={() => setHoveredResource(null)}>
 							<div style={{ color: '#ffc100' }}>✨ {materials?.star_fragment ?? 0}</div>
 							{hoveredResource === 'star_fragment' && (
-								<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '140px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.3 }}>
 									{STAT_TOOLTIPS.star_fragment}
 								</div>
 							)}
@@ -147,7 +147,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 						<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('void_shard')} onMouseLeave={() => setHoveredResource(null)}>
 							<div style={{ color: '#4a4a6a' }}>◆ {materials?.void_shard ?? 0}</div>
 							{hoveredResource === 'void_shard' && (
-								<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.3 }}>
 									{STAT_TOOLTIPS.void_shard}
 								</div>
 							)}
