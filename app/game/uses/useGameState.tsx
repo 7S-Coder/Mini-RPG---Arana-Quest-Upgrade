@@ -35,6 +35,13 @@ export function useGameState() {
     speed: 120, // default 120 px/s
     regen: 3, // hp regeneration per second (out of combat)
     gold: 0,
+    essence: 0, // ensure essence is initialized
+    materials: {
+      essence_dust: 0,
+      mithril_ore: 0,
+      star_fragment: 0,
+      void_shard: 0,
+    },
     // ensure unlockedTiers always present so gating logic works
     unlockedTiers: ['common'],
   });
@@ -99,6 +106,7 @@ export function useGameState() {
   const BASE_DEF = 2;
   const BASE_DODGE = 5;
   const BASE_CRIT = 3;
+  const BASE_REGEN = 3;
 
   const addXp = (amount: number) => {
     // accumulate rapid XP calls and process once per tick to avoid stale read/write races
@@ -1247,8 +1255,9 @@ export function useGameState() {
     const baseDef = BASE_DEF + Math.floor((lvl - 1) * 0.05);
     const baseDodge = BASE_DODGE + Math.floor((lvl - 1) * 0.03);
     const baseCrit = BASE_CRIT + Math.floor((lvl - 1) * 0.02);
+    const baseRegen = BASE_REGEN + Math.floor((lvl - 1) * 0.05);
 
-    const acc: Record<string, number> = { hp: 0, dmg: 0, def: 0, dodge: 0, crit: 0 };
+    const acc: Record<string, number> = { hp: 0, dmg: 0, def: 0, dodge: 0, crit: 0, regen: 0 };
     for (const v of Object.values(equipment)) {
       if (!v || !v.stats) continue;
       for (const [k, val] of Object.entries(v.stats)) {
@@ -1258,12 +1267,13 @@ export function useGameState() {
 
     // include allocated progression bonuses
     try {
-      const alloc = progression && (progression as any).allocated ? (progression as any).allocated : { hp: 0, dmg: 0, def: 0, crit: 0, dodge: 0 };
+      const alloc = progression && (progression as any).allocated ? (progression as any).allocated : { hp: 0, dmg: 0, def: 0, crit: 0, dodge: 0, regen: 0 };
       acc.hp = (acc.hp || 0) + (alloc.hp || 0) * 5;
       acc.dmg = (acc.dmg || 0) + (alloc.dmg || 0) * 1;
       acc.def = (acc.def || 0) + (alloc.def || 0) * 1;
       acc.crit = (acc.crit || 0) + (alloc.crit || 0) * 0.5;
       acc.dodge = (acc.dodge || 0) + (alloc.dodge || 0) * 0.5;
+      acc.regen = (acc.regen || 0) + (alloc.regen || 0) * 1;
     } catch (e) {}
 
     const newMaxHp = Math.max(1, Math.round(baseMaxHp + (acc.hp || 0)));
@@ -1283,6 +1293,7 @@ export function useGameState() {
         def: Math.max(0, Math.round(baseDef + (acc.def || 0))),
         dodge: Math.max(0, Number((baseDodge + (acc.dodge || 0)).toFixed(2))),
         crit: Math.max(0, Number((baseCrit + (acc.crit || 0)).toFixed(2))),
+        regen: Math.max(0, Number((baseRegen + (acc.regen || 0)).toFixed(2))),
       } as Player;
     });
   }, [equipment, player.level, progression]);
@@ -1460,7 +1471,17 @@ export function useGameState() {
 
       if (save.player) {
         // Apply saved player data but reset transient fields like consecutive wins
-        const sp = { ...save.player, consecWins: 0 };
+        // Ensure materials are always present (for backward compatibility with old saves)
+        const sp = {
+          ...save.player,
+          consecWins: 0,
+          materials: {
+            essence_dust: save.player.materials?.essence_dust ?? 0,
+            mithril_ore: save.player.materials?.mithril_ore ?? 0,
+            star_fragment: save.player.materials?.star_fragment ?? 0,
+            void_shard: save.player.materials?.void_shard ?? 0,
+          },
+        };
         // Completely replace the player, don't merge with defaults
         setPlayer(sp as Player);
         // Update ref immediately for synchronous access

@@ -3,9 +3,10 @@ import React, { useEffect, useRef } from "react";
 type Props = {
   logs: React.ReactNode[];
   logColor?: string;
+  inDungeonActive?: boolean;
 };
 
-export default function LogMessages({ logs, logColor }: Props) {
+export default function LogMessages({ logs, logColor, inDungeonActive }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -35,7 +36,11 @@ export default function LogMessages({ logs, logColor }: Props) {
   // apply theme color as a subtle background tint for the log area
   const style = logColor ? { backgroundColor: hexToRgba(logColor, 0.12) } : undefined;
   return (
-    <div ref={containerRef} className="log-messages" style={style}>
+    <div
+      ref={containerRef}
+      className={`log-messages${inDungeonActive ? ' pulse-effect' : ''}`}
+      style={style}
+    >
       {logs.map((l, i) => (
         <div key={i} className="log-line">{l}</div>
       ))}

@@ -16,7 +16,7 @@ type Props = {
   logColor?: string;
 };
 
-export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, collectAllPickups, pushLog, logColor, disableRun = false }: Props) {
+export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, collectAllPickups, pushLog, logColor, disableRun = false, inDungeonActive }: Props & { inDungeonActive?: boolean }) {
   // helper: convert hex to rgba for subtle background tint
   const hexToRgba = (hex?: string, alpha = 0.06) => {
     if (!hex) return undefined;
@@ -39,7 +39,7 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
     <section className="arena-panel" style={arenaStyle}>
       <div className="arena-log">
         <EnemiesRow enemies={enemies} />
-        <LogMessages logs={logs} logColor={logColor} />
+        <LogMessages logs={logs} logColor={logColor} inDungeonActive={inDungeonActive} />
       </div>
 
       {/* pickups rendered as absolute positioned elements within the arena wrapper */}

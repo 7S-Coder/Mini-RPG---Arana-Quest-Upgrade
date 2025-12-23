@@ -52,6 +52,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
   const [filterSlot, setFilterSlot] = React.useState<string>('all');
   const [selectedItemForAction, setSelectedItemForAction] = React.useState<any>(null);
   const [hoveredTooltip, setHoveredTooltip] = React.useState<string | null>(null);
+  const [hoveredItemId, setHoveredItemId] = React.useState<string | null>(null);
 
   const TOOLTIPS: Record<string, string> = {
     upgradeStat: 'Increase a random stat by 1-3. Costs 500 gold.',
@@ -77,6 +78,16 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
     const rarityMult: Record<string, number> = { common: 1, rare: 1.6, epic: 2.6, legendary: 5, mythic: 12 };
     const base = 10 + Object.values(it.stats || {}).reduce((s: number, v: any) => s + Number(v || 0), 0) * 5;
     return Math.max(1, Math.round(base * (rarityMult[it.rarity] || 1)));
+  };
+
+  const getItemDescription = (it: any) => {
+    if (it.category === 'consumable') return 'Consumable item. Use to gain temporary or permanent effects.';
+    else if (it.category === 'fragment') return 'This precious fragment opens the doors to the next map for you.';
+    else if (it.category === 'accessory') return it.description || 'This precious key opens the doors to the next map for you.';
+    const statsList = Object.entries(it.stats || {})
+      .map(([k, v]) => `${k} +${v}`)
+      .join(', ');
+    return statsList || 'No special effects.';
   };
 
   const forgeGroups = React.useMemo(() => {
@@ -156,7 +167,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                           onMouseLeave={() => setHoveredTooltip(null)}
                         >
                           {hoveredTooltip === 'upgradeStat' && (
-                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
                               {TOOLTIPS.upgradeStat}
                             </div>
                           )}
@@ -181,7 +192,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                           onMouseLeave={() => setHoveredTooltip(null)}
                         >
                           {hoveredTooltip === 'lockStat' && (
-                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
                               {TOOLTIPS.lockStat}
                             </div>
                           )}
@@ -209,7 +220,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                           onMouseLeave={() => setHoveredTooltip(null)}
                         >
                           {hoveredTooltip === 'infusion' && (
-                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
                               {TOOLTIPS.infusion}
                             </div>
                           )}
@@ -233,7 +244,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                             onMouseLeave={() => setHoveredTooltip(null)}
                           >
                             {hoveredTooltip === 'mythicEvolution' && (
-                              <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+                              <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
                                 {TOOLTIPS.mythicEvolution}
                               </div>
                             )}
@@ -309,13 +320,20 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                         <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>No items.</div>
                       ) : (
                         <div style={{ display: 'grid', gap: 10, alignContent: 'start' }}>
-                          {filteredInventory.map((it) => (
-                            <div key={it.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10, position: 'relative' }}>
-                              <div>
+                          {filteredInventory.map((it, idx) => {
+                            const isInFirstHalf = idx < filteredInventory.length / 2;
+                            return (
+                            <div key={it.id} onMouseEnter={() => setHoveredItemId(it.id)} onMouseLeave={() => setHoveredItemId(null)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10, position: 'relative', transition: 'background 0.2s' }}>
+                              <div style={{ position: 'relative', flex: 1 }}>
                                 <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>
                                   {it.name}
                                   {it.quantity && it.quantity > 1 && <span style={{ marginLeft: 8, color: '#999', fontSize: 12 }}>×{it.quantity}</span>}
                                 </div>
+                                {hoveredItemId === it.id && (it.slot === 'consumable' || it.slot === 'key') && (
+                                  <div style={{ position: 'absolute', [isInFirstHalf ? 'top' : 'bottom']: 'calc(100% + 4px)', left: 0, maxWidth: '180px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '10px 14px', fontSize: 10, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+                                    {getItemDescription(it)}
+                                  </div>
+                                )}
                                 <div style={{ fontSize: 10, color: '#bbb', marginTop: 4 }}>W:{it.weight ?? 1}</div>
                                 <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>{(() => {
                                   const entries = Object.entries(it.stats || {});
@@ -345,7 +363,8 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                                 <button type="button" onClick={(e) => { e.stopPropagation(); if (!onSell) return; setTimeout(() => { try { onSell(it.id); } catch {} }, 0); }}>Sell ({priceFor(it)} g)</button>
                               </div>
                             </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -512,6 +531,8 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
 
         </div>
       </Modal>
+
+
     </>
   );
 }

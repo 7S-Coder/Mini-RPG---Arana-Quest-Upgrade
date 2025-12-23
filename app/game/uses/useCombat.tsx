@@ -63,32 +63,52 @@ export default function useCombat({
     const fastEnemies = aliveEnemies.filter((e) => (e.speed ?? 0) > pSpeed);
     const slowEnemies = aliveEnemies.filter((e) => (e.speed ?? 0) <= pSpeed);
 
+    // Get the target enemy (the one we'll attack)
+    const target = (enemies || []).find((e) => e.hp > 0);
+    if (!target) {
+      // no target, nothing else to do
+      lockedRef.current = false;
+      return;
+    }
+
     // Helper to apply a series of enemy attacks to a player snapshot
     const applyEnemyAttacksToPlayer = (elist: any[], playerSnap: any) => {
       let snap = { ...playerSnap };
       for (const e of elist) {
         if (e.hp <= 0) continue;
-        const dodgePlayer = rollChance(snap.dodge ?? 0);
-        if (dodgePlayer) {
-          pushLog(<>Dodge! You avoid the attack from <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span>.</>);
-          if (onEffect) onEffect({ type: 'dodge', text: 'Dodge', target: 'player' });
-          continue;
-        }
-        const enemyCrit = rollChance(e.crit ?? 0);
-        const edmg = calcDamage(Math.max(1, e.dmg ?? 1), snap.def ?? 0, enemyCrit);
-        snap.hp = Math.max(0, snap.hp - edmg);
-        if (enemyCrit) {
-          pushLog(<>💥 Critical hit! <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> deals {edmg} damage to you.</>);
-          if (onEffect) onEffect({ type: 'damage', text: String(edmg), kind: 'crit', target: 'player' });
-        } else {
-          pushLog(<> <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> hits you for {edmg} damage.</>);
-          if (onEffect) onEffect({ type: 'damage', text: String(edmg), kind: 'hit', target: 'player' });
+        
+        // Enemy can attack 1-3 times with decreasing chance
+        let attackCount = 0;
+        let canAttackAgain = true;
+        
+        while (canAttackAgain && attackCount < 3) {
+          const dodgePlayer = rollChance(snap.dodge ?? 0);
+          if (dodgePlayer) {
+            pushLog(<>Dodge! You avoid the attack from <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span>.</>);
+            if (onEffect) onEffect({ type: 'dodge', text: 'Dodge', target: 'player' });
+            break;
+          }
+          const enemyCrit = rollChance(e.crit ?? 0);
+          const edmg = calcDamage(Math.max(1, e.dmg ?? 1), snap.def ?? 0, enemyCrit);
+          snap.hp = Math.max(0, snap.hp - edmg);
+          if (enemyCrit) {
+            pushLog(<>💥 Critical hit! <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> deals {edmg} damage to you.</>);
+            if (onEffect) onEffect({ type: 'damage', text: String(edmg), kind: 'crit', target: 'player' });
+          } else {
+            pushLog(<> <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> hits you for {edmg} damage.</>);
+            if (onEffect) onEffect({ type: 'damage', text: String(edmg), kind: 'hit', target: 'player' });
+          }
+          attackCount++;
+          
+          // 20% chance to attack again (decreases with each attack)
+          const extraAttackChance = 20 - (attackCount * 8);
+          canAttackAgain = rollChance(extraAttackChance);
         }
       }
       return snap;
     };
 
-    // 1) Fast enemies attack first
+    // 1) Fast enemies attack first - they can all attack regardless of being targeted
     let playerSnap = { ...player };
     if (fastEnemies.length > 0) {
       playerSnap = applyEnemyAttacksToPlayer(fastEnemies, playerSnap);
@@ -105,13 +125,6 @@ export default function useCombat({
     }
 
     // 2) Player attacks (single target)
-    const target = (enemies || []).find((e) => e.hp > 0);
-    if (!target) {
-      // no target, nothing else to do
-      lockedRef.current = false;
-      return;
-    }
-
     const critRoll = rollChance(player.crit ?? 0);
     const dodgeRoll = rollChance(target.dodge ?? 0);
     let postAttackEnemies = (enemies || []).slice();
@@ -208,10 +221,11 @@ export default function useCombat({
     })();
 
     // 3) Slow enemies attack after player (use the updated snapshot so dead enemies don't act)
+    // Only the target enemy can counterattack
     const postEnemies = postAttackEnemies.filter((e) => e.hp > 0);
-    const slowToAct = postEnemies.filter((e) => (e.speed ?? 0) <= pSpeed);
-    if (slowToAct.length > 0) {
-      playerSnap = applyEnemyAttacksToPlayer(slowToAct, playerSnap);
+    const slowTargetEnemy = postEnemies.filter((e) => (e.speed ?? 0) <= pSpeed && e.id === target.id);
+    if (slowTargetEnemy.length > 0) {
+      playerSnap = applyEnemyAttacksToPlayer(slowTargetEnemy, playerSnap);
       setPlayer((currentPlayer: Player) => ({
         ...currentPlayer,
         hp: playerSnap.hp,

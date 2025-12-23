@@ -14,6 +14,7 @@ export type Item = {
   quantity?: number; // for stackable items like potions
   lockedStats?: string[]; // stats that won't change during upgrades
   infused?: boolean; // has essence infusion
+  description?: string; // item description
 };
 
 export type Enemy = {

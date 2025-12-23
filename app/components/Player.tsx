@@ -39,6 +39,16 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 	const xpToNext = (lvl = level ?? 1) => Math.max(20, 100 * lvl);
 	const xpPerc = Math.max(0, Math.min(1, (xp ?? 0) / xpToNext(level ?? 1)));
 
+	// Debug: log hp, maxHp, and hpPerc
+	useEffect(() => {
+		console.log(`[Player] hp=${Math.round(hp)}, maxHp=${Math.round(maxHp)}, hpPerc=${(hpPerc * 100).toFixed(1)}%`);
+	}, [hp, maxHp, hpPerc]);
+
+	// Debug: log materials
+	useEffect(() => {
+		console.log(`[Player] materials=`, materials);
+	}, [materials]);
+
 	const STAT_TOOLTIPS: Record<string, string> = {
 		hp: 'Health Points - Your current life. Regenerates out of combat.',
 		level: 'Character level determines encounter difficulty and stat scaling.',
@@ -91,145 +101,252 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 	}, [hp, inCombat]);
 
 	return (
-		<div className="player-card" style={{ position: "relative" }}>
+		<div className="player-card" style={{ position: "relative", display: 'flex', flexDirection: 'column', gap: 8 }}>
 			{showLevelUp && (
-					<div className="level-up-badge">Level up!</div>
+				<div className="level-up-badge">Level up!</div>
 			)}
 
-			<div className="player-header">
-				<div className="avatar" />
+			{/* ZONE 1 — IDENTITÉ & TENSION */}
+			
+			{/* Avatar + Nom */}
+			<div className="player-header" style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 4 }}>
+				<div className="avatar" style={{ width: 40, height: 40, flexShrink: 0 }} />
 				<div>
-					<h3>Player</h3>
-					<div style={{ fontSize: 12, fontWeight: 700, marginTop: 4, display: 'flex', alignItems: 'center', gap: 8 }}>
-						<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('gold')} onMouseLeave={() => setHoveredResource(null)}>
-							<div style={{ color: '#ffd700' }}>{(typeof gold === 'number' ? gold.toFixed(2) : (gold ?? 0))} g</div>
-							{hoveredResource === 'gold' && (
-								<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.3 }}>
-									{STAT_TOOLTIPS.gold}
-								</div>
-							)}
-						</div>
-						 
-						<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('essence')} onMouseLeave={() => setHoveredResource(null)}>
-							<div style={{ color: '#6eb3ff' }}>{(essence ?? 0).toFixed(0)} e</div>
-							{hoveredResource === 'essence' && (
-								<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.3 }}>
-									{STAT_TOOLTIPS.essence}
-								</div>
-							)}
-						</div>
-					</div>
-					<div style={{ fontSize: 11, marginTop: 6, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-						<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('essence_dust')} onMouseLeave={() => setHoveredResource(null)}>
-							<div style={{ color: '#a389d9' }}>⚪ {materials?.essence_dust ?? 0}</div>
-							{hoveredResource === 'essence_dust' && (
-							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '140px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.3 }}>
-									{STAT_TOOLTIPS.essence_dust}
-								</div>
-							)}
-						</div>
-						<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('mithril_ore')} onMouseLeave={() => setHoveredResource(null)}>
-							<div style={{ color: '#c0a080' }}>⬜ {materials?.mithril_ore ?? 0}</div>
-							{hoveredResource === 'mithril_ore' && (
-							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.3 }}>
-									{STAT_TOOLTIPS.mithril_ore}
-								</div>
-							)}
-						</div>
-						<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('star_fragment')} onMouseLeave={() => setHoveredResource(null)}>
-							<div style={{ color: '#ffc100' }}>✨ {materials?.star_fragment ?? 0}</div>
-							{hoveredResource === 'star_fragment' && (
-							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '140px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.3 }}>
-									{STAT_TOOLTIPS.star_fragment}
-								</div>
-							)}
-						</div>
-						<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('void_shard')} onMouseLeave={() => setHoveredResource(null)}>
-							<div style={{ color: '#4a4a6a' }}>◆ {materials?.void_shard ?? 0}</div>
-							{hoveredResource === 'void_shard' && (
-							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.3 }}>
-									{STAT_TOOLTIPS.void_shard}
-								</div>
-							)}
-						</div>
-					</div>
+					<h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Player</h3>
 				</div>
 			</div>
 
-			{/* floating damage number near avatar (MMO-style) */}
+			{/* Floating damage (MMO-style) */}
 			{damageFlash && (
 				<div className="damage-number" key={damageFlash.key}>-{damageFlash.amount}</div>
 			)}
 
-			<div className="bars">
+			{/* HP BAR — L'ÉLÉMENT LE PLUS IMPORTANT */}
 			<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('hp_bar')} onMouseLeave={() => setHoveredResource(null)}>
-				<div className="hp-bar" style={{ position: "relative" }}>
-					<div className="track">
-						<div className={`fill ${hpPerc <= 0.1 ? 'hp-low' : ''}`} style={{ width: `${hpPerc * 100}%` }} />
+				<div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: '#fff' }}>
+					HP: {Math.round(hp)} / {Math.round(maxHp)}
+				</div>
+				<div className="hp-bar" style={{ 
+					position: "relative",
+					height: 28,
+					backgroundColor: '#1a1a1a',
+					borderRadius: 4,
+					border: '1px solid #444',
+					overflow: 'hidden'
+				}}>
+					<div className="track" style={{ width: '100%', height: '100%' }}>
+						<div 
+							className={`fill ${hpPerc <= 0.2 ? 'hp-critical' : hpPerc <= 0.5 ? 'hp-low' : 'hp-normal'}`}
+							style={{ 
+								width: `${hpPerc * 100}%`,
+								height: '100%',
+								backgroundColor: hpPerc <= 0.2 ? '#cc3333' : hpPerc <= 0.5 ? '#ca2020ff' : '#cc3333',
+								animation: hpPerc <= 0.2 ? 'pulse-critical 0.6s infinite' : hpPerc <= 0.5 ? 'pulse-low 1s infinite' : 'none'
+							}} 
+						/>
 					</div>
 				</div>
 				{hoveredResource === 'hp_bar' && (
-					<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+					<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
 						{STAT_TOOLTIPS.hp_bar}
 					</div>
 				)}
 			</div>
+
+			{/* LEVEL + XP BAR */}
 			<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('xp_bar')} onMouseLeave={() => setHoveredResource(null)}>
-				<div className="xp-bar">
-					<div className="track"><div className="fill" style={{ width: `${xpPerc * 100}%` }} /></div>
+				<div style={{ fontSize: 13, fontWeight: 700, marginBottom: 6, color: '#fff' }}>
+					LEVEL {level ?? 1}
+				</div>
+				<div className="xp-bar" style={{
+					position: 'relative',
+					height: 18,
+					backgroundColor: '#1a1a1a',
+					borderRadius: 3,
+					border: '1px solid #444',
+					overflow: 'hidden'
+				}}>
+					<div className="track" style={{ width: '100%', height: '100%' }}>
+						<div 
+							className="fill"
+							style={{ 
+								width: `${xpPerc * 100}%`,
+								height: '100%',
+								backgroundColor: '#6eb3ff',
+								transition: 'width 0.3s ease'
+							}}
+						/>
+					</div>
+				</div>
+				<div style={{ fontSize: 10, color: '#999', marginTop: 4 }}>
+					XP: {xp ?? 0}/{xpToNext(level ?? 1)}
 				</div>
 				{hoveredResource === 'xp_bar' && (
-					<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
+					<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
 						{STAT_TOOLTIPS.xp_bar}
 					</div>
 				)}
-			</div>		</div>
-			<div className="player-stats">
-			<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('hp')} onMouseLeave={() => setHoveredStat(null)}>
-				HP: {Math.round(hp)} / {Math.round(maxHp)}
-				{hoveredStat === 'hp' && (
-					<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
-						{STAT_TOOLTIPS.hp}
-					</div>
-				)}
-			</div>
-			<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('level')} onMouseLeave={() => setHoveredStat(null)}>
-				Level: {level ?? 1} XP: {xp ?? 0}/{xpToNext(level ?? 1)}
-				{hoveredStat === 'level' && (
-					<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
-						{STAT_TOOLTIPS.level}
-					</div>
-				)}
-			</div>
-			<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('damage')} onMouseLeave={() => setHoveredStat(null)}>
-				Damage: {dmg ?? 0} - Defense: {def ?? 0}
-				{hoveredStat === 'damage' && (
-					<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
-						{STAT_TOOLTIPS.damage}
-					</div>
-				)}
-			</div>
-			<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('dodge')} onMouseLeave={() => setHoveredStat(null)}>
-				Dodge: {dodge ?? 0} - Crit: {crit ?? 0}%
-				{hoveredStat === 'dodge' && (
-					<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
-						{STAT_TOOLTIPS.dodge}
-					</div>
-				)}
-			</div>
-			<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('regen')} onMouseLeave={() => setHoveredStat(null)}>
-				Regen: {regen ?? 0} - Speed: {speed ?? 0}
-				{hoveredStat === 'regen' && (
-					<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: 8, fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8 }}>
-						{STAT_TOOLTIPS.regen}
-					</div>
-				)}
-			</div>
 			</div>
 
-			<div className="player-actions">
-				<button className="btn" onClick={() => onOpenModal?.("inventory")}>Inventory</button>
+			{/* ZONE 2 — PUISSANCE DE COMBAT */}
+
+			{/* Stats primaires */}
+			<div style={{ 
+				display: 'grid', 
+				gridTemplateColumns: '1fr 1fr', 
+				gap: 12,
+				fontSize: 12,
+				fontWeight: 600,
+				padding: '12px 0',
+				borderTop: '1px solid #333',
+				borderBottom: '1px solid #333'
+			}}>
+				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('damage')} onMouseLeave={() => setHoveredStat(null)}>
+					<div style={{ color: '#ff9999' }}>⚔ Damage</div>
+					<div style={{ fontSize: 14, fontWeight: 700, color: '#ff9999', marginTop: 2 }}>{dmg ?? 0}</div>
+					{hoveredStat === 'damage' && (
+						<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+							{STAT_TOOLTIPS.damage}
+						</div>
+					)}
+				</div>
+				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('defense')} onMouseLeave={() => setHoveredStat(null)}>
+					<div style={{ color: '#99ccff' }}>🛡 Defense</div>
+					<div style={{ fontSize: 14, fontWeight: 700, color: '#99ccff', marginTop: 2 }}>{def ?? 0}</div>
+					{hoveredStat === 'defense' && (
+						<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+							{STAT_TOOLTIPS.defense}
+						</div>
+					)}
+				</div>
 			</div>
+
+			{/* Stats secondaires */}
+			<div style={{ 
+				display: 'grid', 
+				gridTemplateColumns: '1fr 1fr 1fr 1fr', 
+				gap: 8,
+				fontSize: 11,
+				color: '#aaa'
+			}}>
+				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('crit')} onMouseLeave={() => setHoveredStat(null)}>
+					<div>🎯 <br/>Crit</div>
+					<div style={{ fontSize: 12, fontWeight: 600, color: '#ddd', marginTop: 2 }}>{crit ?? 0}%</div>
+					{hoveredStat === 'crit' && (
+						<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+							{STAT_TOOLTIPS.crit}
+						</div>
+					)}
+				</div>
+				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('dodge')} onMouseLeave={() => setHoveredStat(null)}>
+					<div>👟 <br/> Dodge</div>
+					<div style={{ fontSize: 12, fontWeight: 600, color: '#ddd', marginTop: 2 }}>{dodge ?? 0}</div>
+					{hoveredStat === 'dodge' && (
+						<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+							{STAT_TOOLTIPS.dodge}
+						</div>
+					)}
+				</div>
+				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('speed')} onMouseLeave={() => setHoveredStat(null)}>
+					<div>⚡ <br/> Speed</div>
+					<div style={{ fontSize: 12, fontWeight: 600, color: '#ddd', marginTop: 2 }}>{speed ?? 0}</div>
+					{hoveredStat === 'speed' && (
+						<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+							{STAT_TOOLTIPS.speed}
+						</div>
+					)}
+				</div>
+				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('regen')} onMouseLeave={() => setHoveredStat(null)}>
+					<div>💚 <br/>Regen</div>
+					<div style={{ fontSize: 12, fontWeight: 600, color: '#ddd', marginTop: 2 }}>{regen ?? 0}</div>
+					{hoveredStat === 'regen' && (
+						<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+							{STAT_TOOLTIPS.regen}
+						</div>
+					)}
+				</div>
+			</div>
+
+			{/* ZONE 3 — ÉCONOMIE & RESSOURCES */}
+
+			{/* Or + Essence */}
+			<div style={{ 
+				fontSize: 12, 
+				fontWeight: 600,
+				padding: '8px 0',
+				borderTop: '1px solid #333',
+				display: 'grid',
+				gridTemplateColumns: '1fr 1fr',
+				gap: 12
+			}}>
+				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('gold')} onMouseLeave={() => setHoveredResource(null)}>
+					<div style={{ color: '#ffd700' }}>💰 {(typeof gold === 'number' ? gold.toFixed(2) : (gold ?? 0))} g</div>
+					{hoveredResource === 'gold' && (
+						<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+							{STAT_TOOLTIPS.gold}
+						</div>
+					)}
+				</div>
+				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('essence')} onMouseLeave={() => setHoveredResource(null)}>
+					<div style={{ color: '#6eb3ff' }}> {(essence ?? 0).toFixed(0)} e</div>
+					{hoveredResource === 'essence' && (
+						<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+							{STAT_TOOLTIPS.essence}
+						</div>
+					)}
+				</div>
+			</div>
+
+			{/* Forge Materials — TRÈS DISCRET */}
+			<div style={{ 
+				fontSize: 10,
+				color: '#777',
+				padding: '8px 0',
+				opacity: 0.75,
+				borderTop: '1px solid #2a2a2a'
+			}}>
+				<div style={{ fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Forge Materials</div>
+				<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
+					<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('essence_dust')} onMouseLeave={() => setHoveredResource(null)}>
+						<div style={{ color: '#a389d9' }}>⚪ Essence Dust</div>
+						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa' }}>x{materials?.essence_dust ?? 0}</div>
+						{hoveredResource === 'essence_dust' && (
+							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '140px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+								{STAT_TOOLTIPS.essence_dust}
+							</div>
+						)}
+					</div>
+					<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('mithril_ore')} onMouseLeave={() => setHoveredResource(null)}>
+						<div style={{ color: '#c0a080' }}>⬜ Mithril Ore</div>
+						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa' }}>x{materials?.mithril_ore ?? 0}</div>
+						{hoveredResource === 'mithril_ore' && (
+							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+								{STAT_TOOLTIPS.mithril_ore}
+							</div>
+						)}
+					</div>
+					<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('star_fragment')} onMouseLeave={() => setHoveredResource(null)}>
+						<div style={{ color: '#ffc100' }}>✨ Star Fragment</div>
+						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa' }}>x{materials?.star_fragment ?? 0}</div>
+						{hoveredResource === 'star_fragment' && (
+							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '140px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+								{STAT_TOOLTIPS.star_fragment}
+							</div>
+						)}
+					</div>
+					<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('void_shard')} onMouseLeave={() => setHoveredResource(null)}>
+						<div style={{ color: '#4a4a6a' }}>◆ Void Shard</div>
+						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa' }}>x{materials?.void_shard ?? 0}</div>
+						{hoveredResource === 'void_shard' && (
+							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+								{STAT_TOOLTIPS.void_shard}
+							</div>
+						)}
+					</div>
+				</div>
+			</div>
+
+
 		</div>
 	);
 }

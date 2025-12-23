@@ -25,12 +25,12 @@ const RARITY_COLOR: Record<Rarity, string> = {
 
 // Prix des boites par rareté (or)
 const LOOT_BOX_PRICES_GOLD: Record<Rarity, number> = {
-  common: 10,
-  uncommon: 20,
-  rare: 35,
-  epic: 100,
-  legendary: 250,
-  mythic: 500,
+  common: 200,
+  uncommon: 400,
+  rare: 700,
+  epic: 1100,
+  legendary: 2500,
+  mythic: 5000,
 };
 
 // Prix des boites par rareté (essence)
@@ -184,7 +184,7 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
                           color: '#6eb3ff'
                         }}
                       >
-                        {costEssence}✨
+                        {costEssence}
                       </button>
                     </div>
                   </div>

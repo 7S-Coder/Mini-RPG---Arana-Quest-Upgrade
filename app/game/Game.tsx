@@ -119,7 +119,9 @@ export default function Game() {
       // Out-of-combat regeneration
       if (!inCombatRef.current && (p.regen ?? 0) > 0) {
         const hpRegen = (p.regen ?? 0) * seconds;
-        updated.hp = Math.min(p.maxHp, p.hp + hpRegen);
+        const newHp = p.hp + hpRegen;
+        // Ensure hp never exceeds maxHp
+        updated.hp = Math.min(p.maxHp ?? p.hp, newHp);
       }
       
       return updated;
@@ -843,7 +845,7 @@ export default function Game() {
             {
               (() => {
                 const inDungeonActive = selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null;
-                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} disableRun={!!inDungeonActive} />;
+                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} />;
               })()
             }
      
