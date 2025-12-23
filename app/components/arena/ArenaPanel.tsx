@@ -6,7 +6,7 @@ import ArenaActions from "./ArenaActions";
 type Props = {
   enemies: any[];
   logs: React.ReactNode[];
-  onAttack: () => void;
+  onAttack: (type: 'quick' | 'safe' | 'risky') => void;
   onRun: () => void;
   disableRun?: boolean;
   pickups?: any[];
@@ -14,9 +14,12 @@ type Props = {
   collectAllPickups?: (logger?: (msg: React.ReactNode) => void) => number;
   pushLog?: (node: React.ReactNode) => void;
   logColor?: string;
+  nextTurnModifier?: { skipped?: boolean; defenseDebuff?: boolean } | null;
+  safeCooldown?: number;
+  riskyCooldown?: number;
 };
 
-export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, collectAllPickups, pushLog, logColor, disableRun = false, inDungeonActive }: Props & { inDungeonActive?: boolean }) {
+export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, collectAllPickups, pushLog, logColor, disableRun = false, inDungeonActive, nextTurnModifier, safeCooldown = 0, riskyCooldown = 0 }: Props & { inDungeonActive?: boolean }) {
   // helper: convert hex to rgba for subtle background tint
   const hexToRgba = (hex?: string, alpha = 0.06) => {
     if (!hex) return undefined;
@@ -80,7 +83,26 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
         </div>
       )}
 
-      <ArenaActions onAttack={onAttack} onRun={onRun} disableRun={disableRun} />
+      {nextTurnModifier && enemies.length > 0 && (
+        <div style={{ 
+          padding: '12px 20px', 
+          marginBottom: 12,
+          borderRadius: 8, 
+          background: 'rgba(255, 107, 107, 0.3)', 
+          border: '2px solid #ff6b6b',
+          color: '#ff6b6b',
+          fontSize: 13,
+          fontWeight: 700,
+          textAlign: 'center',
+          backdropFilter: 'blur(8px)',
+          boxShadow: '0 8px 24px rgba(255, 107, 107, 0.3)'
+        }}>
+          {nextTurnModifier.skipped && '⏸️ RECOVERY MODE - NEXT TURN SKIPPED!'}
+          {nextTurnModifier.defenseDebuff && '🔥 DEFENSE WEAKENED - TAKE 2X DAMAGE NEXT TURN!'}
+        </div>
+      )}
+
+      <ArenaActions onAttack={onAttack} onRun={onRun} disableRun={disableRun} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} />
     </section>
   );
 }

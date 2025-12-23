@@ -74,7 +74,7 @@ body{
 	display:flex;
 	flex-direction:column;
 	gap:12px;
-  height: 275px;
+  height: 220px;
 }
 .enemies-row{min-height:60px}
 .log-messages{
@@ -177,6 +177,15 @@ body{
 .tier-legend .tier-name{font-weight:700;color:inherit}
 .tier-legend .tier-range{font-size:12px;color:var(--muted)}
 .dot{width:14px;height:14px;border-radius:6px;display:inline-block}
+/* Enemy cards with rarity-based styling */
+.enemy-card{padding:10px 12px;border-radius:8px;border:2px solid;backdrop-filter:blur(4px)}
+.enemy-card.common{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.3)}
+.enemy-card.uncommon{background:rgba(46,204,113,0.1);border-color:rgba(46,204,113,0.4)}
+.enemy-card.rare{background:rgba(74,163,255,0.1);border-color:rgba(74,163,255,0.4)}
+.enemy-card.epic{background:rgba(180,107,255,0.1);border-color:rgba(180,107,255,0.4)}
+.enemy-card.legendary{background:rgba(255,211,107,0.1);border-color:rgba(255,211,107,0.4)}
+.enemy-card.mythic{background:rgba(255,107,107,0.15);border-color:rgba(255,107,107,0.6)}
+
 .dot.common{background:#f2f2f2}
 .dot.uncommon{background:#2ecc71}
 .dot.rare{background:#4aa3ff}
@@ -358,4 +367,47 @@ body.modal-open > *:not(.app-modal-backdrop) {
 	pointer-events: none !important;
 }
 
+/* Tooltip styles for action buttons */
+.tooltip-wrapper {
+	position: relative;
+	display: inline-block;
+}
 
+.tooltip-wrapper .tooltip {
+	visibility: hidden;
+	position: absolute;
+	bottom: 110%;
+	left: 50%;
+	transform: translateX(-50%);
+	background: rgba(20, 20, 20, 0.95);
+	color: #fff;
+	text-align: center;
+	border: 1px solid #444;
+	border-radius: 6px;
+	padding: 8px 12px;
+	width: 180px;
+	font-size: 12px;
+	line-height: 1.4;
+	z-index: 100;
+	white-space: normal;
+	opacity: 0;
+	transition: opacity 0.3s ease, visibility 0.3s ease;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+	backdrop-filter: blur(4px);
+	pointer-events: none;
+}
+
+.tooltip-wrapper .tooltip::after {
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	border: 6px solid transparent;
+	border-top-color: rgba(20, 20, 20, 0.95);
+}
+
+.tooltip-wrapper:hover .tooltip {
+	visibility: visible;
+	opacity: 1;
+}

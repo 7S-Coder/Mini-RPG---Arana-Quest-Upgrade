@@ -8,7 +8,7 @@ export default function EnemiesRow({ enemies }: Props) {
   return (
     <div className="enemies-row">
       {enemies.map((e) => (
-        <div key={e.id} style={{ display: "inline-block", marginRight: 12, verticalAlign: 'top' }}>
+        <div key={e.id} className={`enemy-card ${e.rarity ?? 'common'}`} style={{ display: "inline-block", marginRight: 12, verticalAlign: 'top'}}>
           <Enemy {...e} />
           <div style={{ color: "#ccc", fontSize: 12 }}>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>

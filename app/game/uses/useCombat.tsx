@@ -14,7 +14,14 @@ export default function useCombat({
   pushLog,
   endEncounter,
   onEffect,
+  saveCoreGame,
   onDrop,
+  onModifierChange,
+  turnModifier,
+  onSafeCooldownChange,
+  onRiskyCooldownChange,
+  safeCooldown,
+  riskyCooldown,
 }: {
   player: Player;
   setPlayer: (updater: any) => void;
@@ -24,7 +31,14 @@ export default function useCombat({
   pushLog: (s: React.ReactNode) => void;
   endEncounter: (msg?: string, opts?: { type?: 'clear' | 'flee' | 'death'; isBoss?: boolean; bossName?: string }) => void;
   onEffect?: (eff: { type: string; text?: string; kind?: string; target?: string; id?: string }) => void;
+  saveCoreGame?: (data: any, reason?: string) => any;
   onDrop?: (enemy: Enemy) => any;
+  onModifierChange?: (mod: { skipped?: boolean; defenseDebuff?: boolean } | null) => void;
+  turnModifier?: { skipped?: boolean; defenseDebuff?: boolean } | null;
+  onSafeCooldownChange?: (cooldown: number) => void;
+  onRiskyCooldownChange?: (cooldown: number) => void;
+  safeCooldown?: number;
+  riskyCooldown?: number;
 }) {
   const lockedRef = useRef(false);
   const rollChance = useCallback((percent = 0) => Math.random() * 100 < (percent ?? 0), []);
@@ -38,7 +52,121 @@ export default function useCombat({
     return dmg;
   }, []);
 
-  const onAttack = useCallback(() => {
+  // Helper to apply a series of enemy attacks to a player snapshot
+  const applyEnemyAttacksToPlayer = useCallback((elist: any[], playerSnap: any, dodgeBonus: number = 0, isSafeActive: boolean = false) => {
+    let snap = { ...playerSnap };
+    for (const e of elist) {
+      if (e.hp <= 0) continue;
+      
+      // Enemy can attack 1-3 times with decreasing chance
+      let attackCount = 0;
+      let canAttackAgain = true;
+      
+      while (canAttackAgain && attackCount < 3) {
+        const dodgePlayer = rollChance((snap.dodge ?? 0) + (dodgeBonus * 100));
+        if (dodgePlayer) {
+          pushLog(<>Dodge! You avoid the attack from <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span>.</>);
+          if (onEffect) onEffect({ type: 'dodge', text: 'Dodge', target: 'player' });
+          break;
+        }
+        const enemyCrit = rollChance(e.crit ?? 0);
+        const defenseAdjusted = turnModifier?.defenseDebuff ? (snap.def ?? 0) * 0.5 : (snap.def ?? 0);
+        let edmg = calcDamage(Math.max(1, e.dmg ?? 1), defenseAdjusted, enemyCrit);
+        
+        // Apply Safe protection (50% damage reduction)
+        if (isSafeActive) {
+          edmg = Math.ceil(edmg * 0.5);
+        }
+        
+        snap.hp = Math.max(0, snap.hp - edmg);
+        if (enemyCrit) {
+          const safeMsg = isSafeActive ? ' 🛡️ (Protected!)' : '';
+          const debuffMsg = turnModifier?.defenseDebuff ? ' 🔥 (Defense weakened!)' : '';
+          pushLog(<>💥 Critical hit! <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> deals {edmg} damage to you.{safeMsg}{debuffMsg}</>);
+          if (onEffect) onEffect({ type: 'damage', text: String(edmg), kind: 'crit', target: 'player' });
+        } else {
+          const safeMsg = isSafeActive ? ' 🛡️ (Protected!)' : '';
+          const debuffMsg = turnModifier?.defenseDebuff ? ' 🔥 (Defense weakened!)' : '';
+          pushLog(<> <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> hits you for {edmg} damage.{safeMsg}{debuffMsg}</>);
+          if (onEffect) onEffect({ type: 'damage', text: String(edmg), kind: 'hit', target: 'player' });
+        }
+        attackCount++;
+        
+        // 20% chance to attack again (decreases with each attack)
+        const extraAttackChance = 20 - (attackCount * 8);
+        canAttackAgain = rollChance(extraAttackChance);
+      }
+    }
+    return snap;
+  }, [rollChance, calcDamage, pushLog, onEffect, turnModifier]);
+
+  const onAttack = useCallback((attackType: 'quick' | 'safe' | 'risky' = 'quick') => {
+    // Decrement cooldowns at start of turn
+    if (safeCooldown && safeCooldown > 0 && onSafeCooldownChange) {
+      onSafeCooldownChange(safeCooldown - 1);
+    }
+    if (riskyCooldown && riskyCooldown > 0 && onRiskyCooldownChange) {
+      onRiskyCooldownChange(riskyCooldown - 1);
+    }
+
+    // Check if turn is skipped
+    if (turnModifier?.skipped) {
+      pushLog("⏸️ You're still recovering from your last action. Skipping turn...");
+      if (typeof onModifierChange === 'function') onModifierChange(null); // Clear modifier
+      
+      // Enemies attack while player is recovering
+      if (lockedRef.current) {
+        pushLog("Action in progress...");
+        return;
+      }
+      lockedRef.current = true;
+
+      // Get alive enemies and player snapshot
+      const aliveEnemies = (enemies || []).filter((e) => e.hp > 0);
+      if (aliveEnemies.length > 0) {
+        const pSpeed = player?.speed ?? 0;
+        const fastEnemies = aliveEnemies.filter((e) => (e.speed ?? 0) > pSpeed);
+        const slowEnemies = aliveEnemies.filter((e) => (e.speed ?? 0) <= pSpeed);
+
+        let playerSnap = { ...player };
+
+        // Fast enemies attack
+        if (fastEnemies.length > 0) {
+          playerSnap = applyEnemyAttacksToPlayer(fastEnemies, playerSnap, 0);
+          setPlayer((currentPlayer: Player) => ({
+            ...currentPlayer,
+            hp: playerSnap.hp,
+          }));
+          if (playerSnap.hp <= 0) {
+            pushLog('You are dead...');
+            endEncounter('You died. Respawned at the tavern.', { type: 'death' });
+            lockedRef.current = false;
+            return;
+          }
+        }
+
+        // Slow enemies attack
+        if (slowEnemies.length > 0) {
+          playerSnap = applyEnemyAttacksToPlayer(slowEnemies, playerSnap, 0);
+          setPlayer((currentPlayer: Player) => ({
+            ...currentPlayer,
+            hp: playerSnap.hp,
+          }));
+          if (playerSnap.hp <= 0) {
+            pushLog('You are dead...');
+            endEncounter('You died. Respawned at the tavern.', { type: 'death' });
+            lockedRef.current = false;
+            return;
+          }
+        }
+      }
+
+      setTimeout(() => {
+        lockedRef.current = false;
+      }, 120);
+      return;
+    }
+
     // prevent re-entrancy / repeated clicks while processing
     if (lockedRef.current) {
       pushLog("Action in progress...");
@@ -71,47 +199,18 @@ export default function useCombat({
       return;
     }
 
-    // Helper to apply a series of enemy attacks to a player snapshot
-    const applyEnemyAttacksToPlayer = (elist: any[], playerSnap: any) => {
-      let snap = { ...playerSnap };
-      for (const e of elist) {
-        if (e.hp <= 0) continue;
-        
-        // Enemy can attack 1-3 times with decreasing chance
-        let attackCount = 0;
-        let canAttackAgain = true;
-        
-        while (canAttackAgain && attackCount < 3) {
-          const dodgePlayer = rollChance(snap.dodge ?? 0);
-          if (dodgePlayer) {
-            pushLog(<>Dodge! You avoid the attack from <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span>.</>);
-            if (onEffect) onEffect({ type: 'dodge', text: 'Dodge', target: 'player' });
-            break;
-          }
-          const enemyCrit = rollChance(e.crit ?? 0);
-          const edmg = calcDamage(Math.max(1, e.dmg ?? 1), snap.def ?? 0, enemyCrit);
-          snap.hp = Math.max(0, snap.hp - edmg);
-          if (enemyCrit) {
-            pushLog(<>💥 Critical hit! <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> deals {edmg} damage to you.</>);
-            if (onEffect) onEffect({ type: 'damage', text: String(edmg), kind: 'crit', target: 'player' });
-          } else {
-            pushLog(<> <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> hits you for {edmg} damage.</>);
-            if (onEffect) onEffect({ type: 'damage', text: String(edmg), kind: 'hit', target: 'player' });
-          }
-          attackCount++;
-          
-          // 20% chance to attack again (decreases with each attack)
-          const extraAttackChance = 20 - (attackCount * 8);
-          canAttackAgain = rollChance(extraAttackChance);
-        }
-      }
-      return snap;
+    // Attack type modifiers
+    const attackMods = {
+      quick: { critBonus: 0.1, dmgMult: 1.0, dodgeBonus: 0, label: '⚔️ Quick' },
+      safe: { critBonus: -0.3, dmgMult: 0.8, dodgeBonus: 0.1, label: '🛡️ Safe' },
+      risky: { critBonus: 0.2, dmgMult: 1.8, dodgeBonus: -0.15, label: '💥 Risky' },
     };
+    const mod = attackMods[attackType];
 
     // 1) Fast enemies attack first - they can all attack regardless of being targeted
     let playerSnap = { ...player };
     if (fastEnemies.length > 0) {
-      playerSnap = applyEnemyAttacksToPlayer(fastEnemies, playerSnap);
+      playerSnap = applyEnemyAttacksToPlayer(fastEnemies, playerSnap, mod.dodgeBonus, attackType === 'safe');
       setPlayer((currentPlayer: Player) => ({
         ...currentPlayer,
         hp: playerSnap.hp,
@@ -125,19 +224,21 @@ export default function useCombat({
     }
 
     // 2) Player attacks (single target)
-    const critRoll = rollChance(player.crit ?? 0);
+    const critChance = (player.crit ?? 0) + (mod.critBonus * 100);
+    const critRoll = rollChance(critChance);
     const dodgeRoll = rollChance(target.dodge ?? 0);
     let postAttackEnemies = (enemies || []).slice();
     if (dodgeRoll) {
-      pushLog(<> <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span> dodges your attack!</>);
+      pushLog(<> <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span> dodges your {mod.label} attack!</>);
       if (onEffect) onEffect({ type: 'dodge', text: 'Dodge', target: 'enemy', id: target.id });
     } else {
       const baseAtk = Math.max(1, player.dmg ?? 1);
-      const dmg = calcDamage(baseAtk, target.def ?? 0, critRoll);
+      const adjustedAtk = baseAtk * mod.dmgMult;
+      const dmg = calcDamage(adjustedAtk, target.def ?? 0, critRoll);
       if (critRoll) {
-        pushLog(<>💥 Critical hit! You deal {dmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
+        pushLog(<>💥 Critical {mod.label} hit! You deal {dmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
       } else {
-        pushLog(<>You hit <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span> for {dmg} damage.</>);
+        pushLog(<>{mod.label} Hit! You deal {dmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
       }
       const updated = (enemies || []).map((e) => (e.id === target.id ? { ...e, hp: Math.max(0, e.hp - dmg) } : e));
       // update state and keep a local snapshot to avoid reading stale `enemies` later
@@ -185,6 +286,15 @@ export default function useCombat({
               essence: updateObj.essence(p),
               materials: updateObj.materials ? updateObj.materials(p) : p.materials,
             }));
+            // Save immediately after boss rewards to ensure essence/materials persist
+            if (typeof saveCoreGame === 'function') {
+              const updatedPlayer = {
+                ...player,
+                essence: updateObj.essence(player),
+                materials: updateObj.materials ? updateObj.materials(player) : player.materials,
+              };
+              saveCoreGame({ player: updatedPlayer }, 'boss_reward');
+            }
             pushLog(logMsg);
           } catch (e) {}
         }
@@ -225,7 +335,7 @@ export default function useCombat({
     const postEnemies = postAttackEnemies.filter((e) => e.hp > 0);
     const slowTargetEnemy = postEnemies.filter((e) => (e.speed ?? 0) <= pSpeed && e.id === target.id);
     if (slowTargetEnemy.length > 0) {
-      playerSnap = applyEnemyAttacksToPlayer(slowTargetEnemy, playerSnap);
+      playerSnap = applyEnemyAttacksToPlayer(slowTargetEnemy, playerSnap, mod.dodgeBonus, attackType === 'safe');
       setPlayer((currentPlayer: Player) => ({
         ...currentPlayer,
         hp: playerSnap.hp,
@@ -238,11 +348,53 @@ export default function useCombat({
       }
     }
 
+    // 4) Random event: All enemies attack together (20% chance)
+    const allEnemiesAttackChance = 0.2; // 20% chance
+    const allEnemiesAttackRoll = Math.random() < allEnemiesAttackChance;
+    const allAliveEnemies = postAttackEnemies.filter((e) => e.hp > 0);
+    
+    if (allEnemiesAttackRoll && allAliveEnemies.length > 1) {
+      // Get all alive enemies (except already-attacking target)
+      const allAttackingEnemies = allAliveEnemies.filter((e) => e.id !== target.id);
+      
+      if (allAttackingEnemies.length > 0) {
+        pushLog('💥 All enemies coordinate and attack together!');
+        playerSnap = applyEnemyAttacksToPlayer(allAttackingEnemies, playerSnap, mod.dodgeBonus, attackType === 'safe');
+        setPlayer((currentPlayer: Player) => ({
+          ...currentPlayer,
+          hp: playerSnap.hp,
+        }));
+        
+        if (playerSnap.hp <= 0) {
+          pushLog('You are dead...');
+          endEncounter('You died. Respawned at the tavern.', { type: 'death' });
+          lockedRef.current = false;
+          return;
+        }
+      }
+    }
+
+    // Apply turn modifiers based on attack type
+    if (attackType === 'risky') {
+      pushLog('⚠️ You overextend! You\'ll need to recover next turn.');
+      if (typeof onModifierChange === 'function') onModifierChange({ skipped: true });
+      // Set cooldown to 2 for risky attack
+      if (typeof onRiskyCooldownChange === 'function') onRiskyCooldownChange(2);
+    } else if (attackType === 'safe') {
+      pushLog('🛡️ Guard up! You take 50% reduced damage this turn.');
+      if (typeof onModifierChange === 'function') onModifierChange(null); // No modifier since protection is immediate
+      // Set cooldown to 2 for safe attack
+      if (typeof onSafeCooldownChange === 'function') onSafeCooldownChange(2);
+    } else {
+      if (typeof onModifierChange === 'function') onModifierChange(null);
+      // Quick attack has no cooldown
+    }
+
     // finalize: small delay to allow UI updates then release lock
     setTimeout(() => {
       lockedRef.current = false;
     }, 120);
-  }, [enemies, player, setEnemies, setPlayer, addXp, pushLog, endEncounter, rollChance, calcDamage]);
+  }, [enemies, player, setEnemies, setPlayer, addXp, pushLog, endEncounter, rollChance, calcDamage, saveCoreGame, turnModifier, onModifierChange, safeCooldown, riskyCooldown, onSafeCooldownChange, onRiskyCooldownChange]);
 
   const onRun = useCallback(() => {
     if (lockedRef.current) {

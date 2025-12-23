@@ -31,6 +31,13 @@ export default function Game() {
   // streak per map (instead of global streak)
   const [mapStreaks, setMapStreaks] = useState<Record<string, number>>({});
 
+  // Turn modifiers (debuffs from previous action)
+  const [nextTurnModifier, setNextTurnModifier] = useState<{ skipped?: boolean; defenseDebuff?: boolean } | null>(null);
+
+  // Attack cooldowns (2 turns for Safe/Risky, independent)
+  const [safeCooldown, setSafeCooldown] = useState<number>(0);
+  const [riskyCooldown, setRiskyCooldown] = useState<number>(0);
+
   // helper: convert hex color to rgba with provided alpha
   const hexToRgba = (hex: string, alpha = 1) => {
     try {
@@ -395,6 +402,10 @@ export default function Game() {
     }
     // clear any existing enemies from a previous session to avoid mixed spawns
     try { setEnemies([]); } catch (e) {}
+    // Reset cooldowns and modifiers at the start of a new encounter
+    setSafeCooldown(0);
+    setRiskyCooldown(0);
+    setNextTurnModifier(null);
     // bump encounter session id so endEncounter can know which encounter finished
     encounterSessionRef.current = (encounterSessionRef.current || 0) + 1;
   
@@ -581,6 +592,9 @@ export default function Game() {
     encounterCountRef.current = 0;
     setInCombat(false);
     setEnemies([]);
+    setNextTurnModifier(null); // Reset modifier when combat ends
+    setSafeCooldown(0); // Reset safe cooldown
+    setRiskyCooldown(0); // Reset risky cooldown
     // if this endEncounter reports a death, restore player HP to max (respawn)
     if (opts?.type === 'death') {
       try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
@@ -636,11 +650,15 @@ export default function Game() {
     try { saveCoreGame && saveCoreGame(null, 'end_encounter'); } catch (e) {}
     // schedule clearing the logs after a short delay so player can read result
     if (logClearRef.current) clearTimeout(logClearRef.current);
+    const currentSessionId = encounterSessionRef.current; // capture current session
     logClearRef.current = window.setTimeout(() => {
-      clearLogs();
+      // Only clear if we're still in the same encounter session
+      if (encounterSessionRef.current === currentSessionId) {
+        clearLogs();
+      }
       logClearRef.current = null;
     }, 1000);
-  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect, showNarration]);
+  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect, showNarration, setSafeCooldown, setRiskyCooldown, setNextTurnModifier]);
 
   // clear timeout on unmount
   useEffect(() => {
@@ -653,7 +671,7 @@ export default function Game() {
 
   // damage calculation extracted to game/damage.ts (calcDamage)
 
-  const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, onDrop: (enemy: any) => {
+  const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, saveCoreGame, onModifierChange: setNextTurnModifier, turnModifier: nextTurnModifier, onSafeCooldownChange: setSafeCooldown, onRiskyCooldownChange: setRiskyCooldown, safeCooldown, riskyCooldown, onDrop: (enemy: any) => {
     const isDungeonRoom = !!enemy.roomId;
     return maybeDropFromEnemy(enemy, selectedMapId, !!enemy.isBoss, isDungeonRoom);
   } });
@@ -845,7 +863,7 @@ export default function Game() {
             {
               (() => {
                 const inDungeonActive = selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null;
-                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} />;
+                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} nextTurnModifier={nextTurnModifier} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} />;
               })()
             }
      
