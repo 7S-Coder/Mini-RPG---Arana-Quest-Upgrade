@@ -392,7 +392,7 @@ export default function useCombat({
               // Heals itself
               const healAmount = Math.round((rageEnemy.hp ?? 20) * 0.3);
               pushLog(`✨ ${rageEnemy.name} channels its rage to heal!`);
-              setEnemies((currentEnemies) =>
+              setEnemies((currentEnemies: Enemy[]) =>
                 currentEnemies.map((e) => {
                   if (e.id === rageEnemy.id) {
                     return { ...e, hp: Math.min(e.hp + healAmount, (e.hp ?? 50) + healAmount) };
