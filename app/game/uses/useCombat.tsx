@@ -420,7 +420,7 @@ export default function useCombat({
           }
           
           // Reset rage individually for each enemy after their effect
-          setEnemies((currentEnemies) =>
+          setEnemies((currentEnemies: Enemy[]) =>
             currentEnemies.map((e) => {
               if (e.id === rageEnemy.id) {
                 return { ...e, rage: 0 };
