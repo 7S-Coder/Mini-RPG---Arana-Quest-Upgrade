@@ -2,9 +2,11 @@ import Enemy from "./Enemy";
 
 type Props = {
   enemies: any[];
+  selectedTargetId?: string | null;
+  onSelectTarget?: (targetId: string) => void;
 };
 
-export default function EnemiesRow({ enemies }: Props) {
+export default function EnemiesRow({ enemies, selectedTargetId, onSelectTarget }: Props) {
   return (
     <div className="enemies-row">
       {enemies.map((e) => {
@@ -13,13 +15,29 @@ export default function EnemiesRow({ enemies }: Props) {
         const estimatedMaxHp = e.maxHp || e.hp || 100;
         const hpPercent = Math.max(0, Math.min(100, (e.hp / estimatedMaxHp) * 100));
         const ragePercent = Math.max(0, Math.min(100, (e.rage ?? 0)));
+        const isSelected = selectedTargetId === e.id;
         
         return (
-          <div key={e.id} className={`enemy-card ${e.rarity ?? 'common'}`} style={{ flex: '0 0 auto', minWidth: 140 }}>
+          <div 
+            key={e.id} 
+            className={`enemy-card ${e.rarity ?? 'common'}`}
+            style={{ 
+              flex: '0 0 auto', 
+              minWidth: 140,
+              cursor: 'pointer',
+              border: isSelected ? '3px solid #ffd700' : '1px solid rgba(255,255,255,0.1)',
+              boxShadow: isSelected ? '0 0 20px rgba(255,215,0,0.6)' : 'none',
+              transition: 'all 0.2s ease'
+            }}
+            onClick={() => onSelectTarget && onSelectTarget(e.id)}
+          >
             <Enemy {...e} />
             <div style={{ color: "#ccc", fontSize: 12 }}>
               <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                 <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name} - {e.level ?? 1}</span>
+                {isSelected && (
+                  <span style={{ background: '#ffd700', color: '#000', padding: '2px 6px', borderRadius: 4, fontSize: 10, fontWeight: 700 }}>TARGET</span>
+                )}
                 {e.isBoss ? (
                   <span style={{ background: '#e74c3c', color: '#fff', padding: '2px 6px', borderRadius: 6, fontSize: 11, fontWeight: 700 }}>BOSS</span>
                 ) : null}

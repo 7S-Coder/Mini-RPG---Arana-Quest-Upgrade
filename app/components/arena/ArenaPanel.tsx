@@ -17,9 +17,11 @@ type Props = {
   nextTurnModifier?: { skipped?: boolean; defenseDebuff?: boolean } | null;
   safeCooldown?: number;
   riskyCooldown?: number;
+  selectedTargetId?: string | null;
+  onSelectTarget?: (targetId: string) => void;
 };
 
-export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, collectAllPickups, pushLog, logColor, disableRun = false, inDungeonActive, nextTurnModifier, safeCooldown = 0, riskyCooldown = 0 }: Props & { inDungeonActive?: boolean }) {
+export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, collectAllPickups, pushLog, logColor, disableRun = false, inDungeonActive, nextTurnModifier, safeCooldown = 0, riskyCooldown = 0, selectedTargetId, onSelectTarget }: Props & { inDungeonActive?: boolean }) {
   // helper: convert hex to rgba for subtle background tint
   const hexToRgba = (hex?: string, alpha = 0.06) => {
     if (!hex) return undefined;
@@ -41,7 +43,7 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
   return (
     <section className="arena-panel" style={arenaStyle}>
       <div className="arena-log">
-        <EnemiesRow enemies={enemies} />
+        <EnemiesRow enemies={enemies} selectedTargetId={selectedTargetId} onSelectTarget={onSelectTarget} />
         <LogMessages logs={logs} logColor={logColor} inDungeonActive={inDungeonActive} />
       </div>
 

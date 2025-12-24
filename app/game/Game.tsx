@@ -139,6 +139,7 @@ export default function Game() {
     const [inCombat, setInCombat] = useState(false);
       const inCombatRef = useRef<boolean>(false);
       const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
+  const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
   const [effects, setEffects] = useState<Array<{ id: string; type: string; text?: string; kind?: string; target?: string; x?: number; y?: number }>>([]);
   const logClearRef = useRef<number | null>(null);
   const encounterCountRef = useRef<number>(0);
@@ -558,7 +559,12 @@ export default function Game() {
     // record start time for this encounter
     lastEncounterTimestampRef.current = Date.now();
     setInCombat(true);
-  }, [spawnEnemy, pushLog, selectedMapId]);
+    
+    // Auto-target first enemy
+    if (enemies && enemies.length > 0) {
+      setSelectedTargetId(enemies[0].id);
+    }
+  }, [spawnEnemy, pushLog, selectedMapId, enemies]);
 
   // expose the startEncounter function to the dungeon hook so it can schedule auto-enter
   useEffect(() => {
@@ -592,6 +598,7 @@ export default function Game() {
     encounterCountRef.current = 0;
     setInCombat(false);
     setEnemies([]);
+    setSelectedTargetId(null); // Clear target when combat ends
     setNextTurnModifier(null); // Reset modifier when combat ends
     setSafeCooldown(0); // Reset safe cooldown
     setRiskyCooldown(0); // Reset risky cooldown
@@ -682,7 +689,7 @@ export default function Game() {
 
   // damage calculation extracted to game/damage.ts (calcDamage)
 
-  const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, saveCoreGame, onModifierChange: setNextTurnModifier, turnModifier: nextTurnModifier, onSafeCooldownChange: setSafeCooldown, onRiskyCooldownChange: setRiskyCooldown, safeCooldown, riskyCooldown, onDrop: (enemy: any) => {
+  const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, saveCoreGame, onModifierChange: setNextTurnModifier, turnModifier: nextTurnModifier, onSafeCooldownChange: setSafeCooldown, onRiskyCooldownChange: setRiskyCooldown, safeCooldown, riskyCooldown, selectedTargetId, onDrop: (enemy: any) => {
     const isDungeonRoom = !!enemy.roomId;
     const droppedItem = maybeDropFromEnemy(enemy, selectedMapId, !!enemy.isBoss, isDungeonRoom);
     
@@ -885,7 +892,7 @@ export default function Game() {
             {
               (() => {
                 const inDungeonActive = selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null;
-                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} nextTurnModifier={nextTurnModifier} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} />;
+                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} nextTurnModifier={nextTurnModifier} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} selectedTargetId={selectedTargetId} onSelectTarget={setSelectedTargetId} />;
               })()
             }
      

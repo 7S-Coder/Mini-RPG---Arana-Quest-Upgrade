@@ -22,6 +22,7 @@ export default function useCombat({
   onRiskyCooldownChange,
   safeCooldown,
   riskyCooldown,
+  selectedTargetId,
 }: {
   player: Player;
   setPlayer: (updater: any) => void;
@@ -39,6 +40,7 @@ export default function useCombat({
   onRiskyCooldownChange?: (cooldown: number) => void;
   safeCooldown?: number;
   riskyCooldown?: number;
+  selectedTargetId?: string | null;
 }) {
   const lockedRef = useRef(false);
   const rollChance = useCallback((percent = 0) => Math.random() * 100 < (percent ?? 0), []);
@@ -201,7 +203,16 @@ export default function useCombat({
     const slowEnemies = aliveEnemies.filter((e) => (e.speed ?? 0) <= pSpeed);
 
     // Get the target enemy (the one we'll attack)
-    const target = (enemies || []).find((e) => e.hp > 0);
+    // First try to use selectedTargetId, fallback to first alive enemy
+    let target = selectedTargetId 
+      ? (enemies || []).find((e) => e.id === selectedTargetId && e.hp > 0)
+      : null;
+    
+    // If selected target is dead, pick the first alive enemy
+    if (!target) {
+      target = (enemies || []).find((e) => e.hp > 0);
+    }
+    
     if (!target) {
       // no target, nothing else to do
       lockedRef.current = false;
