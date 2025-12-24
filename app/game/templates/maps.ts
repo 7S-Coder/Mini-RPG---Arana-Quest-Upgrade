@@ -177,6 +177,24 @@ const defaultMaps: MapTemplate[] = [
       { id: 'volcano_ashen_citadel_floor_5', enemyPool: ['avatar_of_cinders'], isBossRoom: true },
     ],
   },
+
+  // MAP 5 — Final Boss Arena
+  {
+    id: 'final_arena',
+    name: 'Burning Throne',
+    theme: 'volcano',
+    logColor: '#ff6b35',
+    dungeonThreshold: 999, // No dungeons
+    minLevel: 100,
+    maxLevel: 120,
+    allowedTiers: ['mythic'],
+    loot: 'loot: Mythic',
+    enemyPool: ['fire_overlord'],
+    requiredKeyFragments: ['Volcano Key A', 'Volcano Key B'],
+    rooms: [
+      { id: 'final_arena_throne_room', enemyPool: ['fire_overlord'], isBossRoom: true },
+    ],
+  },
 ];
 
 let customMaps: MapTemplate[] = [];

@@ -34,7 +34,7 @@ export default function LogMessages({ logs, logColor, inDungeonActive }: Props) 
   };
 
   // apply theme color as a subtle background tint for the log area
-  const style = logColor ? { backgroundColor: hexToRgba(logColor, 0.12) } : undefined;
+  const style = logColor ? { backgroundColor: hexToRgba(logColor, 0.08) } : undefined;
   return (
     <div
       ref={containerRef}
@@ -42,7 +42,9 @@ export default function LogMessages({ logs, logColor, inDungeonActive }: Props) 
       style={style}
     >
       {logs.map((l, i) => (
-        <div key={i} className="log-line">{l}</div>
+        <div key={i} className="log-line">
+          <div className="log-content">{l}</div>
+        </div>
       ))}
     </div>
   );

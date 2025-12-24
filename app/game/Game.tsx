@@ -26,7 +26,7 @@ import { useNarration } from "../hooks/useNarration";
 import { getMapNarration, getCombatNarration, TUTORIAL_MESSAGES } from "./templates/narration";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, createItemFromTemplate, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, createItemFromTemplate, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins } = useGameState();
 
   // streak per map (instead of global streak)
   const [mapStreaks, setMapStreaks] = useState<Record<string, number>>({});
@@ -630,6 +630,17 @@ export default function Game() {
         
         // Check for boss victory narration
         if (opts?.isBoss && opts?.bossName) {
+          // Special handling for Fire Overlord (final boss)
+          if (opts.bossName === 'Fire Overlord' && selectedMapId === 'final_arena') {
+            try {
+              addToast('🏆 VICTORY! You have conquered the world!', 'ok', 5000);
+              pushLog('▓▓▓▓▓ VICTORY ▓▓▓▓▓');
+              pushLog('You have defeated the Fire Overlord and saved the world!');
+              pushLog('Congratulations on completing Arena Quest!');
+              addEffect({ type: 'explosion', text: 'VICTORY!', target: 'player' });
+            } catch (e) {}
+          }
+          
           const narration = getMapNarration(parseInt(selectedMapId || '0'));
           if (narration?.events.bossVictory && narration.events.bossVictory.bossName === opts.bossName) {
             showNarration(narration.events.bossVictory.message);
@@ -673,7 +684,18 @@ export default function Game() {
 
   const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, saveCoreGame, onModifierChange: setNextTurnModifier, turnModifier: nextTurnModifier, onSafeCooldownChange: setSafeCooldown, onRiskyCooldownChange: setRiskyCooldown, safeCooldown, riskyCooldown, onDrop: (enemy: any) => {
     const isDungeonRoom = !!enemy.roomId;
-    return maybeDropFromEnemy(enemy, selectedMapId, !!enemy.isBoss, isDungeonRoom);
+    const droppedItem = maybeDropFromEnemy(enemy, selectedMapId, !!enemy.isBoss, isDungeonRoom);
+    
+    // Drop essence for mythic enemies (endgame mechanic)
+    const essenceDropped = maybeDropEssenceFromEnemy(enemy, !!enemy.isBoss);
+    if (essenceDropped > 0) {
+      try {
+        pushLog(`Essence gained: +${essenceDropped} ⚡`);
+        addEffect({ type: 'pickup', text: `+${essenceDropped} ⚡`, target: 'player', kind: 'essence' });
+      } catch (e) {}
+    }
+    
+    return droppedItem;
   } });
 
   const mapsList = getMaps();

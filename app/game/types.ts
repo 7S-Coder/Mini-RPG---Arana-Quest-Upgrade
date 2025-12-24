@@ -14,6 +14,7 @@ export type Item = {
   quantity?: number; // for stackable items like potions
   lockedStats?: string[]; // stats that won't change during upgrades
   infused?: boolean; // has essence infusion
+  isForged?: boolean; // created via forge
   description?: string; // item description
 };
 
@@ -31,6 +32,7 @@ export type Enemy = {
   crit: number;
   def: number;
   speed: number;
+  rage?: number; // 0-100, triggers coordinated attack at 100
   // optional flags for UI/logic
   isBoss?: boolean;
   roomId?: string;
@@ -77,6 +79,8 @@ export type Pickup = {
   createdAt?: number;
 };
 
+export type RageEffect = 'multi_attack' | 'explosion' | 'heal' | 'debuff' | 'multiplier';
+
 export type EnemyTemplate = {
   templateId: string;
   name: string;
@@ -87,4 +91,5 @@ export type EnemyTemplate = {
   crit: number;
   speed: number;
   rarity?: Rarity;
+  rageEffect?: RageEffect; // Special effect when rage reaches 100
 };

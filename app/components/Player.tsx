@@ -41,12 +41,10 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 
 	// Debug: log hp, maxHp, and hpPerc
 	useEffect(() => {
-		console.log(`[Player] hp=${Math.round(hp)}, maxHp=${Math.round(maxHp)}, hpPerc=${(hpPerc * 100).toFixed(1)}%`);
 	}, [hp, maxHp, hpPerc]);
 
 	// Debug: log materials
 	useEffect(() => {
-		console.log(`[Player] materials=`, materials);
 	}, [materials]);
 
 	const STAT_TOOLTIPS: Record<string, string> = {

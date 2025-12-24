@@ -278,9 +278,12 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                           const spanStyle: React.CSSProperties = slot === 'hat' ? { gridColumn: '1 / -1' } : {};
                           return (
                             <div key={slot} style={{ boxSizing: 'border-box', ...spanStyle }}>
-                              <div style={{ background: '#111', border: '1px solid rgba(255,255,255,0.04)', padding: 8, borderRadius: 8, textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer' }} onClick={() => it && (setActiveTab('forge'), setSelectedItemForAction(it))}>
+                              <div style={{ background: it && it.isForged ? 'rgba(255, 193, 7, 0.12)' : '#111', border: it && it.isForged ? '1px solid rgba(255, 193, 7, 0.4)' : '1px solid rgba(255,255,255,0.04)', padding: 8, borderRadius: 8, textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer' }} onClick={() => it && (setActiveTab('forge'), setSelectedItemForAction(it))}>
                                 <div style={{ fontSize: 11, color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
-                                <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 4, overflowWrap: 'anywhere', fontSize: 12 }}>{it ? it.name : 'empty'}</div>
+                                <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 4, overflowWrap: 'anywhere', fontSize: 12 }}>
+                                  {it ? it.name : 'empty'}
+                                  {it && it.isForged && <div style={{ fontSize: 9, color: '#ffc107', marginTop: 2 }}>⚒️ FORGED</div>}
+                                </div>
                                 {it ? (
                                   <>
                                     <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{Object.entries(it.stats || {}).map(([k, v]) => `${k}: ${v}`).join(' • ')}</div>
@@ -323,10 +326,11 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                           {filteredInventory.map((it, idx) => {
                             const isInFirstHalf = idx < filteredInventory.length / 2;
                             return (
-                            <div key={it.id} onMouseEnter={() => setHoveredItemId(it.id)} onMouseLeave={() => setHoveredItemId(null)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10, position: 'relative', transition: 'background 0.2s' }}>
+                            <div key={it.id} onMouseEnter={() => setHoveredItemId(it.id)} onMouseLeave={() => setHoveredItemId(null)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: it.isForged ? 'rgba(255, 193, 7, 0.08)' : '#0d0d0d', borderRadius: 10, position: 'relative', transition: 'background 0.2s', border: it.isForged ? '1px solid rgba(255, 193, 7, 0.3)' : '1px solid transparent' }}>
                               <div style={{ position: 'relative', flex: 1 }}>
                                 <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>
                                   {it.name}
+                                  {it.isForged && <span style={{ marginLeft: 6, color: '#ffc107', fontSize: 10, fontWeight: 600 }}>⚒️ FORGED</span>}
                                   {it.quantity && it.quantity > 1 && <span style={{ marginLeft: 8, color: '#999', fontSize: 12 }}>×{it.quantity}</span>}
                                 </div>
                                 {hoveredItemId === it.id && (it.slot === 'consumable' || it.slot === 'key') && (

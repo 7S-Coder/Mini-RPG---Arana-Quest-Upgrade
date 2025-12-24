@@ -229,6 +229,36 @@ export const NARRATIONS: MapNarration[] = [
       },
     },
   },
+
+  // MAP 5 - Final Arena
+  {
+    mapId: 5,
+    mapName: 'Burning Throne',
+    npcIntro: ['eldran', 'messenger'],
+    events: {
+      arrival: {
+        npc: 'eldran',
+        emoji: '🔥',
+        text: 'At last... the Fire Overlord awaits. Your fate ends here.',
+      },
+      bossBefore: {
+        bossName: 'Fire Overlord',
+        message: {
+          npc: 'messenger',
+          emoji: '👺',
+          text: 'The king of ash and flame. Undefeated for a thousand years.',
+        },
+      },
+      bossVictory: {
+        bossName: 'Fire Overlord',
+        message: {
+          npc: 'eldran',
+          emoji: '🏆',
+          text: 'Against all odds... you have conquered the Burning Throne. The world is saved.',
+        },
+      },
+    },
+  },
 ];
 
 // Helper to get narration for map

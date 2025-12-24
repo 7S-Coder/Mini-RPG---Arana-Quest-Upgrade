@@ -693,6 +693,26 @@ export function useGameState() {
     return goldPickup.id;
   };
 
+  // Add essence to player (endgame currency)
+  const addEssence = (amount: number) => {
+    if (!amount || amount <= 0) return;
+    setPlayer((p) => ({ ...p, essence: (p.essence ?? 0) + amount }));
+  };
+
+  // Distribute essence when defeating mythic enemies (endgame mechanic)
+  const maybeDropEssenceFromEnemy = (enemy: Enemy, isBoss?: boolean): number => {
+    if (enemy.rarity !== 'mythic') return 0;
+    
+    // Mythic regular enemies: 5-10 essence
+    // Mythic bosses: 25-50 essence
+    const baseAmount = isBoss ? 25 : 5;
+    const variance = isBoss ? 25 : 5;
+    const essenceAmount = Math.floor(baseAmount + Math.random() * variance);
+    
+    addEssence(essenceAmount);
+    return essenceAmount;
+  };
+
   // scale and pricing helpers imported from ./items
 
   // Create an item from an arbitrary descriptor (useful for dev/testing or UI creation)
@@ -851,6 +871,7 @@ export function useGameState() {
         stats: boosted,
         cost: sample.cost ?? computeItemCost(boosted as Record<string, number> | undefined, 'rare'),
         weight: sample.weight ?? 1,
+        isForged: true,
       } as any;
 
       // create forged item without auto-adding, then update inventory snapshot and save
@@ -904,6 +925,7 @@ export function useGameState() {
       const updatedItem: Item = {
         ...item,
         stats: { ...(item.stats || {}), [statKey]: statValue + boost },
+        isForged: item.isForged,
       };
 
       // Update in inventory or equipment
@@ -978,6 +1000,7 @@ export function useGameState() {
       const updatedItem: Item = {
         ...item,
         lockedStats: [...lockedStats, statKey],
+        isForged: item.isForged,
       };
 
       // Update in inventory or equipment
@@ -1051,6 +1074,7 @@ export function useGameState() {
         ...item,
         infused: true,
         name: item.name.includes('✨') ? item.name : `${item.name} ✨`,
+        isForged: item.isForged,
       };
 
       // Update in inventory or equipment
@@ -1125,6 +1149,7 @@ export function useGameState() {
         rarity: 'mythic',
         stats: boostedStats,
         name: item.name.includes('Mythic') ? item.name : `${item.name} (Mythic)`,
+        isForged: item.isForged,
       };
 
       // Update in inventory or equipment
@@ -1367,6 +1392,7 @@ export function useGameState() {
       crit: Math.max(0, Math.round(Math.random() * 8 + level * 0.03)),
       def,
       speed: Math.max(8, Math.round(10 + Math.random() * 40 - level * 0.05)),
+      rage: 0,
       isBoss: meta?.isBoss,
       roomId: meta?.roomId,
     };
@@ -1459,6 +1485,14 @@ export function useGameState() {
   };
 
   const loadGame = () => {
+    // Helper to migrate old forged items by adding isForged flag based on name
+    const migrationAddForgedFlag = (item: any) => {
+      if (item.isForged !== undefined) {
+        return item; // Already has the flag
+      }
+      const isForged = (item.name || '').includes('(Forged)');
+      return { ...item, isForged };
+    };
     try {
       const raw = localStorage.getItem(CORE_SAVE_KEY);
       try { console.debug('[LOAD] raw from localStorage', { key: CORE_SAVE_KEY, raw }); } catch (e) {}
@@ -1503,7 +1537,7 @@ export function useGameState() {
         const migratedInv = inv.map((item: any) => {
           // If item already has weight and it's correct, keep it
           if (item.weight && item.weight > 1) {
-            return item;
+            return migrationAddForgedFlag(item);
           }
           // Extract base name without rarity
           let templateName = item.name || '';
@@ -1522,7 +1556,7 @@ export function useGameState() {
           } else if (item.slot === 'consumable' || item.category === 'consumable') {
             correctWeight = 2;
           }
-          return { ...item, weight: correctWeight };
+          return migrationAddForgedFlag({ ...item, weight: correctWeight });
         });
         // filter inventory to avoid duplicates of equipped items
         setInventory(migratedInv.filter((i) => !equippedIds.has(i.id)));
@@ -1534,7 +1568,7 @@ export function useGameState() {
           if (item && typeof item === 'object') {
             // If item already has weight and it's correct, keep it
             if ((item as any).weight && (item as any).weight > 1) {
-              migratedEquip[slot] = item;
+              migratedEquip[slot] = migrationAddForgedFlag(item);
               continue;
             }
             // Extract base name without rarity
@@ -1549,7 +1583,7 @@ export function useGameState() {
             }
             // Get correct weight from template
             const correctWeight = template?.weight ?? 1;
-            migratedEquip[slot] = { ...item, weight: correctWeight };
+            migratedEquip[slot] = migrationAddForgedFlag({ ...item, weight: correctWeight });
           } else {
             migratedEquip[slot] = item;
           }
@@ -1580,6 +1614,6 @@ export function useGameState() {
 
   const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, buyPotion, consumeItem, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, saveCoreGame, loadGame, isInCombat, progression, allocate: allocate, deallocate: deallocate, consecWins, incConsecWins, resetConsecWins } as const;
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, buyPotion, consumeItem, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, saveCoreGame, loadGame, isInCombat, progression, allocate: allocate, deallocate: deallocate, consecWins, incConsecWins, resetConsecWins } as const;
 }
 

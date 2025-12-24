@@ -63,6 +63,15 @@ export default function useCombat({
       let canAttackAgain = true;
       
       while (canAttackAgain && attackCount < 3) {
+        // Display message for consecutive attacks
+        if (attackCount > 0) {
+          if (attackCount === 1) {
+            pushLog(<><span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> strikes again!</>);
+          } else if (attackCount === 2) {
+            pushLog(<><span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span> strikes a third time!</>);
+          }
+        }
+        
         const dodgePlayer = rollChance((snap.dodge ?? 0) + (dodgeBonus * 100));
         if (dodgePlayer) {
           pushLog(<>Dodge! You avoid the attack from <span className={`enemy-name ${e.rarity ?? 'common'}`}>{e.name ?? e.id}</span>.</>);
@@ -201,9 +210,9 @@ export default function useCombat({
 
     // Attack type modifiers
     const attackMods = {
-      quick: { critBonus: 0.1, dmgMult: 1.0, dodgeBonus: 0, label: '⚔️ Quick' },
-      safe: { critBonus: -0.3, dmgMult: 0.8, dodgeBonus: 0.1, label: '🛡️ Safe' },
-      risky: { critBonus: 0.2, dmgMult: 1.8, dodgeBonus: -0.15, label: '💥 Risky' },
+      quick: { critBonus: 0.1, dmgMult: 1.0, dodgeBonus: 0, label: 'Quick' },
+      safe: { critBonus: -0.3, dmgMult: 0.8, dodgeBonus: 0.1, label: 'Safe' },
+      risky: { critBonus: 0.2, dmgMult: 1.8, dodgeBonus: -0.15, label: 'Risky' },
     };
     const mod = attackMods[attackType];
 
@@ -240,7 +249,7 @@ export default function useCombat({
       } else {
         pushLog(<>{mod.label} Hit! You deal {dmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
       }
-      const updated = (enemies || []).map((e) => (e.id === target.id ? { ...e, hp: Math.max(0, e.hp - dmg) } : e));
+      const updated = (enemies || []).map((e) => (e.id === target.id ? { ...e, hp: Math.max(0, e.hp - dmg), rage: Math.min(100, (e.rage ?? 0) + 20) } : e));
       // update state and keep a local snapshot to avoid reading stale `enemies` later
       setEnemies(updated);
       postAttackEnemies = updated;
@@ -331,11 +340,13 @@ export default function useCombat({
     })();
 
     // 3) Slow enemies attack after player (use the updated snapshot so dead enemies don't act)
-    // Only the target enemy can counterattack
+    // All slow enemies attack, not just the target
     const postEnemies = postAttackEnemies.filter((e) => e.hp > 0);
-    const slowTargetEnemy = postEnemies.filter((e) => (e.speed ?? 0) <= pSpeed && e.id === target.id);
-    if (slowTargetEnemy.length > 0) {
-      playerSnap = applyEnemyAttacksToPlayer(slowTargetEnemy, playerSnap, mod.dodgeBonus, attackType === 'safe');
+    const slowEnemiesAttack = postEnemies.filter((e) => (e.speed ?? 0) <= pSpeed);
+    
+    if (slowEnemiesAttack.length > 0) {
+      const updatedEnemies = postAttackEnemies;
+      playerSnap = applyEnemyAttacksToPlayer(slowEnemiesAttack, playerSnap, mod.dodgeBonus, attackType === 'safe');
       setPlayer((currentPlayer: Player) => ({
         ...currentPlayer,
         hp: playerSnap.hp,
@@ -346,20 +357,79 @@ export default function useCombat({
         lockedRef.current = false;
         return;
       }
-    }
-
-    // 4) Random event: All enemies attack together (20% chance)
-    const allEnemiesAttackChance = 0.2; // 20% chance
-    const allEnemiesAttackRoll = Math.random() < allEnemiesAttackChance;
-    const allAliveEnemies = postAttackEnemies.filter((e) => e.hp > 0);
-    
-    if (allEnemiesAttackRoll && allAliveEnemies.length > 1) {
-      // Get all alive enemies (except already-attacking target)
-      const allAttackingEnemies = allAliveEnemies.filter((e) => e.id !== target.id);
       
-      if (allAttackingEnemies.length > 0) {
-        pushLog('💥 All enemies coordinate and attack together!');
-        playerSnap = applyEnemyAttacksToPlayer(allAttackingEnemies, playerSnap, mod.dodgeBonus, attackType === 'safe');
+      // Check for enemies at 100 rage after their attack
+      const aliveAfterSlowAttack = updatedEnemies.filter((e) => e.hp > 0);
+      const enemiesToRageAttack = aliveAfterSlowAttack.filter((e) => (e.rage ?? 0) >= 100);
+      
+      if (enemiesToRageAttack.length > 0) {
+        for (const rageEnemy of enemiesToRageAttack) {
+          const effect = rageEnemy.rageEffect || 'multi_attack';
+          
+          switch(effect) {
+            case 'multi_attack': {
+              // Attack 2-3 times
+              const numAttacks = Math.floor(Math.random() * 2) + 2; // 2 or 3
+              pushLog(`🔥 ${rageEnemy.name} bursts with rage and attacks ${numAttacks} times!`);
+              for (let i = 0; i < numAttacks; i++) {
+                playerSnap = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+              }
+              break;
+            }
+            case 'explosion': {
+              // Explodes and deals AoE damage (slightly reduced but to all)
+              pushLog(`💥 ${rageEnemy.name} explodes in a burst of energy!`);
+              const explosionDamage = Math.round((rageEnemy.dmg ?? 1) * 1.5);
+              const defenseAdjusted = turnModifier?.defenseDebuff ? (playerSnap.def ?? 0) * 0.5 : (playerSnap.def ?? 0);
+              const mitigation = 100 / (100 + Math.max(0, defenseAdjusted));
+              const finalDamage = Math.max(1, Math.round(explosionDamage * mitigation));
+              playerSnap.hp = Math.max(0, playerSnap.hp - finalDamage);
+              pushLog(`💥 Explosion deals ${finalDamage} damage!`);
+              if (onEffect) onEffect({ type: 'damage', text: String(finalDamage), kind: 'hit', target: 'player' });
+              break;
+            }
+            case 'heal': {
+              // Heals itself
+              const healAmount = Math.round((rageEnemy.hp ?? 20) * 0.3);
+              pushLog(`✨ ${rageEnemy.name} channels its rage to heal!`);
+              setEnemies((currentEnemies) =>
+                currentEnemies.map((e) => {
+                  if (e.id === rageEnemy.id) {
+                    return { ...e, hp: Math.min(e.hp + healAmount, (e.hp ?? 50) + healAmount) };
+                  }
+                  return e;
+                })
+              );
+              break;
+            }
+            case 'debuff': {
+              // Debuff the player's defense
+              pushLog(`⚠️ ${rageEnemy.name} channels dark energy and weakens your defense!`);
+              if (typeof onModifierChange === 'function') onModifierChange({ skipped: false, defenseDebuff: true });
+              playerSnap = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+              break;
+            }
+            case 'multiplier': {
+              // Deals double damage attack
+              pushLog(`⚡ ${rageEnemy.name} channels twice its power!`);
+              playerSnap = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+              // Apply again for double damage effect
+              playerSnap = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+              break;
+            }
+          }
+          
+          // Reset rage individually for each enemy after their effect
+          setEnemies((currentEnemies) =>
+            currentEnemies.map((e) => {
+              if (e.id === rageEnemy.id) {
+                return { ...e, rage: 0 };
+              }
+              return e;
+            })
+          );
+        }
+        
         setPlayer((currentPlayer: Player) => ({
           ...currentPlayer,
           hp: playerSnap.hp,
