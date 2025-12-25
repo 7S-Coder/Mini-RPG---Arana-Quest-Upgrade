@@ -209,8 +209,8 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 				borderBottom: '1px solid #333'
 			}}>
 				<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={() => setHoveredStat('damage')} onMouseLeave={() => setHoveredStat(null)}>
-					<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, color: '#ff9999' }}><img src={DamageSVG.src} alt="Damage" style={{ width: 24, height: 24 }} /> Damage</div>
-					<div style={{ fontSize: 14, fontWeight: 700, color: '#ff9999', marginTop: 2 }}>{dmg ?? 0}</div>
+					<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4}}><img src={DamageSVG.src} alt="Damage" style={{ width: 24, height: 24 }} /> Damage</div>
+					<div style={{ fontSize: 14, fontWeight: 700, marginTop: 2 }}>{dmg ?? 0}</div>
 					{hoveredStat === 'damage' && (
 						<div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4, minWidth: 160 }}>
 							{STAT_TOOLTIPS.damage}
@@ -218,8 +218,8 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 					)}
 				</div>
 				<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={() => setHoveredStat('defense')} onMouseLeave={() => setHoveredStat(null)}>
-					<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, color: '#99ccff' }}><img src={DefenseSVG.src} alt="Defense" style={{ width: 24, height: 24 }} /> Defense</div>
-					<div style={{ fontSize: 14, fontWeight: 700, color: '#99ccff', marginTop: 2 }}>{def ?? 0}</div>
+					<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}><img src={DefenseSVG.src} alt="Defense" style={{ width: 24, height: 24 }} /> Defense</div>
+					<div style={{ fontSize: 14, fontWeight: 700, marginTop: 2 }}>{def ?? 0}</div>
 					{hoveredStat === 'defense' && (
 						<div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4, minWidth: 160 }}>
 							{STAT_TOOLTIPS.defense}
