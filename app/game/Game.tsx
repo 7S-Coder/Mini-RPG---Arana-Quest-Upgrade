@@ -1,5 +1,6 @@
 "use client";
 
+import EssenceSVG from "@/app/assets/essence.svg";
 import { useGameState } from "./uses/useGameState";
 import { useGameLoop } from "./uses/useGameLoop";
 import Player from "../components/Player";
@@ -361,7 +362,7 @@ export default function Game() {
     window.setTimeout(() => setEffects((s) => s.filter((x) => x.id !== id)), 1800);
   }, []);
 
-  const { dungeonProgressRef, dungeonUI, processEndEncounter } = useDungeon({ selectedMapId, pushLog, addEffect: addEffect, addToast: (text: string, type?: string, ttl?: number) => addToast(text, type as "ok" | "error" | undefined, ttl), createCustomItem, addXp, setPlayer, encounterSessionRef, startEncounterRef, player, inventory, equipment });
+  const { dungeonProgressRef, dungeonUI, processEndEncounter } = useDungeon({ selectedMapId, pushLog, addEffect: addEffect, addToast: (text: string, type?: string, ttl?: number, icon?: string) => addToast(text, type as "ok" | "error" | undefined, ttl, icon), createCustomItem, addXp, setPlayer, encounterSessionRef, startEncounterRef, player, inventory, equipment });
   // toast/log hooks used instead of local state
 
   // Reset streak when dungeon is activated
@@ -468,25 +469,51 @@ export default function Game() {
       }
     }
 
-    for (let i = 0; i < count; i++) {
-      if (isDungeonActive && dungeonRemaining === 1) {
-        // boss floor: spawn boss once (use captured floor from encounter start)
-        const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
-        const bossId = (idx !== null && selectedMap?.dungeons && selectedMap.dungeons[idx]) ? selectedMap.dungeons[idx].bossTemplateId : undefined;
-        const def = (idx !== null && selectedMap?.dungeons) ? selectedMap.dungeons[idx] : undefined;
-        if (bossId) {
-          // allow boss spawn if the template exists (bosses may be outside the generic pool)
-          const bossTpl = ENEMY_TEMPLATES.find((t) => t.templateId === bossId);
-          if (bossTpl) {
-            const mapId = selectedMapId ?? 'unknown';
-            const dungeonId = (selectedMap?.dungeons && typeof idx === 'number') ? selectedMap.dungeons[idx].id : undefined;
-            const roomId = dungeonId ? `${mapId}_${dungeonId}_floor_${dungeonCurrentFloor}` : undefined;
-            spawnEnemy(bossId, undefined, { isBoss: true, roomId, mapId: selectedMapId ?? undefined });
-            spawned++;
-          } else {
-            }
+    // For boss floors with minions, set count to spawn all enemies from the room
+    if (isDungeonActive && dungeonRemaining === 1 && roomObjGlobal?.isBossRoom && roomSpawnCandidates) {
+      count = roomSpawnCandidates.length;
+    }
+
+    // Handle boss floor differently: spawn all enemies from pool (minions + boss)
+    // Boss identification happens via isBoss flag based on actualBossId match
+    if (isDungeonActive && dungeonRemaining === 1 && roomObjGlobal?.isBossRoom && roomSpawnCandidates && roomSpawnCandidates.length > 0) {
+      // Boss room with minions: spawn all from pool
+      const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
+      const actualBossId = (idx !== null && selectedMap?.dungeons && selectedMap.dungeons[idx]) ? selectedMap.dungeons[idx].bossTemplateId : undefined;
+      
+      for (let i = 0; i < count; i++) {
+        let tid: string | undefined = undefined;
+        if (roomSpawnCandidates && roomSpawnCandidates.length > 0) {
+          const ri = Math.floor(Math.random() * roomSpawnCandidates.length);
+          tid = roomSpawnCandidates.splice(ri, 1)[0];
         }
-          } else {
+        if (tid) {
+          const isBoss = tid === actualBossId;
+          const mapId = selectedMapId ?? 'unknown';
+          const dungeonId = (selectedMap?.dungeons && typeof idx === 'number') ? selectedMap.dungeons[idx].id : undefined;
+          const roomId = dungeonId ? `${mapId}_${dungeonId}_floor_${dungeonCurrentFloor}` : undefined;
+          spawnEnemy(tid, undefined, { isBoss, roomId, mapId: selectedMapId ?? undefined });
+          spawned++;
+        }
+      }
+    } else {
+      // Normal spawn loop (non-boss rooms or single-enemy boss rooms)
+      for (let i = 0; i < count; i++) {
+        // Single-enemy boss floor (old behavior)
+        if (isDungeonActive && dungeonRemaining === 1) {
+          const idx = dungeonProgressRef.current.activeDungeonIndex ?? null;
+          const bossId = (idx !== null && selectedMap?.dungeons && selectedMap.dungeons[idx]) ? selectedMap.dungeons[idx].bossTemplateId : undefined;
+          if (bossId) {
+            const bossTpl = ENEMY_TEMPLATES.find((t) => t.templateId === bossId);
+            if (bossTpl) {
+              const mapId = selectedMapId ?? 'unknown';
+              const dungeonId = (selectedMap?.dungeons && typeof idx === 'number') ? selectedMap.dungeons[idx].id : undefined;
+              const roomId = dungeonId ? `${mapId}_${dungeonId}_floor_${dungeonCurrentFloor}` : undefined;
+              spawnEnemy(bossId, undefined, { isBoss: true, roomId, mapId: selectedMapId ?? undefined });
+              spawned++;
+            }
+          }
+        } else {
             // If inside a dungeon (non-boss floor), prefer room-based deterministic spawns (use captured floor)
             if (isDungeonActive && dungeonProgressRef.current.activeDungeonId) {
               const mapId = selectedMapId ?? 'unknown';
@@ -543,6 +570,7 @@ export default function Game() {
               const areaName = selectedMap?.name ?? 'Spawn';
               }
           }
+        }
       }
     }
 
@@ -698,7 +726,7 @@ export default function Game() {
     if (essenceDropped > 0) {
       try {
         pushLog(`Essence gained: +${essenceDropped} ⚡`);
-        addEffect({ type: 'pickup', text: `+${essenceDropped} ⚡`, target: 'player', kind: 'essence' });
+        addEffect({ type: 'pickup', text: `+${essenceDropped} ${EssenceSVG}`, target: 'player', kind: 'essence' });
       } catch (e) {}
     }
     
@@ -1093,7 +1121,8 @@ export default function Game() {
       {/* Toast container */}
       <div style={{ position: 'fixed', right: 16, top: 16, zIndex: 999999, display: 'flex', flexDirection: 'column', gap: 8 }}>
         {toasts.map((t) => (
-          <div key={t.id} style={{ minWidth: 220, maxWidth: 360, padding: '8px 12px', borderRadius: 8, background: t.type === 'ok' ? 'linear-gradient(90deg,#103218,#144a2a)' : 'linear-gradient(90deg,#3b0b0b,#521010)', color: '#fff', boxShadow: '0 6px 18px rgba(0,0,0,0.6)', fontWeight: 700 }}>
+          <div key={t.id} style={{ minWidth: 220, maxWidth: 360, padding: '8px 12px', borderRadius: 8, background: t.type === 'ok' ? 'linear-gradient(90deg,#103218,#144a2a)' : 'linear-gradient(90deg,#3b0b0b,#521010)', color: '#fff', boxShadow: '0 6px 18px rgba(0,0,0,0.6)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            {t.icon && <img src={t.icon} alt="icon" style={{ width: 20, height: 20, flexShrink: 0 }} />}
             {t.text}
           </div>
         ))}

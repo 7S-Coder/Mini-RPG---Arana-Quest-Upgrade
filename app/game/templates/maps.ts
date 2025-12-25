@@ -77,13 +77,13 @@ const defaultMaps: MapTemplate[] = [
       { id: 'forest_beehive_floor_2', enemyPool: ['bee', 'big_bee', 'giant_spider'] },
       { id: 'forest_beehive_floor_3', enemyPool: ['big_bee', 'mushroom', 'wild_boar'] },
       { id: 'forest_beehive_floor_4', enemyPool: ['big_bee', 'mushroom', 'bee'] },
-      { id: 'forest_beehive_floor_5', enemyPool: ['queen_bee'], isBossRoom: true },
+      { id: 'forest_beehive_floor_5', enemyPool: ['big_bee', 'big_bee', 'queen_bee'], isBossRoom: true },
       // Celestial Tree
       { id: 'forest_celestial_tree_floor_1', enemyPool: ['ant', 'crow', 'forest_goblin'] },
       { id: 'forest_celestial_tree_floor_2', enemyPool: ['crow', 'butterfly', 'giant_spider'] },
       { id: 'forest_celestial_tree_floor_3', enemyPool: ['monkey', 'butterfly', 'crow', 'wild_boar'] },
       { id: 'forest_celestial_tree_floor_4', enemyPool: ['monkey', 'butterfly'] },
-      { id: 'forest_celestial_tree_floor_5', enemyPool: ['quetzal'], isBossRoom: true },
+      { id: 'forest_celestial_tree_floor_5', enemyPool: ['crow', 'crow', 'quetzal'], isBossRoom: true },
     ],
   },
 
@@ -108,7 +108,7 @@ const defaultMaps: MapTemplate[] = [
       { id: 'caves_underground_cave_floor_2', enemyPool: ['cave_troll', 'bat'] },
       { id: 'caves_underground_cave_floor_3', enemyPool: ['snail', 'salamander'] },
       { id: 'caves_underground_cave_floor_4', enemyPool: ['snake', 'wood_fairy', 'bear'] },
-      { id: 'caves_underground_cave_floor_5', enemyPool: ['rabid_hyenas'], isBossRoom: true },
+      { id: 'caves_underground_cave_floor_5', enemyPool: ['bear', 'bear', 'rabid_hyenas'], isBossRoom: true },
     ],
   },
 
@@ -135,13 +135,13 @@ const defaultMaps: MapTemplate[] = [
       { id: 'ruins_forgotten_temple_floor_2', enemyPool: ['tomb_guardian', 'ghost_knight'] },
       { id: 'ruins_forgotten_temple_floor_3', enemyPool: ['ghost_knight', 'cursed_statue'] },
       { id: 'ruins_forgotten_temple_floor_4', enemyPool: ['cursed_knight', 'shadow_mage', 'gargoyle'] },
-      { id: 'ruins_forgotten_temple_floor_5', enemyPool: ['ancient_guardian'], isBossRoom: true },
+      { id: 'ruins_forgotten_temple_floor_5', enemyPool: ['gargoyle', 'ancient_sentinel', 'ancient_guardian'], isBossRoom: true },
       // Library of Ashes
       { id: 'ruins_library_of_ashes_floor_1', enemyPool: ['shadow_mage', 'wraith'] },
       { id: 'ruins_library_of_ashes_floor_2', enemyPool: ['ghost_knight', 'cursed_statue'] },
       { id: 'ruins_library_of_ashes_floor_3', enemyPool: ['cursed_knight', 'gargoyle'] },
       { id: 'ruins_library_of_ashes_floor_4', enemyPool: ['wraith', 'ancient_sentinel'] },
-      { id: 'ruins_library_of_ashes_floor_5', enemyPool: ['forgotten_keeper'], isBossRoom: true },
+      { id: 'ruins_library_of_ashes_floor_5', enemyPool: ['wraith', 'wraith', 'forgotten_keeper'], isBossRoom: true },
     ],
   },
 
@@ -168,13 +168,13 @@ const defaultMaps: MapTemplate[] = [
       { id: 'volcano_infernal_abyss_floor_2', enemyPool: ['lava_golem', 'magma_serpent'] },
       { id: 'volcano_infernal_abyss_floor_3', enemyPool: ['magma_serpent', 'ash_phoenix'] },
       { id: 'volcano_infernal_abyss_floor_4', enemyPool: ['ash_phoenix', 'flame_titan'] },
-      { id: 'volcano_infernal_abyss_floor_5', enemyPool: ['infernal_warden'], isBossRoom: true },
+      { id: 'volcano_infernal_abyss_floor_5', enemyPool: ['flame_titan', 'flame_titan', 'infernal_warden'], isBossRoom: true },
       // Ashen Citadel
       { id: 'volcano_ashen_citadel_floor_1', enemyPool: ['fire_imp', 'magma_serpent'] },
       { id: 'volcano_ashen_citadel_floor_2', enemyPool: ['lava_golem', 'ash_phoenix'] },
       { id: 'volcano_ashen_citadel_floor_3', enemyPool: ['magma_serpent', 'flame_titan'] },
       { id: 'volcano_ashen_citadel_floor_4', enemyPool: ['ash_phoenix', 'flame_titan'] },
-      { id: 'volcano_ashen_citadel_floor_5', enemyPool: ['avatar_of_cinders'], isBossRoom: true },
+      { id: 'volcano_ashen_citadel_floor_5', enemyPool: ['ash_phoenix', 'ash_phoenix', 'avatar_of_cinders'], isBossRoom: true },
     ],
   },
 
@@ -192,7 +192,7 @@ const defaultMaps: MapTemplate[] = [
     enemyPool: ['fire_overlord'],
     requiredKeyFragments: ['Volcano Key A', 'Volcano Key B'],
     rooms: [
-      { id: 'final_arena_throne_room', enemyPool: ['fire_overlord'], isBossRoom: true },
+      { id: 'final_arena_throne_room', enemyPool: ['fire_overlord', 'fire_overlord'], isBossRoom: true },
     ],
   },
 ];

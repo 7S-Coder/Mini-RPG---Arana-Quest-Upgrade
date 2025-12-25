@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getMaps } from "../game/templates/maps";
 import { ITEM_POOL, scaleStats, computeItemCost } from "../game/templates/items";
+import EssenceSVG from "../assets/essence.svg";
 import type { Rarity } from "../game/types";
 
 type DungeonProgress = {
@@ -16,7 +17,7 @@ export function useDungeon(opts: {
   selectedMapId: string | null;
   pushLog: (s: string) => void;
   addEffect?: (e: any) => void;
-  addToast?: (t: string, type?: string, ttl?: number) => void;
+  addToast?: (t: string, type?: string, ttl?: number, icon?: string) => void;
   createCustomItem?: (arg0: any, arg1?: boolean) => void;
   addXp?: (n: number) => void;
   setPlayer?: (updater: any) => void;
@@ -245,7 +246,7 @@ export function useDungeon(opts: {
               } catch (e) { console.error('[useDungeon] reward error:', e); }
               
               pushLog(`Dungeon complete! Earned +${goldReward} g, +${xpReward} XP and +${essenceReward}✨!`);
-              try { addToast && addToast(`Dungeon cleared! +${goldReward} g, +${xpReward} XP, +${essenceReward}✨!`, 'ok', 6000); } catch (e) {}
+              try { addToast && addToast(`Dungeon cleared! +${goldReward} g, +${xpReward} XP, +${essenceReward}`, 'ok', 6000, EssenceSVG.src); } catch (e) {}
               try { addEffect && addEffect({ type: 'pickup', text: `+${goldReward} g`, target: 'player' }); } catch (e) {}
             } catch (e) { console.error('[useDungeon] completion error:', e); }
 
