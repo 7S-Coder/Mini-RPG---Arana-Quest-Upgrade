@@ -1610,6 +1610,26 @@ export function useGameState() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-save on player or inventory changes (with debounce)
+  useEffect(() => {
+    const saveTimer = setTimeout(() => {
+      try {
+        const payload = {
+          version: 1,
+          player: pickPlayerData(player),
+          inventory: inventory || [],
+          equipment: equipmentRef.current || {},
+          timestamp: Date.now(),
+        };
+        localStorage.setItem("arenaquest_core_v1", JSON.stringify(payload));
+        try { console.debug('[AUTO SAVE]', { key: "arenaquest_core_v1", payload }); } catch (e) {}
+      } catch (e) {
+        try { console.error('auto save error', e); } catch (e) {}
+      }
+    }, 500); // Debounce: save 500ms after changes stop
+    return () => clearTimeout(saveTimer);
+  }, [player, inventory]);
+
   // NOTE: removed global autosave — core saves are now explicit via `saveCoreGame`.
 
   const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);

@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { NarrativeMessage, NPC_DATA } from '@/app/game/templates/narration';
+import { NarrativeMessage, NPC_DATA } from '../../game/templates/narration';
 
 interface DialogueModalProps {
   message: NarrativeMessage | null;

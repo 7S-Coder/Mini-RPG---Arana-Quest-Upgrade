@@ -351,13 +351,11 @@ export default function useCombat({
     })();
 
     // 3) Slow enemies attack after player (use the updated snapshot so dead enemies don't act)
-    // All slow enemies attack, not just the target
+    // Only the targeted enemy attacks for now
     const postEnemies = postAttackEnemies.filter((e) => e.hp > 0);
-    const slowEnemiesAttack = postEnemies.filter((e) => (e.speed ?? 0) <= pSpeed);
-    
-    if (slowEnemiesAttack.length > 0) {
-      const updatedEnemies = postAttackEnemies;
-      playerSnap = applyEnemyAttacksToPlayer(slowEnemiesAttack, playerSnap, mod.dodgeBonus, attackType === 'safe');
+    const targetAfterAttack = postEnemies.find((e) => e.id === target.id);
+    if (targetAfterAttack && (targetAfterAttack.speed ?? 0) <= pSpeed && targetAfterAttack.hp > 0) {
+      playerSnap = applyEnemyAttacksToPlayer([targetAfterAttack], playerSnap, mod.dodgeBonus, attackType === 'safe');
       setPlayer((currentPlayer: Player) => ({
         ...currentPlayer,
         hp: playerSnap.hp,
@@ -368,19 +366,16 @@ export default function useCombat({
         lockedRef.current = false;
         return;
       }
-      
-      // Check for enemies at 100 rage after their attack
+      // Gestion de la rage uniquement pour l'ennemi ciblé
+      const updatedEnemies = postAttackEnemies;
       const aliveAfterSlowAttack = updatedEnemies.filter((e) => e.hp > 0);
-      const enemiesToRageAttack = aliveAfterSlowAttack.filter((e) => (e.rage ?? 0) >= 100);
-      
+      const enemiesToRageAttack = aliveAfterSlowAttack.filter((e) => (e.rage ?? 0) >= 100 && e.id === targetAfterAttack.id);
       if (enemiesToRageAttack.length > 0) {
         for (const rageEnemy of enemiesToRageAttack) {
           const effect = rageEnemy.rageEffect || 'multi_attack';
-          
           switch(effect) {
             case 'multi_attack': {
-              // Attack 2-3 times
-              const numAttacks = Math.floor(Math.random() * 2) + 2; // 2 or 3
+              const numAttacks = Math.floor(Math.random() * 2) + 2;
               pushLog(`🔥 ${rageEnemy.name} bursts with rage and attacks ${numAttacks} times!`);
               for (let i = 0; i < numAttacks; i++) {
                 playerSnap = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
@@ -388,7 +383,6 @@ export default function useCombat({
               break;
             }
             case 'explosion': {
-              // Explodes and deals AoE damage (slightly reduced but to all)
               pushLog(`💥 ${rageEnemy.name} explodes in a burst of energy!`);
               const explosionDamage = Math.round((rageEnemy.dmg ?? 1) * 1.5);
               const defenseAdjusted = turnModifier?.defenseDebuff ? (playerSnap.def ?? 0) * 0.5 : (playerSnap.def ?? 0);
@@ -400,7 +394,6 @@ export default function useCombat({
               break;
             }
             case 'heal': {
-              // Heals itself
               const healAmount = Math.round((rageEnemy.hp ?? 20) * 0.3);
               pushLog(`✨ ${rageEnemy.name} channels its rage to heal!`);
               setEnemies((currentEnemies: Enemy[]) =>
@@ -414,23 +407,18 @@ export default function useCombat({
               break;
             }
             case 'debuff': {
-              // Debuff the player's defense
               pushLog(`⚠️ ${rageEnemy.name} channels dark energy and weakens your defense!`);
               if (typeof onModifierChange === 'function') onModifierChange({ skipped: false, defenseDebuff: true });
               playerSnap = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
               break;
             }
             case 'multiplier': {
-              // Deals double damage attack
               pushLog(`⚡ ${rageEnemy.name} channels twice its power!`);
               playerSnap = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
-              // Apply again for double damage effect
               playerSnap = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
               break;
             }
           }
-          
-          // Reset rage individually for each enemy after their effect
           setEnemies((currentEnemies: Enemy[]) =>
             currentEnemies.map((e) => {
               if (e.id === rageEnemy.id) {
@@ -440,12 +428,10 @@ export default function useCombat({
             })
           );
         }
-        
         setPlayer((currentPlayer: Player) => ({
           ...currentPlayer,
           hp: playerSnap.hp,
         }));
-        
         if (playerSnap.hp <= 0) {
           pushLog('You are dead...');
           endEncounter('You died. Respawned at the tavern.', { type: 'death' });

@@ -758,14 +758,14 @@ export default function Game() {
       // Choisir un item aléatoire
       const randomItem = itemsOfRarity[Math.floor(Math.random() * itemsOfRarity.length)];
       
-      // Définir les prix basés sur la rareté et la devise
+      // Définir les prix basés sur la rareté et la devise (SYNCHRONISÉ avec StoreModal)
       const LOOT_BOX_PRICES_GOLD: Record<Rarity, number> = {
-        common: 10,
-        uncommon: 20,
-        rare: 35,
-        epic: 100,
-        legendary: 250,
-        mythic: 500,
+        common: 200,
+        uncommon: 400,
+        rare: 700,
+        epic: 1100,
+        legendary: 2500,
+        mythic: 5000,
       };
       const LOOT_BOX_PRICES_ESSENCE: Record<Rarity, number> = {
         common: 1,
@@ -806,7 +806,16 @@ export default function Game() {
       createItemFromTemplate(randomItem.name, rarity, true);
       const msg = `Loot box opened! You got: ${randomItem.name}.`;
       pushLog(msg);
-      try { saveCoreGame && saveCoreGame(null, 'buy_lootbox'); } catch (e) {}
+      // Force save after state updates complete
+      setTimeout(() => {
+        try {
+          if (typeof window !== 'undefined' && (window as any).__arenaquest_save_game) {
+            (window as any).__arenaquest_save_game(null, 'lootbox_purchase');
+          }
+        } catch (e) {
+          console.error('Force save error:', e);
+        }
+      }, 100);
       return { ok: true, msg };
     } catch (e) {
       const msg = 'Error during purchase';
