@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { getMaps } from "../game/templates/maps";
 import { ITEM_POOL, scaleStats, computeItemCost } from "../game/templates/items";
 import EssenceSVG from "../assets/essence.svg";
+import GoldSVG from "../assets/gold.svg";
 import type { Rarity } from "../game/types";
 
 type DungeonProgress = {
@@ -245,7 +246,7 @@ export function useDungeon(opts: {
                 }
               } catch (e) { console.error('[useDungeon] reward error:', e); }
               
-              pushLog(`Dungeon complete! Earned +${goldReward} g, +${xpReward} XP and +${essenceReward}✨!`);
+              pushLog(`Dungeon complete! Earned +${goldReward} g, +${xpReward} XP and +${essenceReward}!`);
               try { addToast && addToast(`Dungeon cleared! +${goldReward} g, +${xpReward} XP, +${essenceReward}`, 'ok', 6000, EssenceSVG.src); } catch (e) {}
               try { addEffect && addEffect({ type: 'pickup', text: `+${goldReward} g`, target: 'player' }); } catch (e) {}
             } catch (e) { console.error('[useDungeon] completion error:', e); }

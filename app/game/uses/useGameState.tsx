@@ -945,9 +945,13 @@ export function useGameState() {
         inventoryRef.current = inventoryRef.current.map((i) => (i.id === itemId ? updatedItem : i));
       }
 
-      // Deduct gold
-      setPlayer((prev) => ({ ...prev, gold: (prev.gold ?? 0) - GOLD_COST }));
-      playerRef.current.gold = (playerRef.current.gold ?? 0) - GOLD_COST;
+      // Deduct gold - double check before doing it
+      const currentGold = playerRef.current.gold ?? 0;
+      if (currentGold < GOLD_COST) {
+        return { ok: false, msg: `Not enough gold (need ${GOLD_COST}g, have ${currentGold}g)` };
+      }
+      setPlayer((prev) => ({ ...prev, gold: Math.max(0, (prev.gold ?? 0) - GOLD_COST) }));
+      playerRef.current.gold = Math.max(0, (playerRef.current.gold ?? 0) - GOLD_COST);
 
       try { saveCoreGame({ player: pickPlayerData(playerRef.current), inventory: inventoryRef.current, equipment: equipmentRef.current }); } catch (e) {}
       return { ok: true, msg: `Upgraded ${statKey} by +${boost}!` };
@@ -1020,14 +1024,18 @@ export function useGameState() {
         inventoryRef.current = inventoryRef.current.map((i) => (i.id === itemId ? updatedItem : i));
       }
 
-      // Deduct costs
-      const newMaterials = { ...materials, mithril_ore: (materials.mithril_ore ?? 0) - MATERIAL_COST };
+      // Deduct costs - double check before doing it
+      const currentGold = playerRef.current.gold ?? 0;
+      if (currentGold < GOLD_COST) {
+        return { ok: false, msg: `Not enough gold (need ${GOLD_COST}g, have ${currentGold}g)` };
+      }
+      const newMaterials = { ...materials, mithril_ore: Math.max(0, (materials.mithril_ore ?? 0) - MATERIAL_COST) };
       setPlayer((prev) => ({
         ...prev,
-        gold: (prev.gold ?? 0) - GOLD_COST,
+        gold: Math.max(0, (prev.gold ?? 0) - GOLD_COST),
         materials: newMaterials,
       }));
-      playerRef.current.gold = (playerRef.current.gold ?? 0) - GOLD_COST;
+      playerRef.current.gold = Math.max(0, (playerRef.current.gold ?? 0) - GOLD_COST);
       playerRef.current.materials = newMaterials;
 
       try { saveCoreGame({ player: pickPlayerData(playerRef.current), inventory: inventoryRef.current, equipment: equipmentRef.current }); } catch (e) {}
@@ -1094,9 +1102,13 @@ export function useGameState() {
         inventoryRef.current = inventoryRef.current.map((i) => (i.id === itemId ? updatedItem : i));
       }
 
-      // Deduct essence
-      setPlayer((prev) => ({ ...prev, essence: (prev.essence ?? 0) - ESSENCE_COST }));
-      playerRef.current.essence = (playerRef.current.essence ?? 0) - ESSENCE_COST;
+      // Deduct essence - double check before doing it
+      const currentEssence = playerRef.current.essence ?? 0;
+      if (currentEssence < ESSENCE_COST) {
+        return { ok: false, msg: `Not enough essence (need ${ESSENCE_COST}✨, have ${currentEssence}✨)` };
+      }
+      setPlayer((prev) => ({ ...prev, essence: Math.max(0, (prev.essence ?? 0) - ESSENCE_COST) }));
+      playerRef.current.essence = Math.max(0, (playerRef.current.essence ?? 0) - ESSENCE_COST);
 
       try { saveCoreGame({ player: pickPlayerData(playerRef.current), inventory: inventoryRef.current, equipment: equipmentRef.current }); } catch (e) {}
       return { ok: true, msg: 'Item infused with essence!' };
@@ -1508,12 +1520,14 @@ export function useGameState() {
         // Ensure materials are always present (for backward compatibility with old saves)
         const sp = {
           ...save.player,
+          gold: Math.max(0, save.player.gold ?? 0), // Prevent negative gold
+          essence: Math.max(0, save.player.essence ?? 0), // Prevent negative essence
           consecWins: 0,
           materials: {
-            essence_dust: save.player.materials?.essence_dust ?? 0,
-            mithril_ore: save.player.materials?.mithril_ore ?? 0,
-            star_fragment: save.player.materials?.star_fragment ?? 0,
-            void_shard: save.player.materials?.void_shard ?? 0,
+            essence_dust: Math.max(0, save.player.materials?.essence_dust ?? 0),
+            mithril_ore: Math.max(0, save.player.materials?.mithril_ore ?? 0),
+            star_fragment: Math.max(0, save.player.materials?.star_fragment ?? 0),
+            void_shard: Math.max(0, save.player.materials?.void_shard ?? 0),
           },
         };
         // Completely replace the player, don't merge with defaults

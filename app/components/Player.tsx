@@ -4,6 +4,11 @@ import React, { useEffect, useState, useRef } from "react";
 import EssenceSVG from "@/app/assets/essence.svg";
 import GoldSVG from "@/app/assets/gold.svg";
 
+import DodgeSVG from "@/app/assets/stats/dodge.svg";
+import CritSVG from "@/app/assets/stats/crit.svg";
+import SpeedSVG from "@/app/assets/stats/speed.svg";
+import RegenSVG from "@/app/assets/stats/regen.svg";
+
 type Props = {
 	x: number;
 	y: number;
@@ -182,7 +187,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 					XP: {xp ?? 0}/{xpToNext(level ?? 1)}
 				</div>
 				{hoveredResource === 'xp_bar' && (
-					<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+					<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4, minWidth: 160 }}>
 						{STAT_TOOLTIPS.xp_bar}
 					</div>
 				)}
@@ -201,20 +206,20 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 				borderTop: '1px solid #333',
 				borderBottom: '1px solid #333'
 			}}>
-				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('damage')} onMouseLeave={() => setHoveredStat(null)}>
+				<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseEnter={() => setHoveredStat('damage')} onMouseLeave={() => setHoveredStat(null)}>
 					<div style={{ color: '#ff9999' }}>⚔ Damage</div>
 					<div style={{ fontSize: 14, fontWeight: 700, color: '#ff9999', marginTop: 2 }}>{dmg ?? 0}</div>
 					{hoveredStat === 'damage' && (
-						<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+						<div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4, minWidth: 160 }}>
 							{STAT_TOOLTIPS.damage}
 						</div>
 					)}
 				</div>
-				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('defense')} onMouseLeave={() => setHoveredStat(null)}>
+				<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseEnter={() => setHoveredStat('defense')} onMouseLeave={() => setHoveredStat(null)}>
 					<div style={{ color: '#99ccff' }}>🛡 Defense</div>
 					<div style={{ fontSize: 14, fontWeight: 700, color: '#99ccff', marginTop: 2 }}>{def ?? 0}</div>
 					{hoveredStat === 'defense' && (
-						<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+						<div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4, minWidth: 160 }}>
 							{STAT_TOOLTIPS.defense}
 						</div>
 					)}
@@ -229,38 +234,38 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 				fontSize: 11,
 				color: '#aaa'
 			}}>
-				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('crit')} onMouseLeave={() => setHoveredStat(null)}>
-					<div>🎯 <br/>Crit</div>
+				<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'  }} onMouseEnter={() => setHoveredStat('crit')} onMouseLeave={() => setHoveredStat(null)}>
+					<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}><img src={CritSVG.src} alt="Crit" style={{ width: 24, height: 24 }} /> Crit</div>
 					<div style={{ fontSize: 12, fontWeight: 600, color: '#ddd', marginTop: 2 }}>{crit ?? 0}%</div>
 					{hoveredStat === 'crit' && (
-						<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+						<div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4, minWidth: 160 }}>
 							{STAT_TOOLTIPS.crit}
 						</div>
 					)}
 				</div>
-				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('dodge')} onMouseLeave={() => setHoveredStat(null)}>
-					<div>👟 <br/> Dodge</div>
+				<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'  }} onMouseEnter={() => setHoveredStat('dodge')} onMouseLeave={() => setHoveredStat(null)}>
+					<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}><img src={DodgeSVG.src} alt="Dodge" style={{ width: 24, height: 24 }} />  Dodge</div>
 					<div style={{ fontSize: 12, fontWeight: 600, color: '#ddd', marginTop: 2 }}>{dodge ?? 0}</div>
 					{hoveredStat === 'dodge' && (
-						<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+						<div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4, minWidth: 160 }}>
 							{STAT_TOOLTIPS.dodge}
 						</div>
 					)}
 				</div>
-				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('speed')} onMouseLeave={() => setHoveredStat(null)}>
-					<div>⚡ <br/> Speed</div>
+				<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'  }} onMouseEnter={() => setHoveredStat('speed')} onMouseLeave={() => setHoveredStat(null)}>
+					<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}><img src={SpeedSVG.src} alt="Speed" style={{ width: 24, height: 24 }} />  Speed</div>
 					<div style={{ fontSize: 12, fontWeight: 600, color: '#ddd', marginTop: 2 }}>{speed ?? 0}</div>
 					{hoveredStat === 'speed' && (
-						<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+						<div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4, minWidth: 160 }}>
 							{STAT_TOOLTIPS.speed}
 						</div>
 					)}
 				</div>
-				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredStat('regen')} onMouseLeave={() => setHoveredStat(null)}>
-					<div>💚 <br/>Regen</div>
+				<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={() => setHoveredStat('regen')} onMouseLeave={() => setHoveredStat(null)}>
+					<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}><img src={RegenSVG.src} alt="Regen" style={{ width: 24, height: 24 }} />  Regen</div>
 					<div style={{ fontSize: 12, fontWeight: 600, color: '#ddd', marginTop: 2 }}>{regen ?? 0}</div>
 					{hoveredStat === 'regen' && (
-						<div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+						<div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4, minWidth: 160 }}>
 							{STAT_TOOLTIPS.regen}
 						</div>
 					)}
@@ -279,24 +284,24 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 				gridTemplateColumns: '1fr 1fr',
 				gap: 12
 			}}>
-				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('gold')} onMouseLeave={() => setHoveredResource(null)}>
-				<div style={{ color: '#ffd700', display: 'flex', alignItems: 'center', gap: 6 }}>
+				<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseEnter={() => setHoveredResource('gold')} onMouseLeave={() => setHoveredResource(null)}>
+				<div style={{ color: '#ffd700', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
 					<img src={GoldSVG.src} alt="Gold" style={{ width: 20, height: 20 }} />
 					{(typeof gold === 'number' ? gold.toFixed(2) : (gold ?? 0))}
 				</div>
 					{hoveredResource === 'gold' && (
-						<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+						<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4, minWidth: 160 }}>
 							{STAT_TOOLTIPS.gold}
 						</div>
 					)}
 				</div>
-				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('essence')} onMouseLeave={() => setHoveredResource(null)}>
-				<div style={{ color: '#6eb3ff', display: 'flex', alignItems: 'center', gap: 6 }}>
+				<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseEnter={() => setHoveredResource('essence')} onMouseLeave={() => setHoveredResource(null)}>
+				<div style={{ color: '#6eb3ff', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}>
 					<img src={EssenceSVG.src} alt="Essence" style={{ width: 20, height: 20 }} />
 					{(essence ?? 0).toFixed(0)}
 				</div>
 					{hoveredResource === 'essence' && (
-						<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+						<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4, minWidth: 160 }}>
 							{STAT_TOOLTIPS.essence}
 						</div>
 					)}
@@ -311,40 +316,40 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 				opacity: 0.75,
 				borderTop: '1px solid #2a2a2a'
 			}}>
-				<div style={{ fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 }}>Forge Materials</div>
+				<div style={{ fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center' }}>Forge Materials</div>
 				<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-					<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('essence_dust')} onMouseLeave={() => setHoveredResource(null)}>
+					<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseEnter={() => setHoveredResource('essence_dust')} onMouseLeave={() => setHoveredResource(null)}>
 						<div style={{ color: '#a389d9' }}>⚪ Essence Dust</div>
 						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa' }}>x{materials?.essence_dust ?? 0}</div>
 						{hoveredResource === 'essence_dust' && (
-							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '140px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '140px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4, minWidth: 160 }}>
 								{STAT_TOOLTIPS.essence_dust}
 							</div>
 						)}
 					</div>
-					<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('mithril_ore')} onMouseLeave={() => setHoveredResource(null)}>
+					<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseEnter={() => setHoveredResource('mithril_ore')} onMouseLeave={() => setHoveredResource(null)}>
 						<div style={{ color: '#c0a080' }}>⬜ Mithril Ore</div>
 						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa' }}>x{materials?.mithril_ore ?? 0}</div>
 						{hoveredResource === 'mithril_ore' && (
-							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4, minWidth: 160 }}>
 								{STAT_TOOLTIPS.mithril_ore}
 							</div>
 						)}
 					</div>
-					<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('star_fragment')} onMouseLeave={() => setHoveredResource(null)}>
+					<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseEnter={() => setHoveredResource('star_fragment')} onMouseLeave={() => setHoveredResource(null)}>
 						<div style={{ color: '#ffc100' }}>✨ Star Fragment</div>
 						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa' }}>x{materials?.star_fragment ?? 0}</div>
 						{hoveredResource === 'star_fragment' && (
-							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '140px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '140px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4, minWidth: 160 }}>
 								{STAT_TOOLTIPS.star_fragment}
 							</div>
 						)}
 					</div>
-					<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('void_shard')} onMouseLeave={() => setHoveredResource(null)}>
+					<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseEnter={() => setHoveredResource('void_shard')} onMouseLeave={() => setHoveredResource(null)}>
 						<div style={{ color: '#4a4a6a' }}>◆ Void Shard</div>
 						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa' }}>x{materials?.void_shard ?? 0}</div>
 						{hoveredResource === 'void_shard' && (
-							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4, minWidth: 160 }}>
 								{STAT_TOOLTIPS.void_shard}
 							</div>
 						)}
