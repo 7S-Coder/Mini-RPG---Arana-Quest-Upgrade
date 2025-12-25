@@ -1,0 +1,32 @@
+<svg
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <circle
+    cx="32"
+    cy="32"
+    r="28"
+    fill="#ffd700"
+  />
+  <circle
+    cx="32"
+    cy="32"
+    r="20"
+    fill="none"
+    stroke="#e6c200"
+    stroke-width="4"
+  />
+  <text
+    x="32"
+    y="40"
+    text-anchor="middle"
+    font-size="28"
+    font-weight="bold"
+    fill="#bfa100"
+    font-family="Arial, sans-serif"
+  >
+    G
+  </text>
+</svg>

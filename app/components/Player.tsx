@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useEffect, useState, useRef } from "react";
+import EssenceSVG from "@/app/assets/essence.svg";
+import GoldSVG from "@/app/assets/gold.svg";
 
 type Props = {
 	x: number;
@@ -278,7 +280,10 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 				gap: 12
 			}}>
 				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('gold')} onMouseLeave={() => setHoveredResource(null)}>
-					<div style={{ color: '#ffd700' }}>💰 {(typeof gold === 'number' ? gold.toFixed(2) : (gold ?? 0))} g</div>
+				<div style={{ color: '#ffd700', display: 'flex', alignItems: 'center', gap: 6 }}>
+					<img src={GoldSVG.src} alt="Gold" style={{ width: 20, height: 20 }} />
+					{(typeof gold === 'number' ? gold.toFixed(2) : (gold ?? 0))}
+				</div>
 					{hoveredResource === 'gold' && (
 						<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
 							{STAT_TOOLTIPS.gold}
@@ -286,7 +291,10 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 					)}
 				</div>
 				<div style={{ position: 'relative' }} onMouseEnter={() => setHoveredResource('essence')} onMouseLeave={() => setHoveredResource(null)}>
-					<div style={{ color: '#6eb3ff' }}> {(essence ?? 0).toFixed(0)} e</div>
+				<div style={{ color: '#6eb3ff', display: 'flex', alignItems: 'center', gap: 6 }}>
+					<img src={EssenceSVG.src} alt="Essence" style={{ width: 20, height: 20 }} />
+					{(essence ?? 0).toFixed(0)}
+				</div>
 					{hoveredResource === 'essence' && (
 						<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
 							{STAT_TOOLTIPS.essence}

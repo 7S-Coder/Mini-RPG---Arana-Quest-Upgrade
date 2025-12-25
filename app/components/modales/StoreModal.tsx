@@ -3,6 +3,8 @@
 import React from "react";
 import Modal from "./Modal";
 import type { Rarity } from "@/app/game/types";
+import EssenceSVG from "@/app/assets/essence.svg";
+import GoldSVG from "@/app/assets/gold.svg";
 
 type Props = {
   onClose: () => void;
@@ -207,11 +209,17 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
           </div>
           <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
             <h4 style={{ marginTop: 0, marginBottom: 8 }}>Gold</h4>
-            <div style={{ fontSize: 18, fontWeight: 800, color: '#ffd96b' }}>{(playerGold || 0).toFixed(2)} g</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#ffd96b', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <img src={GoldSVG.src} alt="Gold" style={{ width: 24, height: 24 }} />
+              {(playerGold || 0).toFixed(2)}
+            </div>
           </div>
           <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
             <h4 style={{ marginTop: 0, marginBottom: 8 }}>Essence</h4>
-            <div style={{ fontSize: 18, fontWeight: 800, color: '#6eb3ff' }}>{(playerEssence || 0).toFixed(0)}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#6eb3ff', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <img src={EssenceSVG.src} alt="Essence" style={{ width: 24, height: 24 }} />
+              {(playerEssence || 0).toFixed(0)}
+            </div>
           </div>
         </div>
       </div>
