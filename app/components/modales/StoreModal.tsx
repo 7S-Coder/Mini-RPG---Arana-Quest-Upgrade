@@ -45,6 +45,15 @@ const LOOT_BOX_PRICES_ESSENCE: Record<Rarity, number> = {
   mythic: 120,
 };
 
+// Définition des potions
+const POTIONS = [
+  { type: 'small' as const, name: 'Small potion', hp: 20, cost: 5 },
+  { type: 'medium' as const, name: 'Medium potion', hp: 50, cost: 12 },
+  { type: 'large' as const, name: 'Large potion', hp: 100, cost: 25 },
+  { type: 'huge' as const, name: 'Huge potion', hp: 200, cost: 45 },
+  { type: 'giant' as const, name: 'Giant potion', hp: 400, cost: 80 },
+];
+
 export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold, playerEssence = 0, playerLevel = 1, unlockedRarities = [] }: Props) {
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
 
@@ -79,66 +88,26 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
 
   return (
     <Modal title="Store" onClose={onClose}>
-      <div style={{ minWidth: 800, minHeight: 300 }}>
+      <div style={{ minWidth: 950, minHeight: 300 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {/* Potions Section */}
           <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>
             <h3 style={{ margin: '0 0 8px 0' }}>Healing Potions</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 0, maxHeight: 240, overflowY: 'auto', paddingRight: 8 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
-                <div>
-                  <div style={{ fontWeight: 700 }}>Small potion</div>
-                  <div style={{ fontSize: 12, color: '#bbb' }}>Restores 20 HP</div>
+              {POTIONS.map((potion) => (
+                <div key={potion.type} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
+                  <div>
+                    <div style={{ fontWeight: 700 }}>{potion.name}</div>
+                    <div style={{ fontSize: 12, color: '#bbb' }}>Restores {potion.hp} HP</div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <div style={{ color: '#ffd96b', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      {potion.cost} <img src={GoldSVG.src} alt="Gold" style={{ width: 16, height: 16 }} />
+                    </div>
+                    <button className="btn" onClick={() => handleBuy(potion.type)}>Buy</button>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <div style={{ color: '#ffd96b', fontWeight: 800 }}>5 g</div>
-                  <button className="btn" onClick={() => handleBuy('small')}>Buy</button>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
-                <div>
-                  <div style={{ fontWeight: 700 }}>Medium potion</div>
-                  <div style={{ fontSize: 12, color: '#bbb' }}>Restores 50 HP</div>
-                </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <div style={{ color: '#ffd96b', fontWeight: 800 }}>12 g</div>
-                  <button className="btn" onClick={() => handleBuy('medium')}>Buy</button>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
-                <div>
-                  <div style={{ fontWeight: 700 }}>Large potion</div>
-                  <div style={{ fontSize: 12, color: '#bbb' }}>Restores 100 HP</div>
-                </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <div style={{ color: '#ffd96b', fontWeight: 800 }}>25 g</div>
-                  <button className="btn" onClick={() => handleBuy('large')}>Buy</button>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
-                <div>
-                  <div style={{ fontWeight: 700 }}>Huge potion</div>
-                  <div style={{ fontSize: 12, color: '#bbb' }}>Restores 200 HP</div>
-                </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <div style={{ color: '#ffd96b', fontWeight: 800 }}>45 g</div>
-                  <button className="btn" onClick={() => handleBuy('huge')}>Buy</button>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 8, borderRadius: 8, background: '#111' }}>
-                <div>
-                  <div style={{ fontWeight: 700 }}>Giant potion</div>
-                  <div style={{ fontSize: 12, color: '#bbb' }}>Restores 400 HP</div>
-                </div>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <div style={{ color: '#ffd96b', fontWeight: 800 }}>80 g</div>
-                  <button className="btn" onClick={() => handleBuy('giant')}>Buy</button>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -169,10 +138,13 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
                         style={{ 
                           opacity: canBuyWithGold ? 1 : 0.5, 
                           cursor: canBuyWithGold ? 'pointer' : 'not-allowed',
-                          fontSize: 12
+                          fontSize: 12,
+                          display: 'flex', alignItems: 'center',
+                          gap: '4px',
+                          color: '#ffd96b'
                         }}
                       >
-                        {costGold}g
+                        {costGold} <img src={GoldSVG.src} alt="Gold" style={{ width: 16, height: 16 }} />
                       </button>
                       <button 
                         className="btn" 
@@ -183,10 +155,13 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
                           opacity: canBuyWithEssence ? 1 : 0.5, 
                           cursor: canBuyWithEssence ? 'pointer' : 'not-allowed',
                           fontSize: 12,
-                          color: '#6eb3ff'
+                          color: '#6eb3ff',
+                          display: 'flex', alignItems: 'center',
+                          gap: '4px',
                         }}
+                        
                       >
-                        {costEssence}
+                        {costEssence} <img src={EssenceSVG.src} alt="Essence" style={{ width: 16, height: 16 }} />
                       </button>
                     </div>
                   </div>

@@ -125,7 +125,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
   return (
     <>
       <Modal title="Inventory" onClose={onClose}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 760, minHeight: 480 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 860, minHeight: 480 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: 8 }}>
               <button className={activeTab === 'inventory' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('inventory')}>Inventory</button>
