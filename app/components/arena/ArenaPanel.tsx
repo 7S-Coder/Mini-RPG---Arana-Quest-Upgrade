@@ -1,4 +1,5 @@
 import React from "react";
+import GoldSVG from "@/app/assets/gold.svg";
 import EnemiesRow from "../enemys/EnemiesRow";
 import LogMessages from "../LogMessages";
 import ArenaActions from "./ArenaActions";
@@ -78,7 +79,7 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
               }}
               style={{ left: (p.x ?? 220), top: (p.y ?? 120), position: 'absolute', pointerEvents: 'auto' }}
             >
-              <div className="icon">{p.kind === 'gold' ? '💰' : '📦'}</div>
+              <div className="icon">{p.kind === 'gold' ? <img src={GoldSVG.src} alt="Gold" style={{ width: 32, height: 32 }} /> : '📦'}</div>
               <div className="label">{p.kind === 'gold' ? `${Number(p.amount).toFixed(2)} g` : (p.item?.name ?? 'Item')}</div>
             </div>
           ))}

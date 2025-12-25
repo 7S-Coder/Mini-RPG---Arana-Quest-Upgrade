@@ -337,9 +337,9 @@ body{
 .pickup:hover{transform:translate(-50%,-55%) scale(1.03); box-shadow:0 10px 30px rgba(0,0,0,0.6)}
 .pickup .label{color:inherit; font-weight:800}
 /* Solid backgrounds (no gradients) for pickups */
-.pickup.gold{background-color:#fff7d6; border:1px solid rgba(200,150,60,0.95); box-shadow:0 6px 18px rgba(0,0,0,0.12)}
-.pickup.gold .label{color:#1b1b1b}
-.pickup.gold .icon{color:#1b1b1b}
+.pickup.gold{background-color:transparent; ; box-shadow:0 6px 18px rgba(0,0,0,0.12)}
+.pickup.gold .label{color:#ffd700}
+.pickup.gold .icon{color:#ffd700}
 .pickup.item{background-color:#eef6ff; border:1px solid rgba(120,160,220,0.95); box-shadow:0 6px 18px rgba(0,0,0,0.10)}
 
 /* Rarity-specific pickup backgrounds (more vivid) */
