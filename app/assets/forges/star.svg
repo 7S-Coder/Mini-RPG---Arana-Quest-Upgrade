@@ -1,0 +1,13 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+     xmlns="http://www.w3.org/2000/svg">
+  <g fill="#f6c453">
+    <!-- Fragment central -->
+    <polygon points="12,4 14,10 12,13 10,10"/>
+
+    <!-- Fragments satellites -->
+    <polygon points="6,8 8,9 7,11"/>
+    <polygon points="18,8 17,11 16,9"/>
+    <polygon points="7,16 9,15 8,18"/>
+    <polygon points="17,16 16,18 15,15"/>
+  </g>
+</svg>

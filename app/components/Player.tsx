@@ -11,6 +11,11 @@ import RegenSVG from "@/app/assets/stats/regen.svg";
 import DamageSVG from "@/app/assets/stats/damage.svg";
 import DefenseSVG from "@/app/assets/stats/defense.svg";
 
+import EssenceDustSVG from "@/app/assets/forges/essence.svg";
+import MithrilOreSVG from "@/app/assets/forges/mithril.svg";
+import StarFragmentSVG from "@/app/assets/forges/star.svg";
+import VoidShardSVG from "@/app/assets/forges/void.svg";
+
 type Props = {
 	x: number;
 	y: number;
@@ -319,37 +324,37 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 				borderTop: '1px solid #2a2a2a'
 			}}>
 				<div style={{ fontWeight: 600, marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5, textAlign: 'center' }}>Forge Materials</div>
-				<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
-					<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseEnter={() => setHoveredResource('essence_dust')} onMouseLeave={() => setHoveredResource(null)}>
-						<div style={{ color: '#a389d9' }}>⚪ Essence Dust</div>
-						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa' }}>x{materials?.essence_dust ?? 0}</div>
+				<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+					<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={() => setHoveredResource('essence_dust')} onMouseLeave={() => setHoveredResource(null)}>
+						<div style={{ color: '#a389d9', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}><img src={EssenceDustSVG.src} alt="Essence Dust" style={{ width: 20, height: 20 }} /> Essence Dust</div>
+						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa', marginTop: 4 }}>x{materials?.essence_dust ?? 0}</div>
 						{hoveredResource === 'essence_dust' && (
 							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '140px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4, minWidth: 160 }}>
 								{STAT_TOOLTIPS.essence_dust}
 							</div>
 						)}
 					</div>
-					<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseEnter={() => setHoveredResource('mithril_ore')} onMouseLeave={() => setHoveredResource(null)}>
-						<div style={{ color: '#c0a080' }}>⬜ Mithril Ore</div>
-						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa' }}>x{materials?.mithril_ore ?? 0}</div>
+					<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={() => setHoveredResource('mithril_ore')} onMouseLeave={() => setHoveredResource(null)}>
+						<div style={{ color: '#c0a080', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}><img src={MithrilOreSVG.src} alt="Mithril Ore" style={{ width: 20, height: 20 }} /> Mithril Ore</div>
+						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa', marginTop: 4 }}>x{materials?.mithril_ore ?? 0}</div>
 						{hoveredResource === 'mithril_ore' && (
 							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4, minWidth: 160 }}>
 								{STAT_TOOLTIPS.mithril_ore}
 							</div>
 						)}
 					</div>
-					<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseEnter={() => setHoveredResource('star_fragment')} onMouseLeave={() => setHoveredResource(null)}>
-						<div style={{ color: '#ffc100' }}>✨ Star Fragment</div>
-						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa' }}>x{materials?.star_fragment ?? 0}</div>
+					<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={() => setHoveredResource('star_fragment')} onMouseLeave={() => setHoveredResource(null)}>
+						<div style={{ color: '#ffc100', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}><img src={StarFragmentSVG.src} alt="Star Fragment" style={{ width: 20, height: 20 }} /> Star Fragment</div>
+						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa', marginTop: 4 }}>x{materials?.star_fragment ?? 0}</div>
 						{hoveredResource === 'star_fragment' && (
 							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '140px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4, minWidth: 160 }}>
 								{STAT_TOOLTIPS.star_fragment}
 							</div>
 						)}
 					</div>
-					<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center' }} onMouseEnter={() => setHoveredResource('void_shard')} onMouseLeave={() => setHoveredResource(null)}>
-						<div style={{ color: '#4a4a6a' }}>◆ Void Shard</div>
-						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa' }}>x{materials?.void_shard ?? 0}</div>
+					<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={() => setHoveredResource('void_shard')} onMouseLeave={() => setHoveredResource(null)}>
+						<div style={{ color: '#4a4a6a', display: 'flex', alignItems: 'center', gap: 6, justifyContent: 'center' }}><img src={VoidShardSVG.src} alt="Void Shard" style={{ width: 20, height: 20 }} /> Void Shard</div>
+						<div style={{ fontSize: 11, fontWeight: 500, color: '#aaa', marginTop: 4 }}>x{materials?.void_shard ?? 0}</div>
 						{hoveredResource === 'void_shard' && (
 							<div style={{ position: 'absolute', bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)', maxWidth: '150px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4, minWidth: 160 }}>
 								{STAT_TOOLTIPS.void_shard}

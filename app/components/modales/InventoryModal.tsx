@@ -291,7 +291,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                                 <div style={{ fontSize: 11, color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
                                 <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 4, overflowWrap: 'anywhere', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                                   <span>{it ? it.name : 'empty'}</span>
-                                  {it && it.isForged && <span style={{ fontSize: 10, color: '#ffc107', fontWeight: 600 }}>⚒️ FORGED</span>}
+                                  {it && it.isForged && <span style={{ fontSize: 10, color: '#ffc107', fontWeight: 600 }}>FORGED</span>}
                                 </div>
                                 {it ? (
                                   <>
