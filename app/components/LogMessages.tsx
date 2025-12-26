@@ -1,10 +1,12 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 
 type Props = {
   logs: React.ReactNode[];
   logColor?: string;
   inDungeonActive?: boolean;
 };
+
+const MAX_VISIBLE_LOGS = 50; // Limit visible logs to improve performance
 
 export default function LogMessages({ logs, logColor, inDungeonActive }: Props) {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -33,6 +35,12 @@ export default function LogMessages({ logs, logColor, inDungeonActive }: Props) 
     }
   };
 
+  // Memoize the visible logs slice to avoid unnecessary re-renders
+  const visibleLogs = useMemo(() => {
+    const start = Math.max(0, logs.length - MAX_VISIBLE_LOGS);
+    return logs.slice(start);
+  }, [logs]);
+
   // apply theme color as a subtle background tint for the log area
   const style = logColor ? { backgroundColor: hexToRgba(logColor, 0.08) } : undefined;
   return (
@@ -41,8 +49,8 @@ export default function LogMessages({ logs, logColor, inDungeonActive }: Props) 
       className={`log-messages${inDungeonActive ? ' pulse-effect' : ''}`}
       style={style}
     >
-      {logs.map((l, i) => (
-        <div key={i} className="log-line">
+      {visibleLogs.map((l, i) => (
+        <div key={logs.length - MAX_VISIBLE_LOGS + i} className="log-line">
           <div className="log-content">{l}</div>
         </div>
       ))}

@@ -947,7 +947,7 @@ export function useGameState() {
       const updatedItem: Item = {
         ...item,
         stats: { ...(item.stats || {}), [statKey]: newStatValue },
-        isForged: item.isForged,
+        isForged: item.isForged || !fails,
         lockedStats: item.lockedStats,
       };
 
