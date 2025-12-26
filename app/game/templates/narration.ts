@@ -254,7 +254,7 @@ export const NARRATIONS: MapNarration[] = [
         message: {
           npc: 'eldran',
           emoji: '🏆',
-          text: 'Against all odds... you have conquered the Burning Throne. The world is saved.',
+          text: 'Against all odds... you have conquered the Burning Throne. Do you think you can also defeat Melethor?',
         },
       },
     },

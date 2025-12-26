@@ -31,9 +31,9 @@ const snippet = `(() => {
     player.def = 9999;
     player.crit = 9999;
     player.dodge = 9999;
-    player.gold = 9999;
+    player.gold = 99999;
     // set level to max for testing
-    player.level = 80;
+    player.level = 105;
     player.xp = 0;
 
     save.player = player;

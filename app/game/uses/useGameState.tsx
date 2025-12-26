@@ -95,7 +95,7 @@ export function useGameState() {
 
   const xpToNextLevel = (lvl: number) => Math.max(20, 100 * lvl);
 
-  const MAX_LEVEL = 80;
+  const MAX_LEVEL = 105;
 
   // track enemies via a ref so functions defined earlier can check combat state
   const enemiesRef = useRef<Enemy[]>([]);
