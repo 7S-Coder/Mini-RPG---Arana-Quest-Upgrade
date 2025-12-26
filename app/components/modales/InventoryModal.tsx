@@ -48,7 +48,7 @@ const SLOT_ORDER = ['hat', 'chestplate', 'belt', 'weapon', 'ring', 'familiar','b
 export default function InventoryModal({ inventory, equipment, player, onEquip, onUnequip, onSell, onUse, onForge, onUpgradeStat, onLockStat, onInfuse, onMythicEvolution, onClose, progression, allocate, deallocate }: Props) {
   React.useEffect(() => { try { console.log('[InventoryModal] progression changed ->', progression); } catch (e) {} }, [progression]);
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
-  const [activeTab, setActiveTab] = React.useState<'inventory' | 'equipment' | 'forge' | 'statistics'>('inventory');
+  const [activeTab, setActiveTab] = React.useState<'inventory' | 'equipment' | 'forge' | 'statistics' | 'artifacts'>('inventory');
   const [filterSlot, setFilterSlot] = React.useState<string>('all');
   const [selectedItemForAction, setSelectedItemForAction] = React.useState<any>(null);
   const [hoveredTooltip, setHoveredTooltip] = React.useState<string | null>(null);
@@ -100,7 +100,14 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
     return Object.values(groups);
   }, [inventory]);
 
-  const filteredInventory = React.useMemo(() => inventory.filter((it) => (filterSlot === 'all' ? true : (filterSlot === 'consumable' ? (it.category === 'consumable') : it.slot === filterSlot))), [inventory, filterSlot]);
+  const filteredInventory = React.useMemo(() => {
+    // Exclude artifacts (keys/fragments) from regular inventory
+    const inventoryItems = inventory.filter((it) => it.slot !== 'key' && it.category !== 'fragment');
+    return inventoryItems.filter((it) => (filterSlot === 'all' ? true : (filterSlot === 'consumable' ? (it.category === 'consumable') : it.slot === filterSlot)));
+  }, [inventory, filterSlot]);
+
+  // Get artifacts (keys and fragments) separately
+  const artifacts = React.useMemo(() => inventory.filter((it) => it.slot === 'key' || it.category === 'fragment'), [inventory]);
 
   function handleForge(ids: string[]) {
     if (!onForge) { setStatus({ ok: false, text: 'Forge not available.' }); setTimeout(() => setStatus(null), 3000); return; }
@@ -110,7 +117,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
   // progression helpers for Statistics view
   const remainingPoints = (progression && (progression as any).points) || 0;
   const allocated = (progression && (progression as any).allocated) || { hp: 0, dmg: 0, def: 0, crit: 0, dodge: 0, regen: 0 };
-  const COSTS: Record<string, number> = { hp: 1, dmg: 2, def: 3, crit: 3, dodge: 3, regen: 7 };
+  const COSTS: Record<string, number> = { hp: 1, dmg: 2, def: 3, crit: 3, dodge: 3, regen: 3 };
 
   // debug wrappers for allocate/deallocate to log events
   const _allocate = (stat: AllocationStat) => {
@@ -129,6 +136,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: 8 }}>
               <button className={activeTab === 'inventory' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('inventory')}>Inventory</button>
+              <button className={activeTab === 'artifacts' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('artifacts')}>Artifacts</button>
               <button className={activeTab === 'forge' ? 'btn primary' : 'btn'} onClick={() => { setActiveTab('forge'); setSelectedItemForAction(null); }}>Forge</button>
               <button className={activeTab === 'statistics' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('statistics')}>Statistics</button>
             </div>
@@ -312,7 +320,6 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                         <select value={filterSlot} onChange={(e) => setFilterSlot(e.target.value)}>
                           <option value="all">All</option>
                           <option value="consumable">Consumables</option>
-                          <option value="key">Fragments</option>
                           {SLOT_ORDER.map((s) => <option key={s} value={s}>{SLOT_LABELS[s] ?? s}</option>)}
                         </select>
                       </div>
@@ -435,14 +442,14 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                         <div>Regen (+1)</div>
                         <div style={{ textAlign: 'center' }}>{(progression && progression.allocated && progression.allocated.regen) || 0}</div>
                         <div style={{ textAlign: 'center' }}>
-                          <button disabled={remainingPoints < COSTS.regen} onClick={() => allocate && allocate('regen')}>+1 (cost 7)</button>
+                          <button disabled={remainingPoints < COSTS.regen} onClick={() => allocate && allocate('regen')}>+1 (cost 3)</button>
                           {deallocate ? <button disabled={(allocated.regen || 0) <= 0} onClick={() => deallocate && deallocate('regen')} style={{ marginLeft: 6 }}>-</button> : null}
                         </div>
                       </div>
 
                       <div style={{ marginTop: 8, color: '#999', fontSize: 12 }}>
                         Points sauvegardés dans la progression — s'ajoutent aux stats et à l'équipement.
-                        Coûts : HP+5 (1), DMG+1 (2), DEF+1 (3), Crit/Dodge +0,5% (3), Regen +1 (7).
+                        Coûts : HP+5 (1), DMG+1 (2), DEF+1 (3), Crit/Dodge +0,5% (3), Regen +1 (3).
                       </div>
                     </div>
                   </div>
@@ -451,7 +458,42 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
               </div>
 
             </div>
-          ) : (
+          ) : null}
+          {activeTab === 'artifacts' ? (
+            <div style={{ minWidth: 520, minHeight: 320, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div>
+                <h2 style={{ marginTop: 0, marginBottom: 8 }}>Artifacts & Keys</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ color: '#ccc', fontSize: 12 }}>Total: {artifacts.length} item{artifacts.length !== 1 ? 's' : ''}</div>
+                </div>
+              </div>
+              <div style={{ display: 'grid', gap: 10, overflow: 'auto', flex: 1, alignContent: 'start' }}>
+                {artifacts.length === 0 ? (
+                  <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>No artifacts yet.</div>
+                ) : (
+                  <div style={{ display: 'grid', gap: 10, alignContent: 'start' }}>
+                    {artifacts.map((it) => (
+                      <div key={it.id} onMouseEnter={() => setHoveredItemId(it.id)} onMouseLeave={() => setHoveredItemId(null)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10, position: 'relative', transition: 'background 0.2s', border: '1px solid transparent' }}>
+                        <div style={{ position: 'relative', flex: 1 }}>
+                          <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>
+                            {it.name}
+                            {it.quantity && it.quantity > 1 && <span style={{ marginLeft: 8, color: '#999', fontSize: 12 }}>×{it.quantity}</span>}
+                          </div>
+                          {hoveredItemId === it.id && (
+                            <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{getItemDescription(it)}</div>
+                          )}
+                        </div>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); if (!onSell) return; setTimeout(() => { try { onSell(it.id); } catch {} }, 0); }}>Sell ({priceFor(it)} g)</button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : null}
+          {activeTab === 'statistics' ? (
             <div style={{ minWidth: 520, minHeight: 320, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 8 }}>
               <div style={{ width: '100%', maxWidth: 720 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -531,7 +573,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                 </div>
               </div>
             </div>
-          )}
+          ) : null}
 
         </div>
       </Modal>

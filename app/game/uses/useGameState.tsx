@@ -920,12 +920,35 @@ export function useGameState() {
       }
 
       const statValue = item.stats?.[statKey] ?? 0;
-      const boost = Math.floor(Math.random() * 3) + 1; // +1 to +3
+      const isStatLocked = (item.lockedStats ?? []).includes(statKey);
+      
+      // 20% chance of failure
+      const failureChance = 0.2;
+      const fails = Math.random() < failureChance;
+
+      let newStatValue: number;
+      let resultMsg: string;
+
+      if (fails && !isStatLocked) {
+        // Failure: lose 1 point (but don't go below 0)
+        newStatValue = Math.max(0, statValue - 1);
+        resultMsg = `⚠️ Upgrade failed! ${statKey} decreased by 1.`;
+      } else if (fails && isStatLocked) {
+        // Failure but stat is locked: no change
+        newStatValue = statValue;
+        resultMsg = `Upgrade attempted but ${statKey} is locked! No change.`;
+      } else {
+        // Success: gain +1 to +3
+        const boost = Math.floor(Math.random() * 3) + 1;
+        newStatValue = statValue + boost;
+        resultMsg = `Upgraded ${statKey} by +${boost}!`;
+      }
 
       const updatedItem: Item = {
         ...item,
-        stats: { ...(item.stats || {}), [statKey]: statValue + boost },
+        stats: { ...(item.stats || {}), [statKey]: newStatValue },
         isForged: item.isForged,
+        lockedStats: item.lockedStats,
       };
 
       // Update in inventory or equipment
@@ -954,7 +977,7 @@ export function useGameState() {
       playerRef.current.gold = Math.max(0, (playerRef.current.gold ?? 0) - GOLD_COST);
 
       try { saveCoreGame({ player: pickPlayerData(playerRef.current), inventory: inventoryRef.current, equipment: equipmentRef.current }); } catch (e) {}
-      return { ok: true, msg: `Upgraded ${statKey} by +${boost}!` };
+      return { ok: true, msg: resultMsg };
     } catch (e) {
       console.error('upgradeStat error', e);
       return { ok: false, msg: 'Upgrade failed' };

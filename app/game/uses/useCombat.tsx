@@ -276,7 +276,7 @@ export default function useCombat({
         const rarityMultiplier = rarityMults[rarityKey] ?? 1;
         const xpGain = Math.floor(baseXp * levelFactor * rarityMultiplier);
         pushLog(`Gain XP: ${xpGain}`);
-        try { console.log('[useCombat] calling addXp ->', xpGain); } catch (e) {}
+        try {  } catch (e) {}
         if (typeof addXp === 'function') addXp(xpGain);
         
         // Boss rewards: essence and materials (dungeon only)

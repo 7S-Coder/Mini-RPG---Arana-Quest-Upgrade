@@ -1,5 +1,30 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M3 21L10 14" stroke="#ff0000ff" stroke-width="2" stroke-linecap="round"/>
-  <path d="M14 10L21 3" stroke="#ff0000ff" stroke-width="2" stroke-linecap="round"/>
-  <path d="M10 14L14 10" stroke="#ff0000ff" stroke-width="3" stroke-linecap="round"/>
+<svg
+  width="64"
+  height="64"
+  viewBox="0 0 64 64"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <!-- Épée gauche -->
+  <g transform="rotate(-45 32 32)" fill="#ff0000">
+    <!-- Lame -->
+    <rect x="30" y="6" width="4" height="36" rx="2"/>
+    <!-- Garde -->
+    <rect x="26" y="40" width="12" height="4" rx="2"/>
+    <!-- Manche -->
+    <rect x="30" y="44" width="4" height="10" rx="2"/>
+    <!-- Pommeau -->
+    <circle cx="32" cy="56" r="3"/>
+  </g>
+
+  <!-- Épée droite -->
+  <g transform="rotate(45 32 32)" fill="#ff0000">
+    <!-- Lame -->
+    <rect x="30" y="6" width="4" height="36" rx="2"/>
+    <!-- Garde -->
+    <rect x="26" y="40" width="12" height="4" rx="2"/>
+    <!-- Manche -->
+    <rect x="30" y="44" width="4" height="10" rx="2"/>
+    <!-- Pommeau -->
+    <circle cx="32" cy="56" r="3"/>
+  </g>
 </svg>
