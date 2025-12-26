@@ -42,7 +42,7 @@ export default function useProgression() {
     }
   }, [state]);
 
-  const COSTS: Record<keyof Allocated, number> = { hp: 1, dmg: 2, def: 3, crit: 3, dodge: 3, regen: 7 };
+  const COSTS: Record<keyof Allocated, number> = { hp: 1, dmg: 2, def: 3, crit: 3, dodge: 3, regen: 3 };
 
   const addPoints = useCallback((n: number) => {
     if (!n || n <= 0) return;

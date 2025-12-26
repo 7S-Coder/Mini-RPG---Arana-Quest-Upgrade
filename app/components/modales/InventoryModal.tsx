@@ -544,7 +544,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                   <div>Regen (+1)</div>
                   <div style={{ textAlign: 'center' }}>{(progression && progression.allocated && progression.allocated.regen) || 0}</div>
                   <div style={{ textAlign: 'center' }}>
-                    <button disabled={remainingPoints < COSTS.regen} onClick={() => allocate && allocate('regen')}>+1 (cost 7)</button>
+                    <button disabled={remainingPoints < COSTS.regen} onClick={() => allocate && allocate('regen')}>+1 (cost 3)</button>
                     {deallocate ? <button disabled={(allocated.regen || 0) <= 0} onClick={() => deallocate && deallocate('regen')} style={{ marginLeft: 6 }}>-</button> : null}
                   </div>
                 </div>
@@ -570,7 +570,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
 
                 <div style={{ marginTop: 8, color: '#999', fontSize: 12 }}>
                   Points sauvegardés dans la progression — s'ajoutent aux stats et à l'équipement.
-                  Coûts : HP+5 (1), DMG+1 (2), DEF+1 (3), Crit/Dodge +0,5% (3), Regen +1 (7).
+                  Coûts : HP+5 (1), DMG+1 (2), DEF+1 (3), Crit/Dodge +0,5% (3), Regen +1 (3).
                 </div>
               </div>
             </div>
