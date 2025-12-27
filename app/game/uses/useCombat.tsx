@@ -521,6 +521,13 @@ export default function useCombat({
       // Quick attack has no cooldown
     }
 
+    // Apply passive rage gain to all alive enemies (20% = +20 rage per turn)
+    setEnemies((currentEnemies: Enemy[]) =>
+      currentEnemies.map((e) =>
+        e.hp > 0 ? { ...e, rage: Math.min(100, (e.rage ?? 0) + 20) } : e
+      )
+    );
+
     // finalize: small delay to allow UI updates then release lock
     setTimeout(() => {
       lockedRef.current = false;
@@ -595,6 +602,13 @@ export default function useCombat({
         return;
       }
     }
+
+    // Apply passive rage gain to all alive enemies even on failed run
+    setEnemies((currentEnemies: Enemy[]) =>
+      currentEnemies.map((e) =>
+        e.hp > 0 ? { ...e, rage: Math.min(100, (e.rage ?? 0) + 20) } : e
+      )
+    );
 
     setTimeout(() => {
       lockedRef.current = false;
