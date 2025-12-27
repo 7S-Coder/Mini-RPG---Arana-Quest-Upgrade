@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { getMaps } from "../game/templates/maps";
 import { ITEM_POOL, scaleStats, computeItemCost } from "../game/templates/items";
-import EssenceSVG from "../assets/essence.svg";
-import GoldSVG from "../assets/gold.svg";
-import EssenceDustSVG from "../assets/forges/essence.svg";
-import MithrilOreSVG from "../assets/forges/mithril.svg";
-import StarFragmentSVG from "../assets/forges/star.svg";
-import VoidShardSVG from "../assets/forges/void.svg";
+import EssenceDustSVG from "@/app/assets/forges/essence.svg";
+import MithrilOreSVG from "@/app/assets/forges/mithril.svg";
+import StarFragmentSVG from "@/app/assets/forges/star.svg";
+import VoidShardSVG from "@/app/assets/forges/void.svg";
 import type { Rarity } from "../game/types";
 
 type DungeonProgress = {
@@ -263,12 +261,12 @@ export function useDungeon(opts: {
               // Create a simple text message with emoji representations
               let materialsMsg = '';
               const materials = player?.materials ?? {};
-              if (materials.essence_dust) materialsMsg += ` ${EssenceDustSVG.src} Essence Dust x${materials.essence_dust}`;
-              if (materials.mithril_ore) materialsMsg += ` ${MithrilOreSVG.src} Mithril Ore x${materials.mithril_ore}`;
-              if (materials.star_fragment) materialsMsg += ` ${StarFragmentSVG.src} Star Fragment x${materials.star_fragment}`;
-              if (materials.void_shard) materialsMsg += ` ${VoidShardSVG.src} Void Shard x${materials.void_shard}`;
+              if (materials.essence_dust) materialsMsg += `Essence Dust x${materials.essence_dust}`;
+              if (materials.mithril_ore) materialsMsg += `Mithril Ore x${materials.mithril_ore}`;
+              if (materials.star_fragment) materialsMsg += `Star Fragment x${materials.star_fragment}`;
+              if (materials.void_shard) materialsMsg += `Void Shard x${materials.void_shard}`;
               
-              try { addToast && addToast(`Dungeon cleared! +${goldReward} g, +${xpReward} XP, +${essenceReward}${materialsMsg}`, 'ok', 8000, EssenceSVG.src); } catch (e) {}
+              try { addToast && addToast(`Dungeon cleared! +${goldReward} g, +${xpReward} XP, +${essenceReward}${materialsMsg}`, 'ok', 8000); } catch (e) {}
               try { addEffect && addEffect({ type: 'pickup', text: `+${goldReward} g`, target: 'player' }); } catch (e) {}
             } catch (e) { console.error('[useDungeon] completion error:', e); }
 
