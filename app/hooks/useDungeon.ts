@@ -263,10 +263,10 @@ export function useDungeon(opts: {
               // Create a simple text message with emoji representations
               let materialsMsg = '';
               const materials = player?.materials ?? {};
-              if (materials.essence_dust) materialsMsg += ` ✨ Essence Dust x${materials.essence_dust}`;
-              if (materials.mithril_ore) materialsMsg += ` ⛏️ Mithril Ore x${materials.mithril_ore}`;
-              if (materials.star_fragment) materialsMsg += ` ⭐ Star Fragment x${materials.star_fragment}`;
-              if (materials.void_shard) materialsMsg += ` 🌌 Void Shard x${materials.void_shard}`;
+              if (materials.essence_dust) materialsMsg += ` ${EssenceDustSVG.src} Essence Dust x${materials.essence_dust}`;
+              if (materials.mithril_ore) materialsMsg += ` ${MithrilOreSVG.src} Mithril Ore x${materials.mithril_ore}`;
+              if (materials.star_fragment) materialsMsg += ` ${StarFragmentSVG.src} Star Fragment x${materials.star_fragment}`;
+              if (materials.void_shard) materialsMsg += ` ${VoidShardSVG.src} Void Shard x${materials.void_shard}`;
               
               try { addToast && addToast(`Dungeon cleared! +${goldReward} g, +${xpReward} XP, +${essenceReward}${materialsMsg}`, 'ok', 8000, EssenceSVG.src); } catch (e) {}
               try { addEffect && addEffect({ type: 'pickup', text: `+${goldReward} g`, target: 'player' }); } catch (e) {}
