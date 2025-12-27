@@ -32,7 +32,8 @@ export type Enemy = {
   crit: number;
   def: number;
   speed: number;
-  rage?: number; // 0-100, triggers coordinated attack at 100
+  rage?: number; // rageThreshold-100, triggers coordinated attack at 100
+  rageThreshold?: number; // minimum rage value (default 0), represents bar start
   // optional flags for UI/logic
   isBoss?: boolean;
   roomId?: string;
@@ -92,4 +93,5 @@ export type EnemyTemplate = {
   speed: number;
   rarity?: Rarity;
   rageEffect?: RageEffect; // Special effect when rage reaches 100
+  rageThreshold?: number; // Minimum rage value (default 0), represents bar start
 };

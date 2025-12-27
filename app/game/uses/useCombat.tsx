@@ -55,10 +55,16 @@ export default function useCombat({
   }, []);
 
   // Helper to apply a series of enemy attacks to a player snapshot
+  // Returns both updated player snap and rage updates for each enemy
   const applyEnemyAttacksToPlayer = useCallback((elist: any[], playerSnap: any, dodgeBonus: number = 0, isSafeActive: boolean = false) => {
     let snap = { ...playerSnap };
+    const rageUpdates: Record<string, number> = {}; // Track rage per enemy
+    
     for (const e of elist) {
       if (e.hp <= 0) continue;
+      
+      // Initialize rage tracking for this enemy
+      if (!rageUpdates[e.id]) rageUpdates[e.id] = 0;
       
       // Enemy can attack 1-3 times with decreasing chance
       let attackCount = 0;
@@ -90,6 +96,14 @@ export default function useCombat({
         }
         
         snap.hp = Math.max(0, snap.hp - edmg);
+        
+        // Calculate rage gain based on damage inflicted
+        // More damage = more rage. Formula: (damage / player_max_hp) * 50
+        // Bosses gain 2x rage
+        let rageGain = Math.round((edmg / (playerSnap.hp ?? 100)) * 50);
+        if (e.isBoss) rageGain *= 2;
+        rageUpdates[e.id] += rageGain;
+        
         if (enemyCrit) {
           const safeMsg = isSafeActive ? ' 🛡️ (Protected!)' : '';
           const debuffMsg = turnModifier?.defenseDebuff ? ' 🔥 (Defense weakened!)' : '';
@@ -108,7 +122,7 @@ export default function useCombat({
         canAttackAgain = rollChance(extraAttackChance);
       }
     }
-    return snap;
+    return { playerSnap: snap, rageUpdates };
   }, [rollChance, calcDamage, pushLog, onEffect, turnModifier]);
 
   const onAttack = useCallback((attackType: 'quick' | 'safe' | 'risky' = 'quick') => {
@@ -143,11 +157,17 @@ export default function useCombat({
 
         // Fast enemies attack
         if (fastEnemies.length > 0) {
-          playerSnap = applyEnemyAttacksToPlayer(fastEnemies, playerSnap, 0);
+          const result = applyEnemyAttacksToPlayer(fastEnemies, playerSnap, 0);
+          playerSnap = result.playerSnap;
           setPlayer((currentPlayer: Player) => ({
             ...currentPlayer,
             hp: playerSnap.hp,
           }));
+          setEnemies((currentEnemies: Enemy[]) =>
+            currentEnemies.map((e) => 
+              result.rageUpdates[e.id] ? { ...e, rage: Math.min(100, (e.rage ?? 0) + result.rageUpdates[e.id]) } : e
+            )
+          );
           if (playerSnap.hp <= 0) {
             pushLog('You are dead...');
             endEncounter('You died. Respawned at the tavern.', { type: 'death' });
@@ -158,11 +178,17 @@ export default function useCombat({
 
         // Slow enemies attack
         if (slowEnemies.length > 0) {
-          playerSnap = applyEnemyAttacksToPlayer(slowEnemies, playerSnap, 0);
+          const result = applyEnemyAttacksToPlayer(slowEnemies, playerSnap, 0);
+          playerSnap = result.playerSnap;
           setPlayer((currentPlayer: Player) => ({
             ...currentPlayer,
             hp: playerSnap.hp,
           }));
+          setEnemies((currentEnemies: Enemy[]) =>
+            currentEnemies.map((e) => 
+              result.rageUpdates[e.id] ? { ...e, rage: Math.min(100, (e.rage ?? 0) + result.rageUpdates[e.id]) } : e
+            )
+          );
           if (playerSnap.hp <= 0) {
             pushLog('You are dead...');
             endEncounter('You died. Respawned at the tavern.', { type: 'death' });
@@ -230,11 +256,17 @@ export default function useCombat({
     // 1) Fast enemies attack first - they can all attack regardless of being targeted
     let playerSnap = { ...player };
     if (fastEnemies.length > 0) {
-      playerSnap = applyEnemyAttacksToPlayer(fastEnemies, playerSnap, mod.dodgeBonus, attackType === 'safe');
+      const result = applyEnemyAttacksToPlayer(fastEnemies, playerSnap, mod.dodgeBonus, attackType === 'safe');
+      playerSnap = result.playerSnap;
       setPlayer((currentPlayer: Player) => ({
         ...currentPlayer,
         hp: playerSnap.hp,
       }));
+      setEnemies((currentEnemies: Enemy[]) =>
+        currentEnemies.map((e) => 
+          result.rageUpdates[e.id] ? { ...e, rage: Math.min(100, (e.rage ?? 0) + result.rageUpdates[e.id]) } : e
+        )
+      );
       if (playerSnap.hp <= 0) {
         pushLog('You are dead...');
         endEncounter('You died. Respawned at the tavern.', { type: 'death' });
@@ -260,7 +292,9 @@ export default function useCombat({
       } else {
         pushLog(<>{mod.label} Hit! You deal {dmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
       }
-      const updated = (enemies || []).map((e) => (e.id === target.id ? { ...e, hp: Math.max(0, e.hp - dmg), rage: Math.min(100, (e.rage ?? 0) + 20) } : e));
+      // Enemy gains rage based on damage received: damage / 2 = rage gain
+      const rageGainFromDamage = Math.round(dmg / 2);
+      const updated = (enemies || []).map((e) => (e.id === target.id ? { ...e, hp: Math.max(0, e.hp - dmg), rage: Math.min(100, (e.rage ?? 0) + rageGainFromDamage) } : e));
       // update state and keep a local snapshot to avoid reading stale `enemies` later
       setEnemies(updated);
       postAttackEnemies = updated;
@@ -355,11 +389,17 @@ export default function useCombat({
     const postEnemies = postAttackEnemies.filter((e) => e.hp > 0);
     const targetAfterAttack = postEnemies.find((e) => e.id === target.id);
     if (targetAfterAttack && (targetAfterAttack.speed ?? 0) <= pSpeed && targetAfterAttack.hp > 0) {
-      playerSnap = applyEnemyAttacksToPlayer([targetAfterAttack], playerSnap, mod.dodgeBonus, attackType === 'safe');
+      const result = applyEnemyAttacksToPlayer([targetAfterAttack], playerSnap, mod.dodgeBonus, attackType === 'safe');
+      playerSnap = result.playerSnap;
       setPlayer((currentPlayer: Player) => ({
         ...currentPlayer,
         hp: playerSnap.hp,
       }));
+      setEnemies((currentEnemies: Enemy[]) =>
+        currentEnemies.map((e) => 
+          result.rageUpdates[e.id] ? { ...e, rage: Math.min(100, (e.rage ?? 0) + result.rageUpdates[e.id]) } : e
+        )
+      );
       if (playerSnap.hp <= 0) {
         pushLog('You are dead...');
         endEncounter('You died. Respawned at the tavern.', { type: 'death' });
@@ -378,7 +418,13 @@ export default function useCombat({
               const numAttacks = Math.floor(Math.random() * 2) + 2;
               pushLog(`🔥 ${rageEnemy.name} bursts with rage and attacks ${numAttacks} times!`);
               for (let i = 0; i < numAttacks; i++) {
-                playerSnap = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+                const rageResult = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+                playerSnap = rageResult.playerSnap;
+                setEnemies((currentEnemies: Enemy[]) =>
+                  currentEnemies.map((e) => 
+                    rageResult.rageUpdates[e.id] ? { ...e, rage: Math.min(100, (e.rage ?? 0) + rageResult.rageUpdates[e.id]) } : e
+                  )
+                );
               }
               break;
             }
@@ -409,13 +455,31 @@ export default function useCombat({
             case 'debuff': {
               pushLog(`⚠️ ${rageEnemy.name} channels dark energy and weakens your defense!`);
               if (typeof onModifierChange === 'function') onModifierChange({ skipped: false, defenseDebuff: true });
-              playerSnap = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+              const rageResult = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+              playerSnap = rageResult.playerSnap;
+              setEnemies((currentEnemies: Enemy[]) =>
+                currentEnemies.map((e) => 
+                  rageResult.rageUpdates[e.id] ? { ...e, rage: Math.min(100, (e.rage ?? 0) + rageResult.rageUpdates[e.id]) } : e
+                )
+              );
               break;
             }
             case 'multiplier': {
               pushLog(`⚡ ${rageEnemy.name} channels twice its power!`);
-              playerSnap = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
-              playerSnap = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+              const rageResult1 = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+              playerSnap = rageResult1.playerSnap;
+              setEnemies((currentEnemies: Enemy[]) =>
+                currentEnemies.map((e) => 
+                  rageResult1.rageUpdates[e.id] ? { ...e, rage: Math.min(100, (e.rage ?? 0) + rageResult1.rageUpdates[e.id]) } : e
+                )
+              );
+              const rageResult2 = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+              playerSnap = rageResult2.playerSnap;
+              setEnemies((currentEnemies: Enemy[]) =>
+                currentEnemies.map((e) => 
+                  rageResult2.rageUpdates[e.id] ? { ...e, rage: Math.min(100, (e.rage ?? 0) + rageResult2.rageUpdates[e.id]) } : e
+                )
+              );
               break;
             }
           }
