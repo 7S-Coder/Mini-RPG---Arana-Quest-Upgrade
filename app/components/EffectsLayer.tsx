@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 type Effect = {
   id: string;
@@ -11,10 +11,25 @@ type Effect = {
 };
 
 export default function EffectsLayer({ effects }: { effects: Effect[] }) {
+  const [displayedEffects, setDisplayedEffects] = useState<Map<string, Effect>>(new Map());
+
+  useEffect(() => {
+    // Update the displayed effects map
+    const newMap = new Map<string, Effect>();
+    effects.forEach((e) => {
+      newMap.set(e.id, e);
+    });
+    setDisplayedEffects(newMap);
+  }, [effects]);
+
   return (
     <div className="effects-layer" aria-hidden>
-      {effects.map((e) => (
-        <div key={e.id} className={`damage-popup ${e.kind ?? ""} ${e.type}`} style={{ left: e.x ?? "50%", top: e.y ?? "40%" }}>
+      {Array.from(displayedEffects.values()).map((e) => (
+        <div
+          key={e.id}
+          className={`damage-popup ${e.kind ?? ""} ${e.type}`}
+          style={{ left: e.x ?? "50%", top: e.y ?? "40%" }}
+        >
           {e.type === "dodge" ? "Dodge" : e.kind === "crit" ? `💥 ${e.text}` : e.text}
         </div>
       ))}

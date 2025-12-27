@@ -36,9 +36,12 @@ export default function LogMessages({ logs, logColor, inDungeonActive }: Props) 
   };
 
   // Memoize the visible logs slice to avoid unnecessary re-renders
-  const visibleLogs = useMemo(() => {
+  const visibleLogsWithKeys = useMemo(() => {
     const start = Math.max(0, logs.length - MAX_VISIBLE_LOGS);
-    return logs.slice(start);
+    return logs.slice(start).map((log, idx) => ({
+      key: `${start + idx}`,
+      content: log,
+    }));
   }, [logs]);
 
   // apply theme color as a subtle background tint for the log area
@@ -49,9 +52,9 @@ export default function LogMessages({ logs, logColor, inDungeonActive }: Props) 
       className={`log-messages${inDungeonActive ? ' pulse-effect' : ''}`}
       style={style}
     >
-      {visibleLogs.map((l, i) => (
-        <div key={logs.length - MAX_VISIBLE_LOGS + i} className="log-line">
-          <div className="log-content">{l}</div>
+      {visibleLogsWithKeys.map(({ key, content }) => (
+        <div key={key} className="log-line">
+          <div className="log-content">{content}</div>
         </div>
       ))}
     </div>

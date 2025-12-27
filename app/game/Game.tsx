@@ -351,6 +351,9 @@ export default function Game() {
   }, [selectedMapId, showNarration, isTutorialShown, markTutorialShown]);
 
 
+  // Track active timeouts for cleanup
+  const effectTimeoutsRef = useRef<Map<string, number>>(new Map());
+
   const addEffect = useCallback((eff: { type: string; text?: string; kind?: string; target?: string; id?: string }) => {
     const id = eff.id ? `${eff.id}_${uid()}` : uid();
     // randomize position a bit
@@ -358,8 +361,26 @@ export default function Game() {
     const y = 120 + Math.random() * 80;
     const obj = { ...eff, id, x, y };
     setEffects((s) => [...s, obj]);
+    
+    // Clear any existing timeout for this effect ID
+    const existingTimeout = effectTimeoutsRef.current.get(id);
+    if (existingTimeout) clearTimeout(existingTimeout);
+    
     // remove after animation
-    window.setTimeout(() => setEffects((s) => s.filter((x) => x.id !== id)), 1800);
+    const timeout = window.setTimeout(() => {
+      setEffects((s) => s.filter((x) => x.id !== id));
+      effectTimeoutsRef.current.delete(id);
+    }, 1800);
+    
+    effectTimeoutsRef.current.set(id, timeout);
+  }, []);
+
+  // Cleanup timeouts on unmount
+  useEffect(() => {
+    return () => {
+      effectTimeoutsRef.current.forEach(timeout => clearTimeout(timeout));
+      effectTimeoutsRef.current.clear();
+    };
   }, []);
 
   const { dungeonProgressRef, dungeonUI, processEndEncounter } = useDungeon({ selectedMapId, pushLog, addEffect: addEffect, addToast: (text: string, type?: string, ttl?: number, icon?: string) => addToast(text, type as "ok" | "error" | undefined, ttl, icon), createCustomItem, addXp, setPlayer, encounterSessionRef, startEncounterRef, player, inventory, equipment });
