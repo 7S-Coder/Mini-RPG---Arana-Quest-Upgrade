@@ -88,7 +88,7 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
 
   return (
     <Modal title="Store" onClose={onClose}>
-      <div style={{ minWidth: 950, minHeight: 300 }}>
+      <div style={{ minWidth: '85vw', width: '85vw', minHeight: 300 }}>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
           {/* Potions Section */}
           <div style={{ padding: 12, background: '#0e0e0e', borderRadius: 8 }}>

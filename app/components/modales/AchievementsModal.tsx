@@ -95,7 +95,7 @@ export default function AchievementsModal({ achievements, onClose }: Achievement
         {/* Category filters */}
         <div className="achievements-filters">
           <button
-            className={`filter-btn ${selectedCategory === null ? "active" : ""}`}
+            className={`btn primary filter-btn ${selectedCategory === null ? "active" : ""}`}
             onClick={() => setSelectedCategory(null)}
           >
             All
@@ -103,7 +103,7 @@ export default function AchievementsModal({ achievements, onClose }: Achievement
           {categories.map((cat: string) => (
             <button
               key={cat}
-              className={`filter-btn ${selectedCategory === cat ? "active" : ""}`}
+              className={`btn primary filter-btn ${selectedCategory === cat ? "active" : ""}`}
               onClick={() => setSelectedCategory(cat)}
             >
               {cat.charAt(0).toUpperCase() + cat.slice(1)}

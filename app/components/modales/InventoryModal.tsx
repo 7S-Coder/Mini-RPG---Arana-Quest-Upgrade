@@ -133,7 +133,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
   return (
     <>
       <Modal title="Inventory" onClose={onClose}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 860, minHeight: 480 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2vw', minWidth: '62vw', width: '62vw', minHeight: '50vh' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: 8 }}>
               <button className={activeTab === 'inventory' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('inventory')}>Inventory</button>
@@ -149,46 +149,46 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
           </div>
 
           {activeTab !== 'statistics' ? (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 360px', gap: 12, alignItems: 'stretch', minHeight: 320 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 28vw', gap: '1.2vw', alignItems: 'stretch', minHeight: '40vh' }}>
 
-              <div style={{ minWidth: 340, minHeight: 320, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ minWidth: '26vw', minHeight: '40vh', position: 'relative', display: 'flex', flexDirection: 'column' }}>
                 {activeTab === 'forge' ? (
                   <>
-                    <h2 style={{ marginTop: 0, marginBottom: 0, flexShrink: 0 }}>Forge</h2>
+                    <h2 style={{ marginTop: 0, marginBottom: '0.8vw', flexShrink: 0 }}>Forge</h2>
                     {selectedItemForAction ? (
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: 350, overflow: 'auto', flex: 1 }}>
-                        <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 10, flexShrink: 0 }}>
-                          <div style={{ color: RARITY_COLOR[selectedItemForAction.rarity] || '#fff', fontWeight: 700, marginBottom: 8 }}>{selectedItemForAction.name}</div>
-                          <div style={{ fontSize: 12, color: '#999', marginBottom: 8 }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8vw', maxHeight: '35vh', overflow: 'auto', flex: 1 }}>
+                        <div style={{ padding: '1vw', background: '#0d0d0d', borderRadius: '0.8vw', flexShrink: 0 }}>
+                          <div style={{ color: RARITY_COLOR[selectedItemForAction.rarity] || '#fff', fontWeight: 700, marginBottom: '0.6vw' }}>{selectedItemForAction.name}</div>
+                          <div style={{ fontSize: '0.9vw', color: '#999', marginBottom: '0.6vw' }}>
                             {selectedItemForAction.infused && <div>Infused</div>}
                             {selectedItemForAction.lockedStats && selectedItemForAction.lockedStats.length > 0 && (
                               <div>Locked: {selectedItemForAction.lockedStats.join(', ')}</div>
                             )}
                           </div>
-                          <button onClick={() => setSelectedItemForAction(null)} style={{ marginTop: 8 }}>← Back</button>
+                          <button className="btn primary" onClick={() => setSelectedItemForAction(null)} style={{ marginTop: '0.6vw' }}>← Back</button>
                         </div>
                         
-                        <div style={{ display: 'grid', gap: 10 }}>
+                        <div style={{ display: 'grid', gap: '0.8vw' }}>
                         {/* Upgrade Stat */}
                         <div 
-                          style={{ padding: 12, background: '#1a1a1a', borderRadius: 10, position: 'relative' }}
+                          style={{ padding: '1vw', background: '#1a1a1a', borderRadius: '0.8vw', position: 'relative' }}
                           onMouseEnter={() => setHoveredTooltip('upgradeStat')}
                           onMouseLeave={() => setHoveredTooltip(null)}
                         >
                           {hoveredTooltip === 'upgradeStat' && (
-                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: '0.5vw', padding: '1vw 1.2vw', fontSize: '0.85vw', color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: '0.6vw', lineHeight: 1.4 }}>
                               {TOOLTIPS.upgradeStat}
                             </div>
                           )}
-                          <div style={{ fontWeight: 700, marginBottom: 8 }}>⬆ Upgrade Stat (500g)</div>
+                          <div style={{ fontWeight: 700, marginBottom: '0.6vw' }}>⬆ Upgrade Stat (500g)</div>
                           {selectedItemForAction.stats && Object.entries(selectedItemForAction.stats).map(([stat, val]: [string, any]) => (
-                            <button key={stat} onClick={() => {
+                            <button className="btn primary" key={stat} onClick={() => {
                               if (onUpgradeStat) {
                                 const res = onUpgradeStat(selectedItemForAction.id, stat);
                                 setStatus({ ok: res.ok, text: res.msg });
                                 setTimeout(() => setStatus(null), 3000);
                               }
-                            }} style={{ width: '100%', marginBottom: 4, fontSize: 11 }} disabled={(player?.gold ?? 0) < 500}>
+                            }} style={{ width: '100%', marginBottom: '0.3vw', fontSize: '0.85vw' }} disabled={(player?.gold ?? 0) < 500}>
                               {stat}: {val} {(player?.gold ?? 0) < 500 ? '❌' : '→'}
                             </button>
                           ))}
@@ -196,26 +196,26 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
 
                         {/* Lock Stat */}
                         <div 
-                          style={{ padding: 12, background: '#1a1a1a', borderRadius: 10, position: 'relative' }}
+                          style={{ padding: '1vw', background: '#1a1a1a', borderRadius: '0.8vw', position: 'relative' }}
                           onMouseEnter={() => setHoveredTooltip('lockStat')}
                           onMouseLeave={() => setHoveredTooltip(null)}
                         >
                           {hoveredTooltip === 'lockStat' && (
-                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+                            <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: '0.5vw', padding: '1vw 1.2vw', fontSize: '0.85vw', color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: '0.6vw', lineHeight: 1.4 }}>
                               {TOOLTIPS.lockStat}
                             </div>
                           )}
-                          <div style={{ fontWeight: 700, marginBottom: 8 }}>Lock Stat (300g + 1 Ore)</div>
+                          <div style={{ fontWeight: 700, marginBottom: '0.6vw' }}>Lock Stat (300g + 1 Ore)</div>
                           {selectedItemForAction.stats && Object.entries(selectedItemForAction.stats).map(([stat, val]: [string, any]) => {
                             const isLocked = selectedItemForAction.lockedStats?.includes(stat);
                             return (
-                              <button key={stat} onClick={() => {
+                              <button className="btn primary" key={stat} onClick={() => {
                                 if (onLockStat) {
                                   const res = onLockStat(selectedItemForAction.id, stat);
                                   setStatus({ ok: res.ok, text: res.msg });
                                   setTimeout(() => setStatus(null), 3000);
                                 }
-                              }} style={{ width: '100%', marginBottom: 4, fontSize: 11 }} disabled={isLocked || (player?.gold ?? 0) < 300 || (player?.materials?.mithril_ore ?? 0) < 1}>
+                              }} style={{ width: '100%', marginBottom: '0.3vw', fontSize: '0.85vw' }} disabled={isLocked || (player?.gold ?? 0) < 300 || (player?.materials?.mithril_ore ?? 0) < 1}>
                                 {stat}{isLocked ? ' ✓' : ''} {(player?.gold ?? 0) < 300 || (player?.materials?.mithril_ore ?? 0) < 1 ? '❌' : '→'}
                               </button>
                             );
@@ -248,23 +248,23 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                         {/* Mythic Evolution */}
                         {selectedItemForAction.rarity === 'legendary' && (
                           <div 
-                            style={{ padding: 12, background: '#1a1a1a', borderRadius: 10, position: 'relative' }}
+                            style={{ padding: '1vw', background: '#1a1a1a', borderRadius: '0.8vw', position: 'relative' }}
                             onMouseEnter={() => setHoveredTooltip('mythicEvolution')}
                             onMouseLeave={() => setHoveredTooltip(null)}
                           >
                             {hoveredTooltip === 'mythicEvolution' && (
-                              <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4 }}>
+                              <div style={{ position: 'absolute', bottom: '105%', left: 0, right: 0, background: '#111', border: '1px solid #666', borderRadius: '0.5vw', padding: '1vw 1.2vw', fontSize: '0.85vw', color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: '0.6vw', lineHeight: 1.4 }}>
                                 {TOOLTIPS.mythicEvolution}
                               </div>
                             )}
-                            <div style={{ fontWeight: 700, marginBottom: 8 }}>Mythic Evolution (150e)</div>
-                            <button onClick={() => {
+                            <div style={{ fontWeight: 700, marginBottom: '0.6vw' }}>Mythic Evolution (150e)</div>
+                            <button className="btn primary" onClick={() => {
                               if (onMythicEvolution) {
                                 const res = onMythicEvolution(selectedItemForAction.id);
                                 setStatus({ ok: res.ok, text: res.msg });
                                 setTimeout(() => setStatus(null), 3000);
                               }
-                            }} style={{ width: '100%', fontSize: 11 }} disabled={(player?.essence ?? 0) < 150}>
+                            }} style={{ width: '100%', fontSize: '0.85vw' }} disabled={(player?.essence ?? 0) < 150}>
                               {(player?.essence ?? 0) < 150 ? '❌ Not enough essence' : 'Evolve to Mythic'}
                             </button>
                           </div>
@@ -279,25 +279,25 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                   </>
                 ) : (
                   <>
-                    <h2 style={{ marginTop: 0, marginBottom: 8 }}>Equipment</h2>
+                    <h2 style={{ marginTop: 0, marginBottom: '0.8vw' }}>Equipment</h2>
                     <div style={{ width: '100%' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8, gridAutoRows: '80px', alignItems: 'stretch', position: 'relative' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.8vw', gridAutoRows: '6vw', alignItems: 'stretch', position: 'relative' }}>
                         {SLOT_ORDER.map((slot) => {
                           const it = (equipment as any)[slot];
                           const spanStyle: React.CSSProperties = slot === 'hat' ? { gridColumn: '1 / -1' } : {};
                           return (
                             <div key={slot} style={{ boxSizing: 'border-box', ...spanStyle }}>
-                              <div style={{ background: it && it.isForged ? 'rgba(255, 193, 7, 0.12)' : '#111', border: it && it.isForged ? '1px solid rgba(255, 193, 7, 0.5)' : '1px solid rgba(255,255,255,0.04)', padding: 8, borderRadius: 8, textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer' }} onClick={() => it && (setActiveTab('forge'), setSelectedItemForAction(it))}>
-                                <div style={{ fontSize: 11, color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
-                                <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: 4, overflowWrap: 'anywhere', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                              <div style={{ background: it && it.isForged ? 'rgba(255, 193, 7, 0.12)' : '#111', border: it && it.isForged ? '1px solid rgba(255, 193, 7, 0.5)' : '1px solid rgba(255,255,255,0.04)', padding: '0.6vw', borderRadius: '0.6vw', textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer' }} onClick={() => it && (setActiveTab('forge'), setSelectedItemForAction(it))}>
+                                <div style={{ fontSize: '0.85vw', color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
+                                <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: '0.3vw', overflowWrap: 'anywhere', fontSize: '0.9vw', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4vw' }}>
                                   <span>{it ? it.name : 'empty'}</span>
-                                  {it && it.isForged && <span style={{ fontSize: 10, color: '#ffc107', fontWeight: 600 }}>FORGED</span>}
+                                  {it && it.isForged && <span style={{ fontSize: '0.75vw', color: '#ffc107', fontWeight: 600 }}>FORGED</span>}
                                 </div>
                                 {it ? (
                                   <>
-                                    <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{Object.entries(it.stats || {}).map(([k, v]) => `${k}: ${v}`).join(' • ')}</div>
+                                    <div style={{ fontSize: '0.75vw', color: '#999', marginTop: '0.15vw' }}>{Object.entries(it.stats || {}).map(([k, v]) => `${k}: ${v}`).join(' • ')}</div>
                                     <div style={{ display: 'flex', justifyContent: 'center' }}>
-                                      <button type="button" style={{ marginTop: 4, padding: '4px 8px', fontSize: 11 }} onClick={(e) => { e.stopPropagation(); onUnequip(slot); }}>Unequip</button>
+                                      <button type="button" style={{ marginTop: '0.3vw', padding: '0.3vw 0.6vw', fontSize: '0.8vw' }} onClick={(e) => { e.stopPropagation(); onUnequip(slot); }}>Unequip</button>
                                     </div>
                                   </>
                                 ) : null}
@@ -311,43 +311,43 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                 )}
               </div>
 
-              <div style={{ width: 360, position: 'relative', minHeight: 320, maxHeight: 420, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+              <div style={{ width: '28vw', position: 'relative', minHeight: '40vh', maxHeight: '50vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', maxWidth: '50vw'  }}>
                 {activeTab === 'inventory' ? (
                   <>
-                    <h2 style={{ marginTop: 0, marginBottom: 8, flexShrink: 0 }}>Inventory</h2>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8, flexShrink: 0 }}>
-                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                        <label style={{ color: '#bbb', fontSize: 12 }}>Filter:</label>
+                    <h2 style={{ marginTop: 0, marginBottom: '0.8vw', flexShrink: 0}}>Inventory</h2>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8vw', flexShrink: 0 }}>
+                      <div style={{ display: 'flex', gap: '0.6vw', alignItems: 'center' }}>
+                        <label style={{ color: '#bbb', fontSize: '0.9vw' }}>Filter:</label>
                         <select value={filterSlot} onChange={(e) => setFilterSlot(e.target.value)}>
                           <option value="all">All</option>
                           <option value="consumable">Consumables</option>
                           {SLOT_ORDER.map((s) => <option key={s} value={s}>{SLOT_LABELS[s] ?? s}</option>)}
                         </select>
                       </div>
-                      <div style={{ color: '#ccc', fontSize: 12 }}>Weight: {currentWeight}/{MAX_CARRY_WEIGHT}</div>
+                      <div style={{ color: '#ccc', fontSize: '0.9vw' }}>Weight: {currentWeight}/{MAX_CARRY_WEIGHT}</div>
                     </div>
-                    <div style={{ display: 'grid', gap: 10, overflow: 'auto', flex: 1, alignContent: 'start' }}>
+                    <div style={{ display: 'grid', gap: '0.8vw', overflow: 'auto', flex: 1, alignContent: 'start' }}>
                       {filteredInventory.length === 0 ? (
                         <div style={{ padding: 12, background: '#0d0d0d', borderRadius: 8 }}>No items.</div>
                       ) : (
-                        <div style={{ display: 'grid', gap: 10, alignContent: 'start' }}>
+                        <div style={{ display: 'grid', gap: '0.8vw', alignContent: 'start' }}>
                           {filteredInventory.map((it, idx) => {
                             const isInFirstHalf = idx < filteredInventory.length / 2;
                             return (
-                            <div key={it.id} onMouseEnter={() => setHoveredItemId(it.id)} onMouseLeave={() => setHoveredItemId(null)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: it.isForged ? 'rgba(255, 193, 7, 0.08)' : '#0d0d0d', borderRadius: 10, position: 'relative', border: it.isForged ? '1px solid rgba(255, 193, 7, 0.5)' : '1px solid transparent' }}>
+                            <div key={it.id} onMouseEnter={() => setHoveredItemId(it.id)} onMouseLeave={() => setHoveredItemId(null)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1vw', background: it.isForged ? 'rgba(255, 193, 7, 0.08)' : '#0d0d0d', borderRadius: '0.8vw', position: 'relative', border: it.isForged ? '1px solid rgba(255, 193, 7, 0.5)' : '1px solid transparent' }}>
                               <div style={{ position: 'relative', flex: 1 }}>
-                                <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.6vw' }}>
                                   <span>{it.name}</span>
-                                  {it.isForged && <span style={{ color: '#ffc107', fontSize: 10, fontWeight: 600 }}>⚒️ FORGED</span>}
-                                  {it.quantity && it.quantity > 1 && <span style={{ marginLeft: 8, color: '#999', fontSize: 12 }}>×{it.quantity}</span>}
+                                  {it.isForged && <span style={{ color: '#ffc107', fontSize: '0.75vw', fontWeight: 600 }}>⚒️ FORGED</span>}
+                                  {it.quantity && it.quantity > 1 && <span style={{ marginLeft: '0.6vw', color: '#999', fontSize: '0.85vw' }}>×{it.quantity}</span>}
                                 </div>
                                 {hoveredItemId === it.id && (it.slot === 'consumable' || it.slot === 'key') && (
-                                  <div style={{ position: 'absolute', [isInFirstHalf ? 'top' : 'bottom']: 'calc(100% + 4px)', left: 0, maxWidth: '180px', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '10px 14px', fontSize: 10, color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
+                                  <div style={{ position: 'absolute', [isInFirstHalf ? 'top' : 'bottom']: 'calc(100% + 0.3vw)', left: 0, maxWidth: '12vw', background: '#111', border: '1px solid #666', borderRadius: '0.5vw', padding: '0.8vw 1vw', fontSize: '0.75vw', color: '#ccc', zIndex: 1000, whiteSpace: 'normal', lineHeight: 1.4 }}>
                                     {getItemDescription(it)}
                                   </div>
                                 )}
-                                <div style={{ fontSize: 10, color: '#bbb', marginTop: 4 }}>W:{it.weight ?? 1}</div>
-                                <div style={{ fontSize: 12, color: '#999', marginTop: 6 }}>{(() => {
+                                <div style={{ fontSize: '0.75vw', color: '#bbb', marginTop: '0.3vw' }}>W:{it.weight ?? 1}</div>
+                                <div style={{ fontSize: '0.85vw', color: '#999', marginTop: '0.4vw' }}>{(() => {
                                   const entries = Object.entries(it.stats || {});
                                   const equipped = (equipment as any)[it.slot];
                                   return entries.map(([k, v], idx) => {
@@ -366,7 +366,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                                   });
                                 })()}</div>
                               </div>
-                              <div style={{ display: 'flex', gap: 8 }}>
+                              <div style={{ display: 'flex', gap: '0.6vw' }}>
                                 {it.category === 'consumable' ? (
                                   <button type="button" onClick={(e) => { e.stopPropagation(); if (!onUse) return; setTimeout(() => { try { const res = onUse(it.id); Promise.resolve(res).then(() => {}); } catch {} }, 0); }}>Use</button>
                                 ) : it.slot === 'key' ? null : (
@@ -383,27 +383,27 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                   </>
                 ) : activeTab === 'forge' ? (
                   <>
-                    <h2 style={{ marginTop: 0, marginBottom: 8, flexShrink: 0 }}>Items</h2>
-                    <div style={{ display: 'grid', gap: 8, overflow: 'auto', flex: 1, alignContent: 'start' }}>
+                    <h2 style={{ marginTop: 0, marginBottom: '0.8vw', flexShrink: 0 }}>Items</h2>
+                    <div style={{ display: 'grid', gap: '0.8vw', overflow: 'auto', flex: 1, alignContent: 'start' }}>
                       {[...equipment ? Object.values(equipment).filter(Boolean) : [], ...inventory].map((it) => (
-                        <div key={it?.id} onClick={() => it && setSelectedItemForAction(it)} style={{ padding: 12, background: selectedItemForAction?.id === it?.id ? '#1a3a2e' : '#0d0d0d', borderRadius: 8, cursor: 'pointer', border: selectedItemForAction?.id === it?.id ? '1px solid #2ecc71' : '1px solid transparent' }}>
-                          <div style={{ color: RARITY_COLOR[it?.rarity] || '#fff', fontWeight: 700, fontSize: 12 }}>{it?.name}</div>
-                          <div style={{ fontSize: 10, color: '#999', marginTop: 2 }}>{it?.slot || 'item'}</div>
+                        <div key={it?.id} onClick={() => it && setSelectedItemForAction(it)} style={{ padding: '1vw', background: selectedItemForAction?.id === it?.id ? '#1a3a2e' : '#0d0d0d', borderRadius: '0.6vw', cursor: 'pointer', border: selectedItemForAction?.id === it?.id ? '1px solid #2ecc71' : '1px solid transparent' }}>
+                          <div style={{ color: RARITY_COLOR[it?.rarity] || '#fff', fontWeight: 700, fontSize: '0.9vw' }}>{it?.name}</div>
+                          <div style={{ fontSize: '0.75vw', color: '#999', marginTop: '0.15vw' }}>{it?.slot || 'item'}</div>
                         </div>
                       ))}
                     </div>
                   </>
                 ) : (
-                  <div style={{ minWidth: 520, minHeight: 320, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: 8 }}>
-                    <div style={{ width: '100%', maxWidth: 720 }}>
+                  <div style={{ minWidth: '60vw', minHeight: '40vh', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', paddingTop: '0.8vw' }}>
+                    <div style={{ width: '100%', maxWidth: '70vw' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 style={{ marginTop: 0, marginBottom: 8 }}>Statistics</h2>
-                        <div style={{ color: '#ccc', fontSize: 14 }}>Points: <strong style={{ color: '#fff' }}>{remainingPoints}</strong></div>
+                        <h2 style={{ marginTop: 0, marginBottom: '0.8vw' }}>Statistics</h2>
+                        <div style={{ color: '#ccc', fontSize: '1vw' }}>Points: <strong style={{ color: '#fff' }}>{remainingPoints}</strong></div>
                       </div>
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 120px 120px', gap: 8 }}>
-                        <div style={{ fontWeight: 700 }}>Stat</div>
-                        <div style={{ textAlign: 'center', fontWeight: 700 }}>Allocated</div>
-                        <div style={{ textAlign: 'center', fontWeight: 700 }}>Action</div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 10vw 10vw', gap: '0.8vw' }}>
+                        <div style={{ fontWeight: 700, fontSize: '0.9vw' }}>Stat</div>
+                        <div style={{ textAlign: 'center', fontWeight: 700, fontSize: '0.9vw' }}>Allocated</div>
+                        <div style={{ textAlign: 'center', fontWeight: 700, fontSize: '0.9vw' }}>Action</div>
 
                         <div>HP (+5 HP)</div>
                         <div style={{ textAlign: 'center' }}>{(progression && progression.allocated && progression.allocated.hp) || 0}</div>
@@ -549,7 +549,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                   </div>
                 </div>
 
-                <button className="align-end btn secondary"
+                <button className="align-end btn primary"
                   id="resetPoints"
                   style={{ marginTop: 12 }}
                   disabled={!deallocate || Object.values(allocated).reduce((s: number, v: any) => s + (Number(v || 0)), 0) <= 0}
