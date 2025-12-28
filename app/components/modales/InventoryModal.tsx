@@ -2,6 +2,7 @@
 
 import React from "react";
 import Modal from "./Modal";
+import "../styles/inventoryModal.css";
 
 type AllocationStat = 'hp' | 'dmg' | 'def' | 'crit' | 'dodge' | 'regen';
 
@@ -133,13 +134,13 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
   return (
     <>
       <Modal title="Inventory" onClose={onClose}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2vw', minWidth: '62vw', width: '62vw', minHeight: '50vh' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2vw', width: '62vw', height: '70vh' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button className={activeTab === 'inventory' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('inventory')}>Inventory</button>
-              <button className={activeTab === 'artifacts' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('artifacts')}>Artifacts</button>
-              <button className={activeTab === 'forge' ? 'btn primary' : 'btn'} onClick={() => { setActiveTab('forge'); setSelectedItemForAction(null); }}>Forge</button>
-              <button className={activeTab === 'statistics' ? 'btn primary' : 'btn'} onClick={() => setActiveTab('statistics')}>Statistics</button>
+              <button className={activeTab === 'inventory' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => setActiveTab('inventory')}>Inventory</button>
+              <button className={activeTab === 'artifacts' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => setActiveTab('artifacts')}>Artifacts</button>
+              <button className={activeTab === 'forge' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => { setActiveTab('forge'); setSelectedItemForAction(null); }}>Forge</button>
+              <button className={activeTab === 'statistics' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => setActiveTab('statistics')}>Statistics</button>
             </div>
             <div>
               {status ? (

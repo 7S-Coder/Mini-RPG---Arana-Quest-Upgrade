@@ -1,0 +1,16 @@
+/* Inventory Modal Tab Styles */
+
+.inventory-tab-btn {
+  transition: all 0.2s ease;
+}
+
+.inventory-tab-btn:hover:not(.active):not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.inventory-tab-btn.active {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.3), rgba(255, 165, 0, 0.2));
+  border-color: rgba(255, 215, 0, 0.5);
+  color: #ffd700;
+}
