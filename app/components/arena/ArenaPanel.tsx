@@ -3,6 +3,8 @@ import GoldSVG from "@/app/assets/gold.svg";
 import EnemiesRow from "../enemys/EnemiesRow";
 import LogMessages from "../LogMessages";
 import ArenaActions from "./ArenaActions";
+import EventDisplay from "../EventDisplay";
+import type { ActiveGameEvent } from "@/app/game/types";
 
 type Props = {
   enemies: any[];
@@ -15,6 +17,7 @@ type Props = {
   collectAllPickups?: (logger?: (msg: React.ReactNode) => void) => number;
   pushLog?: (node: React.ReactNode) => void;
   logColor?: string;
+  activeEvent?: ActiveGameEvent | null;
   nextTurnModifier?: { skipped?: boolean; defenseDebuff?: boolean } | null;
   safeCooldown?: number;
   riskyCooldown?: number;
@@ -22,7 +25,7 @@ type Props = {
   onSelectTarget?: (targetId: string) => void;
 };
 
-export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, collectAllPickups, pushLog, logColor, disableRun = false, inDungeonActive, nextTurnModifier, safeCooldown = 0, riskyCooldown = 0, selectedTargetId, onSelectTarget }: Props & { inDungeonActive?: boolean }) {
+export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, collectAllPickups, pushLog, logColor, activeEvent, disableRun = false, inDungeonActive, nextTurnModifier, safeCooldown = 0, riskyCooldown = 0, selectedTargetId, onSelectTarget }: Props & { inDungeonActive?: boolean }) {
   // helper: convert hex to rgba for subtle background tint
   const hexToRgba = (hex?: string, alpha = 0.06) => {
     if (!hex) return undefined;
@@ -44,6 +47,9 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
   return (
     <section className="arena-panel" style={arenaStyle}>
       <div className="arena-log">
+        {/* Active event display at top of log */}
+        {activeEvent && <EventDisplay activeEvent={activeEvent} />}
+        
         <EnemiesRow enemies={enemies} selectedTargetId={selectedTargetId} onSelectTarget={onSelectTarget} />
         <LogMessages logs={logs} logColor={logColor} inDungeonActive={inDungeonActive} />
       </div>

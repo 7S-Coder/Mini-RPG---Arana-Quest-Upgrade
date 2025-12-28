@@ -449,3 +449,159 @@ body.modal-open > *:not(.app-modal-backdrop) {
 	visibility: visible;
 	opacity: 1;
 }
+/* === EVENT SYSTEM STYLES === */
+
+.event-display {
+	padding: 14px 16px;
+	margin-bottom: 14px;
+	border-radius: 8px;
+	border-left: 4px solid rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(12px);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+	transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+	position: relative;
+	overflow: visible;
+}
+
+.event-tooltip {
+	position: absolute;
+	bottom: calc(100% + 8px);
+	left: 50%;
+	transform: translateX(-50%);
+	background: rgba(20, 20, 20, 0.95);
+	color: #fff;
+	text-align: center;
+	border: 1px solid #444;
+	border-radius: 6px;
+	padding: 8px 12px;
+	width: 200px;
+	font-size: 12px;
+	line-height: 1.4;
+	z-index: 100;
+	white-space: normal;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+	backdrop-filter: blur(4px);
+	pointer-events: none;
+	animation: tooltipFade 0.2s ease-out;
+}
+
+@keyframes tooltipFade {
+	from {
+		opacity: 0;
+		transform: translateX(-50%) translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: translateX(-50%) translateY(0);
+	}
+}
+
+.event-tooltip::after {
+	content: '';
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	border: 6px solid transparent;
+	border-top-color: rgba(20, 20, 20, 0.95);
+}
+
+.event-display.event-pulse {
+	animation: eventPulse 2s ease-in-out infinite;
+}
+
+@keyframes eventPulse {
+	0%, 100% {
+		opacity: 1;
+		box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+	}
+	50% {
+		opacity: 0.85;
+		box-shadow: 0 8px 32px rgba(255, 255, 255, 0.15);
+	}
+}
+
+.event-header {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin-bottom: 8px;
+	font-weight: 700;
+	font-size: 14px;
+	text-transform: uppercase;
+	letter-spacing: 1px;
+	color: rgba(255, 255, 255, 0.95);
+}
+
+.event-icon {
+	font-size: 18px;
+	display: inline-block;
+	animation: eventIconBounce 1.5s ease-in-out infinite;
+	min-width: 24px;
+	text-align: center;
+}
+
+.event-icon-svg {
+	width: 24px;
+	height: 24px;
+	display: inline-block;
+	animation: eventIconBounce 1.5s ease-in-out infinite;
+	filter: brightness(1.1);
+	margin-right: 4px;
+}
+
+@keyframes eventIconBounce {
+	0%, 100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-4px);
+	}
+}
+
+.event-name {
+	flex: 1;
+	color: rgba(255, 255, 255, 0.9);
+}
+
+.event-duration {
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.6);
+	font-weight: 500;
+	background: rgba(255, 255, 255, 0.1);
+	padding: 3px 8px;
+	border-radius: 4px;
+}
+
+.event-description {
+	margin: 0;
+	font-size: 12px;
+	color: rgba(255, 255, 255, 0.75);
+	line-height: 1.4;
+	font-style: italic;
+	opacity: 0.9;
+}
+
+/* Event trigger message in logs */
+.event-trigger-message {
+	padding: 8px 12px;
+	background: rgba(255, 255, 255, 0.08);
+	border-left: 3px solid rgba(255, 200, 80, 0.6);
+	border-radius: 4px;
+	margin: 8px 0;
+	font-size: 12px;
+	color: rgba(255, 200, 80, 0.9);
+	font-weight: 600;
+	animation: eventTrigger 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes eventTrigger {
+	0% {
+		opacity: 0;
+		transform: translateY(-8px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}

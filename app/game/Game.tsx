@@ -3,6 +3,7 @@
 import EssenceSVG from "@/app/assets/essence.svg";
 import { useGameState } from "./uses/useGameState";
 import { useGameLoop } from "./uses/useGameLoop";
+import useEvents from "./uses/useEvents";
 import Player from "../components/Player";
 import ArenaPanel from "../components/arena/ArenaPanel";
 import RightSidebar from "../components/RightSidebar";
@@ -166,11 +167,24 @@ export default function Game() {
     if (!mapId) return;
     setMapStreaks((prev) => ({ ...prev, [mapId]: 0 }));
   };
-
   // useLogs hook will be used below (extracted)
   const { logs, pushLog, clearLogs } = useLogs();
   const { toasts, addToast } = useToasts();
   const { currentMessage, showNarration, closeNarration, markTutorialShown, isTutorialShown } = useNarration();
+  
+  // Event system
+  const { activeEvent, tryTriggerEvent, decrementEventDuration, endActiveEvent, loadFromSave: loadEventFromSave, getSaveData: getEventSaveData, getActiveEventEffects } = useEvents();
+
+  // Wrapper for saveCoreGame to include event data
+  const saveGameWithEvents = useCallback((extra?: Record<string, any> | null, reason?: string) => {
+    try {
+      const eventData = getEventSaveData();
+      const payload = { ...extra, activeEvent: eventData.activeEvent };
+      return saveCoreGame?.(payload, reason);
+    } catch (e) {
+      return saveCoreGame?.(extra, reason);
+    }
+  }, [saveCoreGame, getEventSaveData]);
 
   // Narration tracking
   const mapArrivalShownRef = useRef<Set<string>>(new Set());
@@ -247,6 +261,22 @@ export default function Game() {
   }, [player && player.level, inventory, addToast]);
 
   useEffect(() => { inCombatRef.current = inCombat; }, [inCombat]);
+
+  // Load events from save on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('arenaquest_core_v1');
+      if (raw) {
+        const save = JSON.parse(raw);
+        if (save.activeEvent) {
+          loadEventFromSave(save.activeEvent);
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load event from save', e);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // show a welcome message once when the game component mounts (spawn)
   useEffect(() => {
@@ -669,8 +699,12 @@ export default function Game() {
         }
       } catch (e) {}
     }
-    else if (opts?.type !== 'flee') {
-      // Only increment streak during farming (not in dungeon)
+    else if (opts?.type === 'flee') {
+      // Reset streak when fleeing combat
+      try { resetMapStreak(selectedMapId); } catch (e) {}
+    }
+    else {
+      // Only increment streak during farming (not in dungeon) - when NOT death or flee
       // Use dungeonProgressRef directly to avoid race conditions with state updates
       const inDungeonActive = dungeonProgressRef.current.activeDungeonIndex != null && dungeonProgressRef.current.activeMapId === selectedMapId;
       if (!inDungeonActive) {
@@ -757,10 +791,31 @@ export default function Game() {
       
       // Save immediately after achievements check
       if (newlyUnlocked.length > 0) {
-        saveCoreGame && saveCoreGame(null, 'achievements_unlocked');
+        saveGameWithEvents && saveGameWithEvents(null, 'achievements_unlocked');
       }
     } catch (e) { console.error('[DEBUG] achievements check error', e); }
     
+    // === EVENT SYSTEM ===
+    try {
+      const isBattleWon = opts?.type !== 'death' && opts?.type !== 'flee';
+      
+      if (opts?.type === 'death' || opts?.type === 'flee') {
+        // On player death or flee, end active event and apply cooldown
+        endActiveEvent();
+      } else if (isBattleWon) {
+        // Try to trigger a new event based on win streak
+        const currentStreak = getMapStreak(selectedMapId);
+        const triggeredEvent = tryTriggerEvent(currentStreak, (text) => {
+          try { pushLog(text); } catch (e) {}
+        });
+        
+        // Decrement duration of ongoing zone events
+        if (triggeredEvent === null) {
+          decrementEventDuration();
+        }
+      }
+    } catch (e) { console.error('[DEBUG] event system error', e); }
+      
       try {
         const mapsListNow = getMaps();
         const currentMap = mapsListNow.find((m) => m.id === selectedMapId) ?? null;
@@ -768,7 +823,7 @@ export default function Game() {
         if (handled) return;
       } catch (e) { console.error('[DEBUG] endEncounter error', e); }
     // Save the game state after encounter ends (including any HP changes)
-    try { saveCoreGame && saveCoreGame(null, 'end_encounter'); } catch (e) {}
+    try { saveGameWithEvents && saveGameWithEvents(null, 'end_encounter'); } catch (e) {}
     // schedule clearing the logs after a short delay so player can read result
     if (logClearRef.current) clearTimeout(logClearRef.current);
     const currentSessionId = encounterSessionRef.current; // capture current session
@@ -779,7 +834,7 @@ export default function Game() {
       }
       logClearRef.current = null;
     }, 1000);
-  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect, showNarration, setSafeCooldown, setRiskyCooldown, setNextTurnModifier, enemies, consecWins, saveCoreGame, achievements]);
+  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect, showNarration, setSafeCooldown, setRiskyCooldown, setNextTurnModifier, enemies, consecWins, saveGameWithEvents, achievements, tryTriggerEvent, decrementEventDuration, endActiveEvent, getMapStreak]);
 
   // clear timeout on unmount
   useEffect(() => {
@@ -1004,7 +1059,7 @@ export default function Game() {
             {
               (() => {
                 const inDungeonActive = selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null;
-                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} nextTurnModifier={nextTurnModifier} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} selectedTargetId={selectedTargetId} onSelectTarget={setSelectedTargetId} />;
+                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} activeEvent={activeEvent} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} nextTurnModifier={nextTurnModifier} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} selectedTargetId={selectedTargetId} onSelectTarget={setSelectedTargetId} />;
               })()
             }
      

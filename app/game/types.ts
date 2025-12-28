@@ -135,3 +135,31 @@ export type AchievementTrackingStats = {
   highestWinStreak: number;
   chaptersCompleted: Record<string, boolean>; // { chapterId: true }
 };
+
+// === EVENTS SYSTEM ===
+export type EventEffectType = 'enemy_bonus' | 'player_malus' | 'spawn_modifier' | 'rage_modifier' | 'dodge_bonus' | 'loot_bonus' | 'enemy_debuff';
+
+export type EventEffect = {
+  type: EventEffectType;
+  value: number;
+};
+
+export type GameEvent = {
+  id: string;
+  name: string;
+  description: string; // UI-facing short description
+  lore: string; // Narrative flavor text
+  type: 'zone' | 'combat'; // zone events persist, combat events are single-encounter
+  narrator?: 'eldran' | 'lya' | 'brak' | 'messenger'; // NPC who narrates this event
+  icon?: string; // Emoji/icon for UI display
+  duration: number; // remaining battles (for zone events) or 1 for combat events
+  consoleTint: string; // rgba or hex color for console styling
+  consolePulse?: boolean; // whether to add pulsing animation
+  effects: EventEffect[];
+  rarity?: Rarity; // event rarity for drop table modifications
+};
+
+export type ActiveGameEvent = GameEvent & {
+  activatedAt: number; // timestamp when event started
+  durationRemaining: number; // battles remaining for this event
+};
