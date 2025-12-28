@@ -149,7 +149,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
             </div>
           </div>
 
-          {activeTab !== 'statistics' ? (
+          {activeTab === 'inventory' || activeTab === 'equipment' || activeTab === 'forge' ? (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 28vw', gap: '1.2vw', alignItems: 'stretch', minHeight: '40vh' }}>
 
               <div style={{ minWidth: '26vw', minHeight: '40vh', position: 'relative', display: 'flex', flexDirection: 'column' }}>
