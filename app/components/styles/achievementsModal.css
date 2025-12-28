@@ -55,10 +55,6 @@
   padding-bottom: 0.8vw;
 }
 
-.filter-btn {
-  /* Utilise les styles de btn primary du CSS global */
-}
-
 .filter-btn:hover {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);

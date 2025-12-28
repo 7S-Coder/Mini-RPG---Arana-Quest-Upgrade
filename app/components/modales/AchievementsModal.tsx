@@ -71,7 +71,7 @@ export default function AchievementsModal({ achievements, onClose }: Achievement
 
   return (
     <Modal title="Achievements" onClose={onClose}>
-      <div className="achievements-modal" style={{ width: '60vw', height: '50vh', display: 'flex', flexDirection: 'column' }}>
+      <div className="achievements-modal" style={{ width: '60vw', height: '70vh', display: 'flex', flexDirection: 'column' }}>
         {/* Header stats */}
         <div className="achievements-header">
           <div className="achievement-stats">
