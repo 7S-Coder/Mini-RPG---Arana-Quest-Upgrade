@@ -742,6 +742,16 @@ export default function Game() {
         try {
           addToast(`🏆 Achievement Unlocked: ${ach.title}!`, 'ok', 4000);
           pushLog(`🏆 Achievement: ${ach.title} — ${ach.lore}`);
+          
+          // Show achievement lore through narration modal
+          if (ach.narrator) {
+            const narrativeMessage = {
+              npc: ach.narrator,
+              text: ach.lore,
+              emoji: ach.icon || '🏆',
+            };
+            showNarration(narrativeMessage);
+          }
         } catch (e) {}
       }
       

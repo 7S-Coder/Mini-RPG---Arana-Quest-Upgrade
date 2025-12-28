@@ -1,3 +1,7 @@
+body {
+	overflow: hidden;
+}
+
 /* Effet de pulsation pour la fenêtre de log en donjon */
 .log-messages.pulse-effect {
 	animation: logPulse 1.1s cubic-bezier(0.4,0,0.6,1) infinite;

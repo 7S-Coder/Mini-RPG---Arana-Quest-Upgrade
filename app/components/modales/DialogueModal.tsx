@@ -28,7 +28,6 @@ export default function DialogueModal({ message, onClose }: DialogueModalProps) 
         background: 'rgba(0,0,0,0.5)',
         zIndex: 1000000,
       }}
-      onClick={onClose}
     >
       <div
         className="app-modal-panel"
