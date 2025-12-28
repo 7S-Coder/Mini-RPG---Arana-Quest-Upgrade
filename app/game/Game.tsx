@@ -17,6 +17,7 @@ import BestiaryModal from "../components/modales/BestiaryModal";
 import MapsModal from "../components/modales/MapsModal";
 import CatalogModal from "../components/modales/CatalogModal";
 import DialogueModal from "../components/modales/DialogueModal";
+import AchievementsModal from "../components/modales/AchievementsModal";
 import { getMaps, pickEnemyFromMap, pickEnemyFromRoom, getRoomsForMap } from "./templates/maps";
 import { ENEMY_TEMPLATES } from "./templates/enemies";
 import { calcDamage } from "./damage";
@@ -27,7 +28,7 @@ import { useNarration } from "../hooks/useNarration";
 import { getMapNarration, getCombatNarration, TUTORIAL_MESSAGES } from "./templates/narration";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, createItemFromTemplate, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, createItemFromTemplate, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins, achievements } = useGameState();
 
   // streak per map (instead of global streak)
   const [mapStreaks, setMapStreaks] = useState<Record<string, number>>({});
@@ -99,6 +100,10 @@ export default function Game() {
             e.preventDefault();
             if (modalName === 'catalog') closeModal();
             else openModal('catalog');
+          } else if (key === 'a') {
+            e.preventDefault();
+            if (modalName === 'achievements') closeModal();
+            else openModal('achievements');
           }
         }
       } catch (err) {}
@@ -707,6 +712,45 @@ export default function Game() {
     if (msg) pushLog(msg);
     // Track farming progress: if player is on a map that has dungeons but the dungeon
     // hasn't been activated yet, count this completed encounter toward the threshold.
+    
+    // === CHECK ACHIEVEMENTS ===
+    try {
+      const isBattleWon = opts?.type !== 'death' && opts?.type !== 'flee';
+      const isBattleLost = opts?.type === 'death';
+      
+      if (isBattleWon) {
+        // Record battle win with enemies
+        achievements.recordBattleWin(enemies);
+        
+        // If boss was defeated, record it
+        if (opts?.isBoss && opts?.bossName) {
+          const bossTemplateName = opts.bossName.toLowerCase().replace(/\s+/g, '_');
+          achievements.recordBossDefeat(bossTemplateName);
+        }
+      }
+      
+      if (isBattleLost) {
+        achievements.recordBattleLoss();
+      }
+      
+      // Check all achievement conditions and unlock those that qualify
+      const newlyUnlocked = achievements.checkAchievements({ player, currentWinStreak: consecWins });
+      
+      // Show toast notifications for newly unlocked achievements
+      const newAchs = achievements.getNewlyUnlocked();
+      for (const ach of newAchs) {
+        try {
+          addToast(`🏆 Achievement Unlocked: ${ach.title}!`, 'ok', 4000);
+          pushLog(`🏆 Achievement: ${ach.title} — ${ach.lore}`);
+        } catch (e) {}
+      }
+      
+      // Save immediately after achievements check
+      if (newlyUnlocked.length > 0) {
+        saveCoreGame && saveCoreGame(null, 'achievements_unlocked');
+      }
+    } catch (e) { console.error('[DEBUG] achievements check error', e); }
+    
       try {
         const mapsListNow = getMaps();
         const currentMap = mapsListNow.find((m) => m.id === selectedMapId) ?? null;
@@ -725,7 +769,7 @@ export default function Game() {
       }
       logClearRef.current = null;
     }, 1000);
-  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect, showNarration, setSafeCooldown, setRiskyCooldown, setNextTurnModifier]);
+  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect, showNarration, setSafeCooldown, setRiskyCooldown, setNextTurnModifier, enemies, consecWins, saveCoreGame, achievements]);
 
   // clear timeout on unmount
   useEffect(() => {
@@ -1067,6 +1111,9 @@ export default function Game() {
       )}
       {modalName === 'catalog' && (
         <CatalogModal onClose={closeModal} />
+      )}
+      {modalName === 'achievements' && (
+        <AchievementsModal onClose={closeModal} achievements={achievements.achievements} />
       )}
       {modalName === 'bestiary' && (
         <BestiaryModal onClose={closeModal} enemies={enemies} selectedMapId={selectedMapId} />

@@ -14,12 +14,14 @@ import {
 import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity, EquipmentSlot } from "../types";
 import useStatistics from "../../hooks/useStatistics";
 import useProgression from "../../hooks/useProgression";
+import { useAchievements } from "./useAchievements";
 
 // ENEMY_TEMPLATES moved to ./enemies.ts
 
 export function useGameState() {
   const { stats, record } = useStatistics();
   const { progression, addPoints, allocate, deallocate, reset } = useProgression();
+  const achievements = useAchievements();
 
   const [player, setPlayer] = useState<Player>({
     x: 100,
@@ -1493,6 +1495,8 @@ export function useGameState() {
     player: pickPlayerData((extra && extra.player) ? extra.player : playerRef.current),
     inventory: (extra && Object.prototype.hasOwnProperty.call(extra, 'inventory')) ? extra.inventory : (inventoryRef.current || []),
     equipment: (extra && Object.prototype.hasOwnProperty.call(extra, 'equipment')) ? extra.equipment : (equipmentRef.current || {}),
+    // achievements & tracking stats
+    ...achievements.getSaveData(),
     // progression fields (map/dungeon) can be added here when available
     timestamp: Date.now(),
     ...(extra || {}),
@@ -1629,6 +1633,12 @@ export function useGameState() {
         setEquipment((prev) => ({ ...prev, ...migratedEquip }));
       }
       if (Array.isArray(save.pickups)) setPickups(save.pickups as any[]);
+      
+      // Load achievements and tracking stats
+      if (save.achievements && save.stats) {
+        achievements.loadFromSave(save.achievements, save.stats);
+      }
+      
       return save;
     } catch (e) {
       try { console.error('loadGame error', e); } catch (e) {}
@@ -1651,11 +1661,13 @@ export function useGameState() {
   useEffect(() => {
     const saveTimer = setTimeout(() => {
       try {
+        const achData = achievements.getSaveData();
         const payload = {
           version: 1,
           player: pickPlayerData(player),
           inventory: inventory || [],
           equipment: equipmentRef.current || {},
+          ...achData,
           timestamp: Date.now(),
         };
         localStorage.setItem("arenaquest_core_v1", JSON.stringify(payload));
@@ -1665,12 +1677,12 @@ export function useGameState() {
       }
     }, 500); // Debounce: save 500ms after changes stop
     return () => clearTimeout(saveTimer);
-  }, [player, inventory]);
+  }, [player, inventory, achievements]);
 
   // NOTE: removed global autosave — core saves are now explicit via `saveCoreGame`.
 
   const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, buyPotion, consumeItem, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, saveCoreGame, loadGame, isInCombat, progression, allocate: allocate, deallocate: deallocate, consecWins, incConsecWins, resetConsecWins } as const;
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, buyPotion, consumeItem, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, saveCoreGame, loadGame, isInCombat, progression, allocate: allocate, deallocate: deallocate, consecWins, incConsecWins, resetConsecWins, achievements } as const;
 }
 

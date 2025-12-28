@@ -95,3 +95,43 @@ export type EnemyTemplate = {
   rageEffect?: RageEffect; // Special effect when rage reaches 100
   rageThreshold?: number; // Minimum rage value (default 0), represents bar start
 };
+
+// === ACHIEVEMENTS SYSTEM ===
+export type AchievementReward = {
+  gold?: number;
+  essence?: number;
+  item?: Item; // Optional special item reward
+  fragmentCount?: number; // Key fragment reward
+  passiveBonus?: {
+    dmg?: number;
+    def?: number;
+    dodge?: number;
+    crit?: number;
+    hp?: number;
+  };
+};
+
+export type Achievement = {
+  id: string;
+  title: string;
+  description: string; // Gameplay-focused description
+  lore: string; // Narrative description (shown after unlock)
+  narrator?: 'eldran' | 'lya' | 'brak' | 'messenger'; // NPC who narrates this achievement
+  icon?: string; // Optional icon/emoji
+  reward: AchievementReward;
+  unlocked: boolean;
+  unlockedAt?: number; // Timestamp when unlocked
+  hidden?: boolean; // Hidden achievements aren't shown until unlocked
+  category?: 'combat' | 'exploration' | 'boss' | 'dungeon' | 'narrative' | 'special';
+};
+
+export type AchievementTrackingStats = {
+  totalBattlesWon: number;
+  totalBattlesLost: number;
+  dungeonCompleted: Record<string, number>; // { dungeonId: count }
+  bossesDefeated: Record<string, number>; // { bossTemplateId: count }
+  mapsUnlocked: Record<string, boolean>; // { mapId: true }
+  enemyTypesDefeated: Record<string, number>; // { templateId: count }
+  highestWinStreak: number;
+  chaptersCompleted: Record<string, boolean>; // { chapterId: true }
+};
