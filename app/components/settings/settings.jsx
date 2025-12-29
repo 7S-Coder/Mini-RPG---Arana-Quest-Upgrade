@@ -24,41 +24,62 @@ export default function Settings() {
 
   const handleDeleteAccount = () => {
     if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
-      try {
-        // Stop the game from running
-        if ((window).__stopGame) {
-          (window).__stopGame();
+      if (confirm("This will permanently delete all your game data. Click OK again to confirm.")) {
+        try {
+          // Stop the game from running
+          if ((window).__stopGame) {
+            (window).__stopGame();
+          }
+          
+          // Stop any running intervals/timeouts
+          for (let i = 1; i < 99999; i++) {
+            clearInterval(i);
+            clearTimeout(i);
+          }
+          
+          // Disable any auto-save mechanisms
+          if ((window).__arenaquest_save_game) {
+            (window).__arenaquest_save_game = () => {};
+          }
+          
+          // Wait a moment before clearing storage
+          setTimeout(() => {
+            try {
+              // Remove all localStorage items
+              localStorage.clear();
+              
+              // Remove all sessionStorage items
+              sessionStorage.clear();
+              
+              // Delete all IndexedDB databases
+              if (window.indexedDB) {
+                indexedDB.databases?.().then((dbs) => {
+                  dbs.forEach((db) => {
+                    indexedDB.deleteDatabase(db.name);
+                  });
+                }).catch(() => {});
+              }
+              
+              // Clear all cookies
+              document.cookie.split(";").forEach((c) => {
+                document.cookie = c
+                  .replace(/^ +/, "")
+                  .replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
+              });
+              
+              console.log("✓ Account deleted - all data cleared");
+            } catch (e) {
+              console.error("Error during cleanup:", e);
+            }
+            
+            // Force reload with cache-busting
+            const timestamp = Date.now();
+            window.location.href = '/?t=' + timestamp;
+          }, 500);
+        } catch (e) {
+          console.error("Error deleting account:", e);
+          window.location.href = '/?t=' + Date.now();
         }
-        
-        // Remove all localStorage items
-        localStorage.clear();
-        
-        // Remove all sessionStorage items
-        sessionStorage.clear();
-        
-        // Delete all IndexedDB databases
-        if (window.indexedDB) {
-          indexedDB.databases?.().then((dbs) => {
-            dbs.forEach((db) => {
-              indexedDB.deleteDatabase(db.name);
-            });
-          }).catch(() => {});
-        }
-        
-        // Clear all cookies
-        document.cookie.split(";").forEach((c) => {
-          document.cookie = c
-            .replace(/^ +/, "")
-            .replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
-        });
-        
-        console.log("✓ Account deleted - all data cleared");
-        
-        // Redirect to home page (fresh load)
-        window.location.href = '/';
-      } catch (e) {
-        console.error("Error deleting account:", e);
-        window.location.href = '/';
       }
     }
   };
