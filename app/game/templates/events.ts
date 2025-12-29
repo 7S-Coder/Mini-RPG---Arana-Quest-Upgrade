@@ -29,7 +29,7 @@ export const GAME_EVENTS: Record<string, GameEvent> = {
     lore: "The moon turns crimson. Creatures howl with unnatural fury.",
     type: "zone",
     narrator: "messenger" as NPCName,
-    icon: "🔴",
+    icon: "",
     duration: 5, // lasts for ~5 battles
     consoleTint: "rgba(139, 0, 0, 0.3)", // dark red tint
     consolePulse: true,
@@ -47,7 +47,7 @@ export const GAME_EVENTS: Record<string, GameEvent> = {
     lore: "Essence surges through the air. Reality feels unstable.",
     type: "zone",
     narrator: "eldran" as NPCName,
-    icon: "⚡",
+    icon: "",
     duration: 5,
     consoleTint: "rgba(75, 0, 130, 0.3)", // indigo tint
     consolePulse: false,
@@ -66,7 +66,7 @@ export const GAME_EVENTS: Record<string, GameEvent> = {
     lore: "Shadows whisper forgotten names. You feel watched.",
     type: "combat",
     narrator: "messenger" as NPCName,
-    icon: "👁️",
+    icon: "",
     duration: 1, // single combat event
     consoleTint: "rgba(30, 30, 40, 0.5)", // dark tint with slight transparency
     consolePulse: false,
@@ -83,7 +83,7 @@ export const GAME_EVENTS: Record<string, GameEvent> = {
     lore: "The ground trembles. More creatures join the fray!",
     type: "zone",
     narrator: "brak" as NPCName,
-    icon: "🌊",
+    icon: "",
     duration: 4,
     consoleTint: "rgba(255, 140, 0, 0.3)", // orange tint
     consolePulse: true,
@@ -102,7 +102,7 @@ export const GAME_EVENTS: Record<string, GameEvent> = {
     lore: "Noxious vapor seeps from the earth. Every breath burns.",
     type: "zone",
     narrator: "eldran" as NPCName,
-    icon: "☠️",
+    icon: "",
     duration: 5,
     consoleTint: "rgba(100, 150, 100, 0.3)", // sickly green tint
     consolePulse: false,
@@ -120,7 +120,7 @@ export const GAME_EVENTS: Record<string, GameEvent> = {
     lore: "Bitter cold settles across the land. Movement feels sluggish.",
     type: "zone",
     narrator: "lya" as NPCName,
-    icon: "❄️",
+    icon: "",
     duration: 4,
     consoleTint: "rgba(173, 216, 230, 0.3)", // light blue tint
     consolePulse: false,

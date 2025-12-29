@@ -851,15 +851,6 @@ export default function Game() {
     const isDungeonRoom = !!enemy.roomId;
     const droppedItem = maybeDropFromEnemy(enemy, selectedMapId, !!enemy.isBoss, isDungeonRoom);
     
-    // Drop essence for mythic enemies (endgame mechanic)
-    const essenceDropped = maybeDropEssenceFromEnemy(enemy, !!enemy.isBoss);
-    if (essenceDropped > 0) {
-      try {
-        pushLog(`Essence gained: +${essenceDropped} ⚡`);
-        addEffect({ type: 'pickup', text: `+${essenceDropped} ${EssenceSVG}`, target: 'player', kind: 'essence' });
-      } catch (e) {}
-    }
-    
     return droppedItem;
   } });
 
