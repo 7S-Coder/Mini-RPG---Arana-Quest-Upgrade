@@ -476,6 +476,13 @@ export default function Game() {
     }
     // determine count based on dungeon state: normal area random 1-3, dungeon rooms fixed 4, boss room single
     let count = 1 + Math.floor(Math.random() * 3);
+    
+    // Apply event modifiers to spawn count
+    const eventEffects = getActiveEventEffects();
+    if (eventEffects && eventEffects.spawn_count_bonus) {
+      count = Math.max(1, count + eventEffects.spawn_count_bonus);
+    }
+    
     // prevent starting encounter on a locked map (min level only)
     if (selectedMap?.minLevel && player.level < selectedMap.minLevel) {
       try { pushLog(`Map locked: requires level ${selectedMap.minLevel}+`); } catch (e) {}
@@ -850,7 +857,7 @@ export default function Game() {
       }
       logClearRef.current = null;
     }, 1000);
-  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect, showNarration, setSafeCooldown, setRiskyCooldown, setNextTurnModifier, enemies, consecWins, saveGameWithEvents, achievements, tryTriggerEvent, decrementEventDuration, endActiveEvent, getMapStreak]);
+  }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect, showNarration, setSafeCooldown, setRiskyCooldown, setNextTurnModifier, enemies, consecWins, saveGameWithEvents, achievements, tryTriggerEvent, decrementEventDuration, endActiveEvent, getMapStreak, getActiveEventEffects]);
 
   // clear timeout on unmount
   useEffect(() => {
