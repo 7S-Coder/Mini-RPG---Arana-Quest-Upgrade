@@ -780,13 +780,16 @@ export default function Game() {
           
           // Apply achievement rewards
           if (ach.reward) {
-            if (ach.reward.gold && ach.reward.gold > 0) {
-              setPlayer((prev) => ({ ...prev, gold: Math.max(0, prev.gold + ach.reward.gold) }));
-              pushLog(`💛 +${ach.reward.gold} Gold`);
+            const goldReward = ach.reward.gold ?? 0;
+            const essenceReward = ach.reward.essence ?? 0;
+            
+            if (goldReward > 0) {
+              setPlayer((prev) => ({ ...prev, gold: Math.max(0, (prev.gold ?? 0) + goldReward) }));
+              pushLog(`💛 +${goldReward} Gold`);
             }
-            if (ach.reward.essence && ach.reward.essence > 0) {
-              addEssence(ach.reward.essence);
-              pushLog(`✨ +${ach.reward.essence} Essence`);
+            if (essenceReward > 0) {
+              addEssence(essenceReward);
+              pushLog(`✨ +${essenceReward} Essence`);
             }
           }
           
