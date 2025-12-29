@@ -25,25 +25,25 @@ export default function Settings() {
   const handleDeleteAccount = () => {
     if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
       try {
-        // Empty localStorage completely by removing all keys
-        while (localStorage.length > 0) {
-          const key = localStorage.key(0);
-          console.log('Removing key:', key);
-          localStorage.removeItem(key);
+        // Stop the game from running
+        if ((window).__stopGame) {
+          (window).__stopGame();
         }
         
-        // Double check - remove by specific keys too
-        const keysToRemove = [
-          'arenaquest_core_v1',
-          'arenaquest_progression_v1',
-          'arena_quest_tutorials_shown',
-          'arenaquest_stats_v1',
-          'arenaquest_achievements_v1'
-        ];
-        keysToRemove.forEach(key => localStorage.removeItem(key));
+        // Remove all localStorage items
+        localStorage.clear();
         
-        // Clear sessionStorage
+        // Remove all sessionStorage items
         sessionStorage.clear();
+        
+        // Delete all IndexedDB databases
+        if (window.indexedDB) {
+          indexedDB.databases?.().then((dbs) => {
+            dbs.forEach((db) => {
+              indexedDB.deleteDatabase(db.name);
+            });
+          }).catch(() => {});
+        }
         
         // Clear all cookies
         document.cookie.split(";").forEach((c) => {
@@ -52,25 +52,13 @@ export default function Settings() {
             .replace(/=.*/, `=;expires=${new Date().toUTCString()};path=/`);
         });
         
-        // Clear IndexedDB
-        if (window.indexedDB) {
-          indexedDB.databases?.().then((dbs) => {
-            dbs.forEach((db) => {
-              indexedDB.deleteDatabase(db.name);
-            });
-          });
-        }
+        console.log("✓ Account deleted - all data cleared");
         
-        console.log("Account deleted - all storage cleared");
-        
-        // Wait a moment to ensure everything is cleared, then hard reload
-        setTimeout(() => {
-          window.location.href = window.location.origin + window.location.pathname + window.location.search;
-        }, 100);
+        // Redirect to home page (fresh load)
+        window.location.href = '/';
       } catch (e) {
-        console.error("Error deleting account data:", e);
-        // Still reload even if there's an error
-        setTimeout(() => window.location.reload(), 100);
+        console.error("Error deleting account:", e);
+        window.location.href = '/';
       }
     }
   };
