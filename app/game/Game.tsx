@@ -778,6 +778,18 @@ export default function Game() {
           addToast(`🏆 Achievement Unlocked: ${ach.title}!`, 'ok', 4000);
           pushLog(`🏆 Achievement: ${ach.title} — ${ach.lore}`);
           
+          // Apply achievement rewards
+          if (ach.reward) {
+            if (ach.reward.gold && ach.reward.gold > 0) {
+              setPlayer((prev) => ({ ...prev, gold: Math.max(0, prev.gold + ach.reward.gold) }));
+              pushLog(`💛 +${ach.reward.gold} Gold`);
+            }
+            if (ach.reward.essence && ach.reward.essence > 0) {
+              addEssence(ach.reward.essence);
+              pushLog(`✨ +${ach.reward.essence} Essence`);
+            }
+          }
+          
           // Show achievement lore through narration modal
           if (ach.narrator) {
             const narrativeMessage = {
