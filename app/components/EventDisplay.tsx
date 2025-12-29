@@ -10,6 +10,16 @@ const EVENT_ICON_PATHS: Record<string, string> = {
   frozen_peaks: "/assets/events/frozenPeaks.svg",
 };
 
+const EFFECT_LABELS: Record<string, string> = {
+  enemy_bonus: "Enemy Damage",
+  player_malus: "Player Damage",
+  spawn_modifier: "Enemy Spawn",
+  rage_modifier: "Enemy Rage",
+  dodge_bonus: "Dodge Bonus",
+  loot_bonus: "Loot Rarity",
+  enemy_debuff: "Enemy Defense",
+};
+
 type Props = {
   activeEvent: ActiveGameEvent | null;
 };
@@ -25,6 +35,15 @@ export default function EventDisplay({ activeEvent }: Props) {
   };
 
   const iconPath = EVENT_ICON_PATHS[activeEvent.id];
+
+  const formatEffects = () => {
+    return activeEvent.effects.map((effect) => {
+      const label = EFFECT_LABELS[effect.type] || effect.type;
+      const sign = effect.value > 0 ? "+" : "";
+      const suffix = effect.type === "spawn_modifier" ? " enemies" : "%";
+      return `${label}: ${sign}${effect.value}${suffix}`;
+    });
+  };
 
   return (
     <div
@@ -51,10 +70,15 @@ export default function EventDisplay({ activeEvent }: Props) {
         </span>
       </div>
       {hoveredEvent && (
-        <div
-          className="event-tooltip"
-        >
-          {activeEvent.description}
+        <div className="event-tooltip">
+          <div style={{ marginBottom: "8px" }}>
+            {activeEvent.description}
+          </div>
+          <div style={{ borderTop: "1px solid rgba(255, 200, 80, 0.3)", paddingTop: "8px", fontSize: "11px", color: "rgba(255, 200, 80, 0.9)" }}>
+            {formatEffects().map((effect, idx) => (
+              <div key={idx}>{effect}</div>
+            ))}
+          </div>
         </div>
       )}
     </div>
