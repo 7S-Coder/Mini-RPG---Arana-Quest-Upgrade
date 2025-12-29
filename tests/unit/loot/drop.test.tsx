@@ -57,7 +57,7 @@ describe('maybeDropFromEnemy (loot)', () => {
     expect(res).not.toBeNull();
     // If a fragment dropped, it must use slot 'key' and have the expected name.
     if (res && (res as any).slot === 'key') {
-      expect((res as any).name).toBe('Cave Key fragment A');
+      expect((res as any).name).toBe('Cave Key A');
     } else {
       // Otherwise the function returned a normal item (non-deterministic due to random calls).
       expect(['familiar','boots','belt','hat','chestplate','ring','weapon']).toContain((res as any).slot);

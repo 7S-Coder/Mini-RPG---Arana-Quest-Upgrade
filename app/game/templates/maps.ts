@@ -99,7 +99,7 @@ const defaultMaps: MapTemplate[] = [
     allowedTiers: ['uncommon', 'rare', 'epic'],
     loot: 'loot: Uncommon - Rare - Epic',
     enemyPool: ['stone_golem', 'crystal_bug', 'cave_troll', 'bat', 'snail', 'salamander', 'snake', 'wood_fairy', 'bear', 'batwan', 'rabid_hyenas'],
-    requiredKeyFragments: ['Forest Key A', 'Forest Key B'],
+    requiredKeyFragments: ['Cave Key A', 'Cave Key B'],
     dungeons: [
       { id: 'underground_cave', name: 'The Underground Cave', floors: 5, bossTemplateId: 'rabid_hyenas' },
     ],

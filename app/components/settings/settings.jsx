@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Settings as SettingsIcon, Trash2 } from "lucide-react";
 import "../styles/settings.css";
 
