@@ -9,11 +9,11 @@
     "lint": "eslint",
     "test": "vitest",
     "test:unit": "vitest run tests/unit",
-    "test:integration": "vitest run tests/integration"
-    ,
+    "test:integration": "vitest run tests/integration",
     "godMod": "node scripts/godMod.js"
   },
   "dependencies": {
+    "lucide-react": "^0.562.0",
     "next": "16.0.10",
     "react": "19.2.1",
     "react-dom": "19.2.1"

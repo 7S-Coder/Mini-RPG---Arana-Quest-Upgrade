@@ -27,6 +27,7 @@ import { useToasts } from "../hooks/useToasts";
 import { useDungeon } from "../hooks/useDungeon";
 import { useNarration } from "../hooks/useNarration";
 import { getMapNarration, getCombatNarration, TUTORIAL_MESSAGES } from "./templates/narration";
+import Settings from "../components/settings/settings";
 
 export default function Game() {
   const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, createItemFromTemplate, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins, achievements } = useGameState();
@@ -986,6 +987,9 @@ export default function Game() {
       <header className="app-header">
         <h1>Arena Quest</h1>
         <p className="subtitle">Adventure mmorpg - v0.22</p>
+        <div style={{ position: 'absolute', right: 28, top: 50, transform: 'translateY(-50%)' }}>
+          <Settings />
+        </div>
       </header>
 
       <div className="main-grid">

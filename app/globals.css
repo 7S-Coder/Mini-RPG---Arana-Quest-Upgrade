@@ -19,6 +19,7 @@ body {
 	--accent:#a85638;
 	--accent-2:#2fb3ff;
 	--glass: rgba(255,255,255,0.03);
+	--gold: #ffd700;
 	--radius:12px;
 	--mono: 'Geist Mono', monospace;
 	scrollbar-color:rgb(255, 255, 255) #111;
@@ -43,6 +44,7 @@ body{
 	justify-content:center;
 	flex-direction:column;
 	background:transparent;
+	position:relative;
 }
 .app-header h1{color:var(--accent);margin:0;font-size:28px}
 .app-header .subtitle{color:var(--muted);font-size:12px;margin-top:6px}
