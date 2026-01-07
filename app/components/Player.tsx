@@ -70,7 +70,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 		dodge: 'Chance to avoid incoming attacks completely. Stacks with other defenses.',
 		crit: 'Chance to deal 50% extra damage on an attack. Scales with equipment.',
 		regen: 'Health recovered per second out of combat. Removed in battle.',
-		speed: 'Movement and attack speed. Higher is faster combat.',
+		speed: 'Governs turn order (act first), bonus hits, and enemy rage reduction. Higher is faster combat.',
 		gold: 'Currency earned from battles. Used to purchase items and upgrades.',
 		essence: 'Magical resource for crafting and forging. Obtained from bosses in dungeons.',
 		essence_dust: 'Common material from weak enemies. Used in basic crafting.',

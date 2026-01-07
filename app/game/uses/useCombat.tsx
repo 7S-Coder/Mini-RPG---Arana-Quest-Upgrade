@@ -43,7 +43,20 @@ export default function useCombat({
   selectedTargetId?: string | null;
 }) {
   const lockedRef = useRef(false);
+  const initiativeRef = useRef(false); // Track if initiative message was shown
   const rollChance = useCallback((percent = 0) => Math.random() * 100 < (percent ?? 0), []);
+
+  // Helper: Calculate bonus hits chance based on speed
+  // Formula: clamp(speed / 200, 0, 0.5) = max 50% chance for bonus hit
+  const getBonusHitsChance = useCallback((speed: number) => {
+    return Math.min(0.5, Math.max(0, speed / 200));
+  }, []);
+
+  // Helper: Apply speed-based rage reduction
+  // Formula: enemyRage *= (1 - speed / 500), capped to prevent negative multipliers
+  const getSpeedRageMultiplier = useCallback((speed: number) => {
+    return Math.max(0.5, 1 - speed / 500); // Capped at 50% minimum rage
+  }, []);
 
   const calcDamage = useCallback((atk: number, def: number, isCrit = false) => {
     const variance = 0.85 + Math.random() * 0.3; // 0.85 .. 1.15
@@ -102,6 +115,11 @@ export default function useCombat({
         // Bosses gain 2x rage
         let rageGain = Math.round((edmg / (playerSnap.hp ?? 100)) * 50);
         if (e.isBoss) rageGain *= 2;
+        
+        // Apply speed-based rage reduction (player's speed decreases enemy rage gain)
+        const speedRageMultiplier = getSpeedRageMultiplier(playerSnap.speed ?? 0);
+        rageGain = Math.round(rageGain * speedRageMultiplier);
+        
         rageUpdates[e.id] += rageGain;
         
         if (enemyCrit) {
@@ -228,6 +246,16 @@ export default function useCombat({
     const fastEnemies = aliveEnemies.filter((e) => (e.speed ?? 0) > pSpeed);
     const slowEnemies = aliveEnemies.filter((e) => (e.speed ?? 0) <= pSpeed);
 
+    // Display initiative message (only once per combat sequence)
+    if (!initiativeRef.current) {
+      if (fastEnemies.length > 0) {
+        pushLog("⚡ Enemies move first!");
+      } else {
+        pushLog("⚡ You move first!");
+      }
+      initiativeRef.current = true;
+    }
+
     // Get the target enemy (the one we'll attack)
     // First try to use selectedTargetId, fallback to first alive enemy
     let target = selectedTargetId 
@@ -293,12 +321,34 @@ export default function useCombat({
         pushLog(<>{mod.label} Hit! You deal {dmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
       }
       // Enemy gains rage based on damage received: damage / 2 = rage gain
-      const rageGainFromDamage = Math.round(dmg / 2);
+      let rageGainFromDamage = Math.round(dmg / 2);
+      
+      // Apply speed-based rage reduction (player's speed decreases enemy rage gain)
+      const speedRageMultiplier = getSpeedRageMultiplier(player.speed ?? 0);
+      rageGainFromDamage = Math.round(rageGainFromDamage * speedRageMultiplier);
+      
       const updated = (enemies || []).map((e) => (e.id === target.id ? { ...e, hp: Math.max(0, e.hp - dmg), rage: Math.min(100, (e.rage ?? 0) + rageGainFromDamage) } : e));
       // update state and keep a local snapshot to avoid reading stale `enemies` later
       setEnemies(updated);
       postAttackEnemies = updated;
       if (onEffect) onEffect({ type: 'damage', text: String(dmg), kind: critRoll ? 'crit' : 'hit', target: 'enemy', id: target.id });
+
+      // Check for bonus hits based on player's speed
+      const bonusHitsChance = getBonusHitsChance(player.speed ?? 0);
+      if (Math.random() < bonusHitsChance && postAttackEnemies.find((e) => e.id === target.id && e.hp > 0)) {
+        // Bonus hit triggered!
+        const bonusDmg = calcDamage(adjustedAtk * 0.8, target.def ?? 0, false); // 80% of base damage
+        pushLog(<>⚡ Swift strike! You follow up with another hit for {bonusDmg} damage!</>);
+        const bonusRageGain = Math.round((bonusDmg / 2) * speedRageMultiplier);
+        const updatedWithBonus = postAttackEnemies.map((e) => 
+          e.id === target.id 
+            ? { ...e, hp: Math.max(0, e.hp - bonusDmg), rage: Math.min(100, (e.rage ?? 0) + bonusRageGain) } 
+            : e
+        );
+        setEnemies(updatedWithBonus);
+        postAttackEnemies = updatedWithBonus;
+        if (onEffect) onEffect({ type: 'damage', text: String(bonusDmg), kind: 'hit', target: 'enemy', id: target.id });
+      }
 
       const killed = updated.find((e) => e.id === target.id && e.hp === 0);
       if (killed) {
@@ -532,7 +582,7 @@ export default function useCombat({
     setTimeout(() => {
       lockedRef.current = false;
     }, 120);
-  }, [enemies, player, setEnemies, setPlayer, addXp, pushLog, endEncounter, rollChance, calcDamage, saveCoreGame, turnModifier, onModifierChange, safeCooldown, riskyCooldown, onSafeCooldownChange, onRiskyCooldownChange]);
+  }, [enemies, player, setEnemies, setPlayer, addXp, pushLog, endEncounter, rollChance, calcDamage, saveCoreGame, turnModifier, onModifierChange, safeCooldown, riskyCooldown, onSafeCooldownChange, onRiskyCooldownChange, getBonusHitsChance, getSpeedRageMultiplier, onEffect]);
 
   const onRun = useCallback(() => {
     if (lockedRef.current) {

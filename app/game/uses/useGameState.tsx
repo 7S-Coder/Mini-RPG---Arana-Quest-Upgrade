@@ -34,7 +34,7 @@ export function useGameState() {
     dodge: 5,
     crit: 3,
     def: 2,
-    speed: 120, // default 120 px/s
+    speed: 0, // starts at 0, scale with equipment
     regen: 3, // hp regeneration per second (out of combat)
     gold: 0,
     essence: 0, // ensure essence is initialized
