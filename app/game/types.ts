@@ -16,6 +16,7 @@ export type Item = {
   infused?: boolean; // has essence infusion
   isForged?: boolean; // created via forge
   description?: string; // item description
+  weaponType?: WeaponType; // weapon type for weapon items
 };
 
 export type Enemy = {

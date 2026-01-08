@@ -11,7 +11,7 @@ import {
   getDropChanceForMap,
   LOOT_RARITY_ORDER,
 } from "../templates/lootTables";
-import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity, EquipmentSlot } from "../types";
+import type { Player, Enemy, Item, Pickup, ItemTemplate, Rarity, EquipmentSlot, WeaponType } from "../types";
 import useStatistics from "../../hooks/useStatistics";
 import useProgression from "../../hooks/useProgression";
 import { useAchievements } from "./useAchievements";
@@ -228,6 +228,27 @@ export function useGameState() {
     return null;
   };
 
+  // Map enemy types to thematic weapon types (intelligent weapon assignment)
+  const getWeaponTypeForEnemy = (templateId: string): WeaponType => {
+    // Dagger: Fast, multi-hit enemies (rodents, flying, magic)
+    const daggerEnemies = ['rat_spawn', 'rat', 'butterfly_spawn', 'butterfly', 'bee', 'big_bee', 'bat', 'wood_fairy', 'batwan', 'wraith', 'shadow_mage', 'fire_imp'];
+    
+    // Sword: Balanced enemies (quadrupeds, warriors, knights)
+    const swordEnemies = ['wolf', 'crow', 'monkey', 'skeleton', 'ghost_knight', 'cursed_knight', 'ancient_sentinel'];
+    
+    // Axe: Heavy hitters (large creatures, titans)
+    const axeEnemies = ['wild_boar', 'bear', 'stone_golem', 'cave_troll', 'rabid_hyenas', 'lava_golem', 'flame_titan', 'gargoyle', 'ancient_guardian', 'infernal_warden', 'avatar_of_cinders', 'fire_overlord'];
+    
+    // Spear: Swarm control, hive enemies, serpents
+    const spearEnemies = ['ant', 'giant_spider', 'salamander', 'snake', 'magma_serpent', 'ash_phoenix', 'forgotten_keeper'];
+    
+    if (daggerEnemies.includes(templateId)) return 'dagger';
+    if (swordEnemies.includes(templateId)) return 'sword';
+    if (axeEnemies.includes(templateId)) return 'axe';
+    if (spearEnemies.includes(templateId)) return 'spear';
+    return 'barehand'; // Default fallback for unspecified enemies
+  };
+
   const createItemForEnemy = (enemy: Enemy, rarity: Rarity): Item => {
     const slot = SLOTS[Math.floor(Math.random() * SLOTS.length)];
     const baseName = enemy.name ?? "Item";
@@ -238,6 +259,8 @@ export function useGameState() {
     const hpFactor: Record<Rarity, number> = { common: 0.03, uncommon: 0.04, rare: 0.05, epic: 0.08, legendary: 0.14, mythic: 0.25 };
     const defFactor: Record<Rarity, number> = { common: 0.05, uncommon: 0.065, rare: 0.08, epic: 0.12, legendary: 0.18, mythic: 0.3 };
     const critFactor: Record<Rarity, number> = { common: 0.5, uncommon: 0.7, rare: 0.9, epic: 1.4, legendary: 2.2, mythic: 3.5 };
+
+    const weaponType = slot === 'weapon' ? getWeaponTypeForEnemy(enemy.templateId ?? '') : undefined;
 
     switch (slot) {
       case "weapon":
@@ -291,7 +314,7 @@ export function useGameState() {
     };
 
     const scaled = scaleStats(stats, rarity);
-    return { id: uid(), slot, name, rarity, category: slotToCategory[slot], stats: scaled, cost: computeItemCost(scaled as Record<string, number> | undefined, rarity) };
+    return { id: uid(), slot, name, rarity, category: slotToCategory[slot], stats: scaled, cost: computeItemCost(scaled as Record<string, number> | undefined, rarity), weaponType };
   };
 
   const maybeDropFromEnemy = (enemy: Enemy, selectedMapId: string | null, isBoss?: boolean, isDungeonRoom?: boolean): Item | null => {
