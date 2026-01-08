@@ -1,5 +1,24 @@
-import type { Player, WeaponStats } from "./types";
+import type { Player, WeaponStats, Rarity } from "./types";
 import { getWeaponStats } from "./templates/weapons";
+
+/**
+ * Get rarity multiplier bonus for weapons
+ * Increases effectiveness based on weapon rarity tier
+ */
+export function getRarityMultiplier(rarity?: Rarity): number {
+  if (!rarity) return 1.0;
+  
+  const rarityMultipliers: Record<Rarity, number> = {
+    common: 1.0,
+    uncommon: 1.05,
+    rare: 1.1,
+    epic: 1.25,
+    legendary: 1.5,
+    mythic: 2.0,
+  };
+  
+  return rarityMultipliers[rarity] ?? 1.0;
+}
 
 /**
  * Get equipped weapon stats for a player
@@ -13,27 +32,30 @@ export function getPlayerWeaponStats(player: Player): WeaponStats {
 }
 
 /**
- * Apply weapon damage multiplier to base damage
+ * Apply weapon damage multiplier to base damage (with rarity bonus)
  */
 export function getWeaponDamage(baseDmg: number, player: Player): number {
   const weaponStats = getPlayerWeaponStats(player);
-  return Math.max(1, Math.round(baseDmg * weaponStats.dmgMultiplier));
+  const rarityMult = getRarityMultiplier(player.equippedWeapon?.rarity);
+  return Math.max(1, Math.round(baseDmg * weaponStats.dmgMultiplier * rarityMult));
 }
 
 /**
- * Get crit chance with weapon bonus
+ * Get crit chance with weapon bonus (with rarity bonus)
  */
 export function getWeaponCritChance(baseCrit: number, player: Player): number {
   const weaponStats = getPlayerWeaponStats(player);
-  return baseCrit + weaponStats.critBonus;
+  const rarityMult = getRarityMultiplier(player.equippedWeapon?.rarity);
+  return baseCrit + (weaponStats.critBonus * rarityMult);
 }
 
 /**
- * Get dodge chance with weapon bonus
+ * Get dodge chance with weapon bonus (with rarity bonus)
  */
 export function getWeaponDodgeChance(baseDodge: number, player: Player): number {
   const weaponStats = getPlayerWeaponStats(player);
-  return Math.max(0, baseDodge + weaponStats.dodgeBonus);
+  const rarityMult = getRarityMultiplier(player.equippedWeapon?.rarity);
+  return Math.max(0, baseDodge + (weaponStats.dodgeBonus * rarityMult));
 }
 
 /**
@@ -46,13 +68,14 @@ export function getWeaponInitiativeBonus(player: Player): number {
 }
 
 /**
- * Get multi-hit chance multiplier from weapon
- * Formula: (speed / 200) * multiHitBonus, capped at 0.5
+ * Get multi-hit chance multiplier from weapon (with rarity bonus)
+ * Formula: (speed / 200) * multiHitBonus * rarityMult, capped at 0.5
  */
 export function getWeaponMultiHitChance(speed: number, player: Player): number {
   const weaponStats = getPlayerWeaponStats(player);
+  const rarityMult = getRarityMultiplier(player.equippedWeapon?.rarity);
   const baseChance = Math.min(0.5, Math.max(0, speed / 200));
-  const bonusChance = baseChance * weaponStats.multiHitBonus;
+  const bonusChance = baseChance * weaponStats.multiHitBonus * rarityMult;
   return Math.min(0.5, bonusChance); // still capped at 50%
 }
 
@@ -65,27 +88,36 @@ export function checkWeaponMiss(player: Player): boolean {
 }
 
 /**
- * Apply weapon rage modifier to enemy rage gain
+ * Apply weapon rage modifier to enemy rage gain (with rarity bonus)
  */
 export function applyWeaponRageModifier(rageGain: number, player: Player): number {
   const weaponStats = getPlayerWeaponStats(player);
-  return Math.round(rageGain * weaponStats.rageModifier);
+  const rarityMult = getRarityMultiplier(player.equippedWeapon?.rarity);
+  // Rarity mult affects the rage modifier strength
+  const adjustedRageModifier = 1 + ((weaponStats.rageModifier - 1) * rarityMult);
+  return Math.round(rageGain * adjustedRageModifier);
 }
 
 /**
- * Get boss damage bonus
+ * Get boss damage bonus (with rarity bonus)
  */
 export function getWeaponBossBonus(player: Player): number {
   const weaponStats = getPlayerWeaponStats(player);
-  return weaponStats.boss_bonus ?? 1.0;
+  const rarityMult = getRarityMultiplier(player.equippedWeapon?.rarity);
+  const baseBossBonus = weaponStats.boss_bonus ?? 1.0;
+  // Apply rarity as percentage increase to boss bonus
+  return 1 + ((baseBossBonus - 1) * rarityMult);
 }
 
 /**
- * Get swarm damage bonus
+ * Get swarm damage bonus (with rarity bonus)
  */
 export function getWeaponSwarmBonus(player: Player): number {
   const weaponStats = getPlayerWeaponStats(player);
-  return weaponStats.swarm_bonus ?? 1.0;
+  const rarityMult = getRarityMultiplier(player.equippedWeapon?.rarity);
+  const baseSwarmBonus = weaponStats.swarm_bonus ?? 1.0;
+  // Apply rarity as percentage increase to swarm bonus
+  return 1 + ((baseSwarmBonus - 1) * rarityMult);
 }
 
 /**
@@ -93,10 +125,17 @@ export function getWeaponSwarmBonus(player: Player): number {
  */
 export function getWeaponDescription(player: Player): string {
   const stats = getPlayerWeaponStats(player);
+  const rarityMult = getRarityMultiplier(player.equippedWeapon?.rarity);
   const parts = [
     stats.name,
     `Role: ${stats.role}`,
   ];
+
+  // Add rarity bonus if present
+  if (player.equippedWeapon?.rarity && rarityMult > 1.0) {
+    const rarityPercent = Math.round((rarityMult - 1) * 100);
+    parts.push(`✨ Rarity +${rarityPercent}%`);
+  }
 
   if (stats.dmgMultiplier !== 1.0) {
     const dmgPercent = Math.round((stats.dmgMultiplier - 1) * 100);
