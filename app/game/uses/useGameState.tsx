@@ -46,6 +46,10 @@ export function useGameState() {
     },
     // ensure unlockedTiers always present so gating logic works
     unlockedTiers: ['common'],
+    // Start with barehand weapon (fallback to this if not set)
+    equippedWeapon: {
+      type: 'barehand',
+    },
   });
   // refs to hold latest state for synchronous access during save
   const playerRef = useRef<Player>(player);

@@ -1,6 +1,13 @@
 "use client";
 
 import { useCallback, useRef } from "react";
+import {
+  getPlayerWeaponStats,
+  getWeaponDamage,
+  getWeaponMultiHitChance,
+  checkWeaponMiss,
+  applyWeaponRageModifier,
+} from "../weaponHelpers";
 
 type Player = any;
 type Enemy = any;
@@ -314,7 +321,15 @@ export default function useCombat({
     } else {
       const baseAtk = Math.max(1, player.dmg ?? 1);
       const adjustedAtk = baseAtk * mod.dmgMult;
-      const dmg = calcDamage(adjustedAtk, target.def ?? 0, critRoll);
+      
+      // Check for weapon miss
+      const weaponStats = getPlayerWeaponStats(player);
+      if (checkWeaponMiss(player)) {
+        pushLog(<>🎯 Miss! Your attack grazes <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
+        if (onEffect) onEffect({ type: 'dodge', text: 'Miss', target: 'enemy', id: target.id });
+      } else {
+        const weaponDmg = getWeaponDamage(adjustedAtk, player);
+        const dmg = calcDamage(weaponDmg, target.def ?? 0, critRoll);
       if (critRoll) {
         pushLog(<>💥 Critical {mod.label} hit! You deal {dmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
       } else {
@@ -327,22 +342,26 @@ export default function useCombat({
       const speedRageMultiplier = getSpeedRageMultiplier(player.speed ?? 0);
       rageGainFromDamage = Math.round(rageGainFromDamage * speedRageMultiplier);
       
+      // Apply weapon rage modifier
+      rageGainFromDamage = applyWeaponRageModifier(rageGainFromDamage, player);
+      
       const updated = (enemies || []).map((e) => (e.id === target.id ? { ...e, hp: Math.max(0, e.hp - dmg), rage: Math.min(100, (e.rage ?? 0) + rageGainFromDamage) } : e));
       // update state and keep a local snapshot to avoid reading stale `enemies` later
       setEnemies(updated);
       postAttackEnemies = updated;
       if (onEffect) onEffect({ type: 'damage', text: String(dmg), kind: critRoll ? 'crit' : 'hit', target: 'enemy', id: target.id });
 
-      // Check for bonus hits based on player's speed
-      const bonusHitsChance = getBonusHitsChance(player.speed ?? 0);
-      if (Math.random() < bonusHitsChance && postAttackEnemies.find((e) => e.id === target.id && e.hp > 0)) {
+      // Check for bonus hits based on player's speed and weapon
+      const bonusHitsChance = getWeaponMultiHitChance(player.speed ?? 0, player);
+      if (weaponStats.multiHitBonus > 0 && Math.random() < bonusHitsChance && postAttackEnemies.find((e) => e.id === target.id && e.hp > 0)) {
         // Bonus hit triggered!
-        const bonusDmg = calcDamage(adjustedAtk * 0.8, target.def ?? 0, false); // 80% of base damage
+        const bonusDmg = calcDamage(weaponDmg * 0.8, target.def ?? 0, false); // 80% of base damage
         pushLog(<>⚡ Swift strike! You follow up with another hit for {bonusDmg} damage!</>);
         const bonusRageGain = Math.round((bonusDmg / 2) * speedRageMultiplier);
+        const bonusRageWithWeapon = applyWeaponRageModifier(bonusRageGain, player);
         const updatedWithBonus = postAttackEnemies.map((e) => 
           e.id === target.id 
-            ? { ...e, hp: Math.max(0, e.hp - bonusDmg), rage: Math.min(100, (e.rage ?? 0) + bonusRageGain) } 
+            ? { ...e, hp: Math.max(0, e.hp - bonusDmg), rage: Math.min(100, (e.rage ?? 0) + bonusRageWithWeapon) } 
             : e
         );
         setEnemies(updatedWithBonus);
@@ -416,6 +435,7 @@ export default function useCombat({
         } catch (e) {
           // ignore drop errors
         }
+      }
       }
     }
 

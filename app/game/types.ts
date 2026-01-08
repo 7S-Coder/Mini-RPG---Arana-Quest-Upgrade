@@ -66,9 +66,11 @@ export type Player = {
     star_fragment?: number;
     void_shard?: number;
   };
+  // equipped weapon (defaults to barehand if not set)
+  equippedWeapon?: EquippedWeapon;
 };
 
-export type ItemTemplate = Omit<Item, "id" | "rarity"> & { weight?: number; rarity?: Rarity; allowedMaps?: string[] };
+export type ItemTemplate = Omit<Item, "id" | "rarity"> & { weight?: number; rarity?: Rarity; allowedMaps?: string[]; weaponType?: WeaponType };
 
 export type Pickup = {
   id: string;
@@ -162,4 +164,34 @@ export type GameEvent = {
 export type ActiveGameEvent = GameEvent & {
   activatedAt: number; // timestamp when event started
   durationRemaining: number; // battles remaining for this event
+};
+
+// === WEAPON SYSTEM ===
+export type WeaponType = 'barehand' | 'dagger' | 'sword' | 'axe' | 'spear';
+
+export type WeaponStats = {
+  type: WeaponType;
+  name: string;
+  description: string;
+  // Bonus/Malus on base stats
+  dmgMultiplier: number; // 1.0 = neutral, 1.3 = +30%
+  critBonus: number; // additive to crit chance (+10 = +10%)
+  dodgeBonus: number; // additive to dodge chance (+5 = +5%)
+  initiativeBonus: number; // additive to initiative calc (+10 = +10%)
+  // Multi-hit and rage specific
+  multiHitBonus: number; // multiplier on speed/200 (1.0 = no change, 1.5 = +50% chance)
+  missChance: number; // 0-100, chance to miss
+  rageModifier: number; // 1.0 = neutral, 1.1 = +10% rage to enemy, 0.9 = -10%
+  // Scaling and progression
+  essence_scaling?: boolean; // scales with essence
+  boss_bonus?: number; // extra dmg vs bosses/elites
+  swarm_bonus?: number; // extra dmg vs multiple enemies
+  // Flavor
+  role: string; // 'Safe early' | 'Burst RNG' | 'Polyvalent' etc
+};
+
+export type EquippedWeapon = {
+  type: WeaponType;
+  rarity?: Rarity;
+  stats?: Record<string, number>; // override stats if forged/enhanced
 };
