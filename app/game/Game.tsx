@@ -677,13 +677,6 @@ export default function Game() {
       try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
       try { addToast(msg ? String(msg) : 'You died.', 'error', 4000); } catch (e) {}
       try { resetMapStreak(selectedMapId); } catch (e) {}
-      // Show death narration
-      try {
-        const narration = getMapNarration(selectedMapId as any);
-        if (narration?.events.playerDeath) {
-          showNarration(narration.events.playerDeath);
-        }
-      } catch (e) {}
     }
     else if (opts?.type === 'flee') {
       // Reset streak when fleeing combat
