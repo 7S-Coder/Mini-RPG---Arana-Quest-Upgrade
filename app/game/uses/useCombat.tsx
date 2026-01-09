@@ -458,6 +458,8 @@ export default function useCombat({
     // Only the targeted enemy attacks for now
     const postEnemies = postAttackEnemies.filter((e) => e.hp > 0);
     const targetAfterAttack = postEnemies.find((e) => e.id === target.id);
+    const targetId = targetAfterAttack?.id;
+    
     if (targetAfterAttack && (targetAfterAttack.speed ?? 0) <= pSpeed && targetAfterAttack.hp > 0) {
       const result = applyEnemyAttacksToPlayer([targetAfterAttack], playerSnap, mod.dodgeBonus, attackType === 'safe');
       playerSnap = result.playerSnap;
@@ -476,10 +478,13 @@ export default function useCombat({
         lockedRef.current = false;
         return;
       }
-      // Gestion de la rage uniquement pour l'ennemi ciblé
+    }
+
+    // Rage attacks for the TARGETED enemy only with 100% rage (happens independently of slow enemy attacks)
+    {
       const updatedEnemies = postAttackEnemies;
       const aliveAfterSlowAttack = updatedEnemies.filter((e) => e.hp > 0);
-      const enemiesToRageAttack = aliveAfterSlowAttack.filter((e) => (e.rage ?? 0) >= 100 && e.id === targetAfterAttack.id);
+      const enemiesToRageAttack = aliveAfterSlowAttack.filter((e) => (e.rage ?? 0) >= 100 && e.id === targetId && e.hp > 0);
       if (enemiesToRageAttack.length > 0) {
         for (const rageEnemy of enemiesToRageAttack) {
           const effect = rageEnemy.rageEffect || 'multi_attack';
