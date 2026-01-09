@@ -118,6 +118,7 @@ export type Achievement = {
   id: string;
   title: string;
   description: string; // Gameplay-focused description
+  context?: string; // Optional narrative context shown before the quote
   lore: string; // Narrative description (shown after unlock)
   narrator?: 'eldran' | 'lya' | 'brak' | 'messenger'; // NPC who narrates this achievement
   icon?: string; // Optional icon/emoji

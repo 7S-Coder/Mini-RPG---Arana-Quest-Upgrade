@@ -147,6 +147,11 @@ export default function AchievementsModal({ achievements, onClose }: Achievement
                   {/* Lore visible only after unlock */}
                   {ach.unlocked && (
                     <>
+                      {ach.context && (
+                        <div className="achievement-context">
+                          {ach.context}
+                        </div>
+                      )}
                       {ach.narrator && (
                         <div className="achievement-narrator">
                           <span className="narrator-label">

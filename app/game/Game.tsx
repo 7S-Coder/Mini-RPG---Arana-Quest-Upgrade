@@ -19,6 +19,7 @@ import MapsModal from "../components/modales/MapsModal";
 import CatalogModal from "../components/modales/CatalogModal";
 import DialogueModal from "../components/modales/DialogueModal";
 import AchievementsModal from "../components/modales/AchievementsModal";
+import NarrationsModal from "../components/modales/NarrationsModal";
 import { getMaps, pickEnemyFromMap, pickEnemyFromRoom, getRoomsForMap } from "./templates/maps";
 import { ENEMY_TEMPLATES } from "./templates/enemies";
 import { calcDamage } from "./damage";
@@ -26,7 +27,8 @@ import { useLogs } from "../hooks/useLogs";
 import { useToasts } from "../hooks/useToasts";
 import { useDungeon } from "../hooks/useDungeon";
 import { useNarration } from "../hooks/useNarration";
-import { getMapNarration, getCombatNarration, TUTORIAL_MESSAGES } from "./templates/narration";
+import { useLevelMilestones } from "../hooks/useLevelMilestones";
+import { TUTORIAL_MESSAGES } from "./templates/narration";
 import Settings from "../components/settings/settings";
 
 export default function Game() {
@@ -172,6 +174,7 @@ export default function Game() {
   const { logs, pushLog, clearLogs } = useLogs();
   const { toasts, addToast } = useToasts();
   const { currentMessage, showNarration, closeNarration, markTutorialShown, isTutorialShown } = useNarration();
+  const { checkAndTriggerMilestone, unlockedLevels } = useLevelMilestones();
   
   // Event system
   const { activeEvent, tryTriggerEvent, decrementEventDuration, endActiveEvent, loadFromSave: loadEventFromSave, getSaveData: getEventSaveData, getActiveEventEffects } = useEvents();
@@ -374,6 +377,16 @@ export default function Game() {
       markTutorialShown('firstLevelUp');
     }
   }, [player?.level, showNarration, isTutorialShown, markTutorialShown]);
+
+  // Level Milestones: Trigger narration at key progression points (5, 10, 15, 20, etc.)
+  useEffect(() => {
+    if (!player?.level) return;
+    
+    const milestoneNarration = checkAndTriggerMilestone(player.level);
+    if (milestoneNarration) {
+      showNarration(milestoneNarration);
+    }
+  }, [player?.level, checkAndTriggerMilestone, showNarration]);
 
   // Tutorial: Map unlock
   useEffect(() => {
@@ -1196,6 +1209,9 @@ export default function Game() {
       )}
       {modalName === 'achievements' && (
         <AchievementsModal onClose={closeModal} achievements={achievements.achievements} />
+      )}
+      {modalName === 'narrations' && (
+        <NarrationsModal onClose={closeModal} unlockedLevels={unlockedLevels} />
       )}
       {modalName === 'bestiary' && (
         <BestiaryModal onClose={closeModal} enemies={enemies} selectedMapId={selectedMapId} />
