@@ -749,8 +749,8 @@ export default function Game() {
       const newAchs = achievements.getNewlyUnlocked();
       for (const ach of newAchs) {
         try {
-          addToast(`🏆 Achievement Unlocked: ${ach.title}!`, 'ok', 4000);
-          pushLog(`🏆 Achievement: ${ach.title} — ${ach.lore}`);
+          addToast(`Achievement Unlocked: ${ach.title}!`, 'ok', 4000);
+          pushLog(`Achievement: ${ach.title} — ${ach.lore}`);
           
           // Apply achievement rewards
           if (ach.reward) {
