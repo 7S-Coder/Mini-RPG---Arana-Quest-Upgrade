@@ -20,6 +20,7 @@ import CatalogModal from "../components/modales/CatalogModal";
 import DialogueModal from "../components/modales/DialogueModal";
 import AchievementsModal from "../components/modales/AchievementsModal";
 import NarrationsModal from "../components/modales/NarrationsModal";
+import PauseModal from "../components/modales/PauseModal";
 import { getMaps, pickEnemyFromMap, pickEnemyFromRoom, getRoomsForMap } from "./templates/maps";
 import { ENEMY_TEMPLATES } from "./templates/enemies";
 import { calcDamage } from "./damage";
@@ -29,7 +30,6 @@ import { useDungeon } from "../hooks/useDungeon";
 import { useNarration } from "../hooks/useNarration";
 import { useLevelMilestones } from "../hooks/useLevelMilestones";
 import { TUTORIAL_MESSAGES } from "./templates/narration";
-import Settings from "../components/settings/settings";
 
 export default function Game() {
   const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, createItemFromTemplate, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins, achievements } = useGameState();
@@ -61,6 +61,7 @@ export default function Game() {
   // modal system (generalized)
   const [modalName, setModalName] = useState<string | null>(null);
   const [modalProps, setModalProps] = useState<any>(null);
+  const [isPaused, setIsPaused] = useState(false);
   const openModal = useCallback((name: string, props?: any) => {
     // compute final props (apply defaults for inventory modal)
     const resolved = name === "inventory" ? (props ?? { inventory, equipment, player, progression, allocate, deallocate }) : (props ?? null);
@@ -80,6 +81,13 @@ export default function Game() {
       try {
         const active = document.activeElement as HTMLElement | null;
         if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as any).isContentEditable)) return;
+        
+        // Handle Escape key for pause
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          setIsPaused(!isPaused);
+          return;
+        }
         
         if (e.ctrlKey || e.metaKey) {
           const key = e.key.toLowerCase();
@@ -114,7 +122,7 @@ export default function Game() {
     };
     window.addEventListener('keydown', handler as any);
     return () => window.removeEventListener('keydown', handler as any);
-  }, [openModal, closeModal, modalName]);
+  }, [openModal, closeModal, modalName, isPaused]);
 
   // uid helper to avoid duplicate keys across fast calls / HMR
   const uid = () => {
@@ -968,8 +976,8 @@ export default function Game() {
       <header className="app-header">
         <h1>Arena Quest</h1>
         <p className="subtitle">Adventure mmorpg - v0.22</p>
-        <div style={{ position: 'absolute', right: 28, top: 50, transform: 'translateY(-50%)' }}>
-          <Settings />
+        <div style={{ position: 'absolute', right: 28, top: 50, transform: 'translateY(-50%)', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+          Press <span style={{ background: 'rgba(255, 215, 0, 0.2)', border: '1px solid rgba(255, 215, 0, 0.5)', borderRadius: '4px', padding: '0.2rem 0.4rem', fontFamily: 'monospace' }}>ESC</span> to pause
         </div>
       </header>
 
@@ -1230,6 +1238,8 @@ export default function Game() {
       )}
       {/* Dialogue Modal */}
       <DialogueModal message={currentMessage} onClose={closeNarration} />
+      {/* Pause Modal */}
+      <PauseModal isOpen={isPaused} onClose={() => setIsPaused(false)} />
       {/* Toast container */}
       <div style={{ position: 'fixed', right: 16, top: 16, zIndex: 999999, display: 'flex', flexDirection: 'column', gap: 8 }}>
         {toasts.map((t) => (
