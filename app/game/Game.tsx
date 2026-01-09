@@ -289,41 +289,6 @@ export default function Game() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Handle map arrival narration
-  useEffect(() => {
-    if (!selectedMapId || selectedMapId === 'spawn') {
-      mapArrivalShownRef.current.delete('arrival');
-      mapCombatCountRef.current = {};
-      return;
-    }
-
-    // Show arrival message once per map selection
-    if (!mapArrivalShownRef.current.has(selectedMapId)) {
-      const narration = getMapNarration(selectedMapId as any);
-      if (narration?.events.arrival) {
-        showNarration(narration.events.arrival);
-        mapArrivalShownRef.current.add(selectedMapId);
-      }
-      // Reset combat counter for this map
-      mapCombatCountRef.current[selectedMapId] = 0;
-    }
-  }, [selectedMapId, showNarration]);
-
-  // Handle boss encounter narration
-  useEffect(() => {
-    try {
-      if (inCombat && enemies && enemies.length > 0) {
-        const boss = enemies.find((e) => e.isBoss);
-        if (boss) {
-          const narration = getMapNarration(parseInt(selectedMapId || '0'));
-          if (narration?.events.bossBefore && narration.events.bossBefore.bossName === boss.name) {
-            showNarration(narration.events.bossBefore.message);
-          }
-        }
-      }
-    } catch (e) {}
-  }, [inCombat, enemies, selectedMapId, showNarration]);
-
   // Tutorial: First combat explanation
   useEffect(() => {
     if (inCombat && !isTutorialShown('firstCombat')) {
@@ -736,15 +701,8 @@ export default function Game() {
       try {
         // Increment combat count for this map
         mapCombatCountRef.current[selectedMapId || 'spawn'] = (mapCombatCountRef.current[selectedMapId || 'spawn'] ?? 0) + 1;
-        const combatCount = mapCombatCountRef.current[selectedMapId || 'spawn'];
         
-        // Check for narration on specific combat counts
-        const combatNarration = getCombatNarration(parseInt(selectedMapId || '0'), combatCount);
-        if (combatNarration) {
-          showNarration(combatNarration);
-        }
-        
-        // Check for boss victory narration
+        // Check for boss victory
         if (opts?.isBoss && opts?.bossName) {
           // Special handling for Fire Overlord (final boss)
           if (opts.bossName === 'Fire Overlord' && selectedMapId === 'final_arena') {
@@ -755,11 +713,6 @@ export default function Game() {
               pushLog('Congratulations on completing Arena Quest!');
               addEffect({ type: 'explosion', text: 'VICTORY!', target: 'player' });
             } catch (e) {}
-          }
-          
-          const narration = getMapNarration(parseInt(selectedMapId || '0'));
-          if (narration?.events.bossVictory && narration.events.bossVictory.bossName === opts.bossName) {
-            showNarration(narration.events.bossVictory.message);
           }
         }
       } catch (e) {}
