@@ -12,6 +12,17 @@ export default function DialogueModal({ message, onClose }: DialogueModalProps) 
   if (!message) return null;
 
   const npcInfo = NPC_DATA[message.npc];
+  
+  // Map NPC to emoji
+  const getNPCEmoji = (npc: string): string => {
+    switch(npc) {
+      case 'eldran': return '👴';
+      case 'lya': return '🗺️';
+      case 'brak': return '🔨';
+      case 'messenger': return '🎭';
+      default: return '📖';
+    }
+  };
 
   return (
     <div
@@ -49,7 +60,7 @@ export default function DialogueModal({ message, onClose }: DialogueModalProps) 
         {/* Header avec NPC */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '32px' }}>{message.emoji}</span>
+            <span style={{ fontSize: '32px' }}>{getNPCEmoji(message.npc)}</span>
             <div>
               <h3 style={{ margin: '0', color: '#d8d8d8', fontSize: '18px' }}>
                 {npcInfo.name}
