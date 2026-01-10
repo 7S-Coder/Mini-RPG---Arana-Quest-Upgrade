@@ -42,6 +42,14 @@ const WEAPON_TYPE_COLOR: Record<string, string> = {
   spear: '#95e1d3',
 };
 
+const WEAPON_TYPE_DESCRIPTION: Record<string, string> = {
+  barehand: 'Instinctive and agile but low damage. Safe poke / early game survival.',
+  dagger: 'Fast and opportunistic. Assassin / explosive burst RNG with multi-hit.',
+  sword: 'Balanced and duelist. Versatile mastery / adaptation with counter-attack.',
+  axe: 'Powerful and penetrating. Boss killer with specialized damage and defense ignore.',
+  spear: 'Versatile and anti-rage. Control enemy waves.',
+};
+
 const SLOT_LABELS: Record<string, string> = {
   hat: 'Hat',
   familiar: 'Familiar',
@@ -317,7 +325,10 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                                 {hoveredTooltip === tooltipId && it && (
                                   <div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: '0.5vw', padding: '0.8vw', fontSize: '0.8vw', color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: '0.6vw', lineHeight: 1.4, minWidth: '15vw', maxWidth: '20vw' }}>
                                     <div style={{ color: '#bbb', fontSize: '0.75vw' }}>
-                                      {(it.description || getItemDescription(it)).replace(/^[^\w]+ /, '')}
+                                      {slot === 'weapon' && (it.weaponType || it.type) 
+                                        ? WEAPON_TYPE_DESCRIPTION[it.weaponType || it.type || 'barehand'] || 'Unknown weapon type'
+                                        : (it.description || getItemDescription(it)).replace(/^[^\w]+ /, '')
+                                      }
                                     </div>
                                   </div>
                                 )}
