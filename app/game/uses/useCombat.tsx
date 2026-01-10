@@ -7,6 +7,13 @@ import {
   getWeaponMultiHitChance,
   checkWeaponMiss,
   applyWeaponRageModifier,
+  getWeaponSkill,
+  hasWeaponSkill,
+  hasWeaponSkillByType,
+  getCounterDamage,
+  getSkillBossDamageBonus,
+  shouldPreventRageBoost,
+  getWeaponPenetration,
 } from "../weaponHelpers";
 
 type Player = any;
@@ -30,6 +37,7 @@ export default function useCombat({
   safeCooldown,
   riskyCooldown,
   selectedTargetId,
+  equipment,
 }: {
   player: Player;
   setPlayer: (updater: any) => void;
@@ -48,10 +56,33 @@ export default function useCombat({
   safeCooldown?: number;
   riskyCooldown?: number;
   selectedTargetId?: string | null;
+  equipment?: any;
 }) {
   const lockedRef = useRef(false);
   const initiativeRef = useRef(false); // Track if initiative message was shown
   const rollChance = useCallback((percent = 0) => Math.random() * 100 < (percent ?? 0), []);
+
+  // Helper: Get equipped weapon type from equipment object
+  const getEquippedWeaponType = useCallback(() => {
+    const equippedWeapon = equipment?.weapon;
+    return equippedWeapon?.weaponType || 'barehand';
+  }, [equipment]);
+
+  // Helper: Get total resolve from player base stats + equipment
+  const getTotalResolve = useCallback(() => {
+    let total = player?.resolve ?? 0;
+    // Add resolve from all equipped items
+    if (equipment) {
+      const slots = ['hat', 'boots', 'belt', 'chestplate', 'ring', 'familiar'] as const;
+      for (const slot of slots) {
+        const item = equipment[slot];
+        if (item?.stats?.resolve) {
+          total += item.stats.resolve;
+        }
+      }
+    }
+    return total;
+  }, [player, equipment]);
 
   // Helper: Calculate bonus hits chance based on speed
   // Formula: clamp(speed / 200, 0, 0.5) = max 50% chance for bonus hit
@@ -76,7 +107,7 @@ export default function useCombat({
 
   // Helper to apply a series of enemy attacks to a player snapshot
   // Returns both updated player snap and rage updates for each enemy
-  const applyEnemyAttacksToPlayer = useCallback((elist: any[], playerSnap: any, dodgeBonus: number = 0, isSafeActive: boolean = false) => {
+  const applyEnemyAttacksToPlayer = useCallback((elist: any[], playerSnap: any, dodgeBonus: number = 0, isSafeActive: boolean = false, resolveValue: number = 0) => {
     let snap = { ...playerSnap };
     const rageUpdates: Record<string, number> = {}; // Track rage per enemy
     
@@ -113,6 +144,19 @@ export default function useCombat({
         // Apply Safe protection (50% damage reduction)
         if (isSafeActive) {
           edmg = Math.ceil(edmg * 0.5);
+        }
+        
+        // RESOLVE: Apply fatal damage reduction (prevents death, stays at 1 HP)
+        // Formula: If current HP - damage would result in death, reduce damage to leave 1 HP
+        // But only if resolve is high enough to trigger the effect (resolve >= 20 for guaranteed trigger)
+        const wouldDie = (snap.hp - edmg) <= 0;
+        if (wouldDie && resolveValue >= 20) {
+          const resolveTriggerChance = Math.min(100, resolveValue * 5); // 20 resolve = 100% chance
+          if (rollChance(resolveTriggerChance)) {
+            edmg = snap.hp - 1; // Reduce damage to leave player at 1 HP
+            pushLog(<>🛡️ <span style={{color: '#FFD700'}}>Resolve</span> prevented your demise!</>);
+            if (onEffect) onEffect({ type: 'protect', text: 'Resolve', target: 'player' });
+          }
         }
         
         snap.hp = Math.max(0, snap.hp - edmg);
@@ -182,7 +226,7 @@ export default function useCombat({
 
         // Fast enemies attack
         if (fastEnemies.length > 0) {
-          const result = applyEnemyAttacksToPlayer(fastEnemies, playerSnap, 0);
+          const result = applyEnemyAttacksToPlayer(fastEnemies, playerSnap, 0, false, getTotalResolve());
           playerSnap = result.playerSnap;
           setPlayer((currentPlayer: Player) => ({
             ...currentPlayer,
@@ -203,7 +247,7 @@ export default function useCombat({
 
         // Slow enemies attack
         if (slowEnemies.length > 0) {
-          const result = applyEnemyAttacksToPlayer(slowEnemies, playerSnap, 0);
+          const result = applyEnemyAttacksToPlayer(slowEnemies, playerSnap, 0, false, getTotalResolve());
           playerSnap = result.playerSnap;
           setPlayer((currentPlayer: Player) => ({
             ...currentPlayer,
@@ -291,7 +335,7 @@ export default function useCombat({
     // 1) Fast enemies attack first - they can all attack regardless of being targeted
     let playerSnap = { ...player };
     if (fastEnemies.length > 0) {
-      const result = applyEnemyAttacksToPlayer(fastEnemies, playerSnap, mod.dodgeBonus, attackType === 'safe');
+      const result = applyEnemyAttacksToPlayer(fastEnemies, playerSnap, mod.dodgeBonus, attackType === 'safe', getTotalResolve());
       playerSnap = result.playerSnap;
       setPlayer((currentPlayer: Player) => ({
         ...currentPlayer,
@@ -318,6 +362,27 @@ export default function useCombat({
     if (dodgeRoll) {
       pushLog(<> <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span> dodges your {mod.label} attack!</>);
       if (onEffect) onEffect({ type: 'dodge', text: 'Dodge', target: 'enemy', id: target.id });
+      
+      // COUNTER SKILL: If player has counter skill, counter-attack!
+      if (hasWeaponSkill(player, 'counter')) {
+        const counterDmg = getCounterDamage(player.dmg ?? 1, player);
+        pushLog(<>Counter! You riposte for {counterDmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>!</>);
+        
+        // Counter still applies rage gain
+        let counterRageGain = Math.round(counterDmg / 2);
+        const speedRageMultiplier = getSpeedRageMultiplier(player.speed ?? 0);
+        counterRageGain = Math.round(counterRageGain * speedRageMultiplier);
+        counterRageGain = applyWeaponRageModifier(counterRageGain, player);
+        
+        const updated = (enemies || []).map((e) => 
+          e.id === target.id 
+            ? { ...e, hp: Math.max(0, e.hp - counterDmg), rage: Math.min(100, (e.rage ?? 0) + counterRageGain) } 
+            : e
+        );
+        setEnemies(updated);
+        postAttackEnemies = updated;
+        if (onEffect) onEffect({ type: 'damage', text: String(counterDmg), kind: 'hit', target: 'enemy', id: target.id });
+      }
     } else {
       const baseAtk = Math.max(1, player.dmg ?? 1);
       const adjustedAtk = baseAtk * mod.dmgMult;
@@ -325,117 +390,134 @@ export default function useCombat({
       // Check for weapon miss
       const weaponStats = getPlayerWeaponStats(player);
       if (checkWeaponMiss(player)) {
-        pushLog(<>🎯 Miss! Your attack grazes <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
+        pushLog(<>Miss! Your attack grazes <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
         if (onEffect) onEffect({ type: 'dodge', text: 'Miss', target: 'enemy', id: target.id });
       } else {
         const weaponDmg = getWeaponDamage(adjustedAtk, player);
-        const dmg = calcDamage(weaponDmg, target.def ?? 0, critRoll);
-      if (critRoll) {
-        pushLog(<>💥 Critical {mod.label} hit! You deal {dmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
-      } else {
-        pushLog(<>{mod.label} Hit! You deal {dmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
-      }
-      // Enemy gains rage based on damage received: damage / 2 = rage gain
-      let rageGainFromDamage = Math.round(dmg / 2);
-      
-      // Apply speed-based rage reduction (player's speed decreases enemy rage gain)
-      const speedRageMultiplier = getSpeedRageMultiplier(player.speed ?? 0);
-      rageGainFromDamage = Math.round(rageGainFromDamage * speedRageMultiplier);
-      
-      // Apply weapon rage modifier
-      rageGainFromDamage = applyWeaponRageModifier(rageGainFromDamage, player);
-      
-      const updated = (enemies || []).map((e) => (e.id === target.id ? { ...e, hp: Math.max(0, e.hp - dmg), rage: Math.min(100, (e.rage ?? 0) + rageGainFromDamage) } : e));
-      // update state and keep a local snapshot to avoid reading stale `enemies` later
-      setEnemies(updated);
-      postAttackEnemies = updated;
-      if (onEffect) onEffect({ type: 'damage', text: String(dmg), kind: critRoll ? 'crit' : 'hit', target: 'enemy', id: target.id });
-
-      // Check for bonus hits based on player's speed and weapon
-      const bonusHitsChance = getWeaponMultiHitChance(player.speed ?? 0, player);
-      if (weaponStats.multiHitBonus > 0 && Math.random() < bonusHitsChance && postAttackEnemies.find((e) => e.id === target.id && e.hp > 0)) {
-        // Bonus hit triggered!
-        const bonusDmg = calcDamage(weaponDmg * 0.8, target.def ?? 0, false); // 80% of base damage
-        pushLog(<>⚡ Swift strike! You follow up with another hit for {bonusDmg} damage!</>);
-        const bonusRageGain = Math.round((bonusDmg / 2) * speedRageMultiplier);
-        const bonusRageWithWeapon = applyWeaponRageModifier(bonusRageGain, player);
-        const updatedWithBonus = postAttackEnemies.map((e) => 
-          e.id === target.id 
-            ? { ...e, hp: Math.max(0, e.hp - bonusDmg), rage: Math.min(100, (e.rage ?? 0) + bonusRageWithWeapon) } 
-            : e
-        );
-        setEnemies(updatedWithBonus);
-        postAttackEnemies = updatedWithBonus;
-        if (onEffect) onEffect({ type: 'damage', text: String(bonusDmg), kind: 'hit', target: 'enemy', id: target.id });
-      }
-
-      const killed = updated.find((e) => e.id === target.id && e.hp === 0);
-      if (killed) {
-      pushLog(<> <span className={`enemy-name ${killed.rarity ?? 'common'}`}>{killed.name ?? killed.id}</span> defeated!</>);
-        const baseXp = 6 + Math.floor(Math.random() * 11);
-        const levelFactor = 1 + (killed.level ?? 1) / 10;
-        const rarityMults: Record<string, number> = { common: 1, rare: 1.5, epic: 2, legendary: 3, mythic: 6 };
-        const rarityKey = (killed.rarity ?? 'common') as string;
-        const rarityMultiplier = rarityMults[rarityKey] ?? 1;
-        const xpGain = Math.floor(baseXp * levelFactor * rarityMultiplier);
-        pushLog(`Gain XP: ${xpGain}`);
-        try {  } catch (e) {}
-        if (typeof addXp === 'function') addXp(xpGain);
         
-        // Boss rewards: essence and materials (dungeon only)
-        if (killed.isBoss) {
-          const essenceReward = Math.floor(Math.random() * 3) + 1; // 1-3 essences
-          const isDungeonRoom = !!killed.roomId;
+        // PENETRATION: Reduce enemy defense based on weapon penetration
+        let targetDef = target.def ?? 0;
+        const penetrationValue = getWeaponPenetration(player);
+        if (penetrationValue > 0) {
+          targetDef = Math.max(0, targetDef * (1 - penetrationValue));
+        }
+        
+        // BOSS DAMAGE SKILL: Apply boss damage bonus if targeting a boss
+        let dmg = calcDamage(weaponDmg, targetDef, critRoll);
+        if (target.isBoss && hasWeaponSkill(player, 'boss_damage')) {
+          const bossDamageBonus = getSkillBossDamageBonus(player);
+          dmg = Math.round(dmg * bossDamageBonus);
+          pushLog(<>👑 <span style={{color: '#FFD700'}}>Boss Slayer</span> bonus applied! 👑</>);
+        }
+        
+        if (critRoll) {
+          pushLog(<>💥 Critical {mod.label} hit! You deal {dmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
+        } else {
+          pushLog(<>{mod.label} Hit! You deal {dmg} damage to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
+        }
+        
+        // Enemy gains rage based on damage received: damage / 2 = rage gain
+        let rageGainFromDamage = Math.round(dmg / 2);
+        
+        // Apply speed-based rage reduction (player's speed decreases enemy rage gain)
+        const speedRageMultiplier = getSpeedRageMultiplier(player.speed ?? 0);
+        rageGainFromDamage = Math.round(rageGainFromDamage * speedRageMultiplier);
+        
+        // Apply weapon rage modifier
+        rageGainFromDamage = applyWeaponRageModifier(rageGainFromDamage, player);
+        
+        const updated = (enemies || []).map((e) => (e.id === target.id ? { ...e, hp: Math.max(0, e.hp - dmg), rage: Math.min(100, (e.rage ?? 0) + rageGainFromDamage) } : e));
+        // update state and keep a local snapshot to avoid reading stale `enemies` later
+        setEnemies(updated);
+        postAttackEnemies = updated;
+        if (onEffect) onEffect({ type: 'damage', text: String(dmg), kind: critRoll ? 'crit' : 'hit', target: 'enemy', id: target.id });
+
+        // Check for bonus hits based on player's speed and weapon
+        const bonusHitsChance = getWeaponMultiHitChance(player.speed ?? 0, player);
+        if (weaponStats.multiHitBonus > 0 && Math.random() < bonusHitsChance && postAttackEnemies.find((e) => e.id === target.id && e.hp > 0)) {
+          // Bonus hit triggered!
+          const bonusDmg = calcDamage(weaponDmg * 0.8, targetDef, false); // 80% of base damage (with penetration already applied)
+          pushLog(<>⚡ Swift strike! You follow up with another hit for {bonusDmg} damage!</>);
+          const bonusRageGain = Math.round((bonusDmg / 2) * speedRageMultiplier);
+          const bonusRageWithWeapon = applyWeaponRageModifier(bonusRageGain, player);
           
-          try {
-            let logMsg = `Boss drops: +${essenceReward}✨`;
-            const updateObj: any = {
-              essence: (p: any) => (p.essence ?? 0) + essenceReward,
-            };
+          const updatedWithBonus = postAttackEnemies.map((e) => 
+            e.id === target.id 
+              ? { ...e, hp: Math.max(0, e.hp - bonusDmg), rage: Math.min(100, (e.rage ?? 0) + bonusRageWithWeapon) } 
+              : e
+          );
+          setEnemies(updatedWithBonus);
+          postAttackEnemies = updatedWithBonus;
+          if (onEffect) onEffect({ type: 'damage', text: String(bonusDmg), kind: 'hit', target: 'enemy', id: target.id });
+        }
+
+        const killed = updated.find((e) => e.id === target.id && e.hp === 0);
+        if (killed) {
+        pushLog(<> <span className={`enemy-name ${killed.rarity ?? 'common'}`}>{killed.name ?? killed.id}</span> defeated!</>);
+          const baseXp = 6 + Math.floor(Math.random() * 11);
+          const levelFactor = 1 + (killed.level ?? 1) / 10;
+          const rarityMults: Record<string, number> = { common: 1, rare: 1.5, epic: 2, legendary: 3, mythic: 6 };
+          const rarityKey = (killed.rarity ?? 'common') as string;
+          const rarityMultiplier = rarityMults[rarityKey] ?? 1;
+          const xpGain = Math.floor(baseXp * levelFactor * rarityMultiplier);
+          pushLog(`Gain XP: ${xpGain}`);
+          try {  } catch (e) {}
+          if (typeof addXp === 'function') addXp(xpGain);
+          
+          // Boss rewards: essence and materials (dungeon only)
+          if (killed.isBoss) {
+            const essenceReward = Math.floor(Math.random() * 3) + 1; // 1-3 essences
+            const isDungeonRoom = !!killed.roomId;
             
-            // Materials only drop in dungeon
-            if (isDungeonRoom) {
-              const materials = ['essence_dust', 'mithril_ore', 'star_fragment', 'void_shard'] as const;
-              const randomMaterial = materials[Math.floor(Math.random() * materials.length)];
-              updateObj.materials = (p: any) => ({
-                ...p.materials,
-                [randomMaterial]: (p.materials?.[randomMaterial] ?? 0) + 1
-              });
-              logMsg += ` and +1 ${randomMaterial}`;
-            }
-            
-            setPlayer((p: any) => ({
-              ...p,
-              essence: updateObj.essence(p),
-              materials: updateObj.materials ? updateObj.materials(p) : p.materials,
-            }));
-            // Save immediately after boss rewards to ensure essence/materials persist
-            if (typeof saveCoreGame === 'function') {
-              const updatedPlayer = {
-                ...player,
-                essence: updateObj.essence(player),
-                materials: updateObj.materials ? updateObj.materials(player) : player.materials,
+            try {
+              let logMsg = `Boss drops: +${essenceReward}✨`;
+              const updateObj: any = {
+                essence: (p: any) => (p.essence ?? 0) + essenceReward,
               };
-              saveCoreGame({ player: updatedPlayer }, 'boss_reward');
-            }
-            pushLog(logMsg);
-          } catch (e) {}
-        }
-        
-        // try drop
-        try {
-          const dropped = typeof onDrop === 'function' ? onDrop(killed) : null;
-            if (dropped) {
-            const statsText = dropped.stats && Object.keys(dropped.stats).length > 0
-              ? Object.entries(dropped.stats).map(([k, v]) => `+${k} ${v}`).join(' • ')
-              : '';
-            pushLog(`Loot obtained: ${dropped.name} (${dropped.rarity})${statsText ? ' — ' + statsText : ''}`);
-            if (onEffect) onEffect({ type: 'item', text: dropped.name, target: 'player', id: dropped.id });
+              
+              // Materials only drop in dungeon
+              if (isDungeonRoom) {
+                const materials = ['essence_dust', 'mithril_ore', 'star_fragment', 'void_shard'] as const;
+                const randomMaterial = materials[Math.floor(Math.random() * materials.length)];
+                updateObj.materials = (p: any) => ({
+                  ...p.materials,
+                  [randomMaterial]: (p.materials?.[randomMaterial] ?? 0) + 1
+                });
+                logMsg += ` and +1 ${randomMaterial}`;
+              }
+              
+              setPlayer((p: any) => ({
+                ...p,
+                essence: updateObj.essence(p),
+                materials: updateObj.materials ? updateObj.materials(p) : p.materials,
+              }));
+              // Save immediately after boss rewards to ensure essence/materials persist
+              if (typeof saveCoreGame === 'function') {
+                const updatedPlayer = {
+                  ...player,
+                  essence: updateObj.essence(player),
+                  materials: updateObj.materials ? updateObj.materials(player) : player.materials,
+                };
+                saveCoreGame({ player: updatedPlayer }, 'boss_reward');
+              }
+              pushLog(logMsg);
+            } catch (e) {}
           }
-        } catch (e) {
-          // ignore drop errors
+          
+          // try drop
+          try {
+            const dropped = typeof onDrop === 'function' ? onDrop(killed) : null;
+              if (dropped) {
+              const statsText = dropped.stats && Object.keys(dropped.stats).length > 0
+                ? Object.entries(dropped.stats).map(([k, v]) => `+${k} ${v}`).join(' • ')
+                : '';
+              pushLog(`Loot obtained: ${dropped.name} (${dropped.rarity})${statsText ? ' — ' + statsText : ''}`);
+              if (onEffect) onEffect({ type: 'item', text: dropped.name, target: 'player', id: dropped.id });
+            }
+          } catch (e) {
+            // ignore drop errors
+          }
         }
-      }
       }
     }
 
@@ -461,7 +543,7 @@ export default function useCombat({
     const targetId = targetAfterAttack?.id;
     
     if (targetAfterAttack && (targetAfterAttack.speed ?? 0) <= pSpeed && targetAfterAttack.hp > 0) {
-      const result = applyEnemyAttacksToPlayer([targetAfterAttack], playerSnap, mod.dodgeBonus, attackType === 'safe');
+      const result = applyEnemyAttacksToPlayer([targetAfterAttack], playerSnap, mod.dodgeBonus, attackType === 'safe', getTotalResolve());
       playerSnap = result.playerSnap;
       setPlayer((currentPlayer: Player) => ({
         ...currentPlayer,
@@ -493,7 +575,7 @@ export default function useCombat({
               const numAttacks = Math.floor(Math.random() * 2) + 2;
               pushLog(`🔥 ${rageEnemy.name} bursts with rage and attacks ${numAttacks} times!`);
               for (let i = 0; i < numAttacks; i++) {
-                const rageResult = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+                const rageResult = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe', getTotalResolve());
                 playerSnap = rageResult.playerSnap;
                 setEnemies((currentEnemies: Enemy[]) =>
                   currentEnemies.map((e) => 
@@ -530,7 +612,7 @@ export default function useCombat({
             case 'debuff': {
               pushLog(`⚠️ ${rageEnemy.name} channels dark energy and weakens your defense!`);
               if (typeof onModifierChange === 'function') onModifierChange({ skipped: false, defenseDebuff: true });
-              const rageResult = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+              const rageResult = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe', getTotalResolve());
               playerSnap = rageResult.playerSnap;
               setEnemies((currentEnemies: Enemy[]) =>
                 currentEnemies.map((e) => 
@@ -541,14 +623,14 @@ export default function useCombat({
             }
             case 'multiplier': {
               pushLog(`⚡ ${rageEnemy.name} channels twice its power!`);
-              const rageResult1 = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+              const rageResult1 = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe', getTotalResolve());
               playerSnap = rageResult1.playerSnap;
               setEnemies((currentEnemies: Enemy[]) =>
                 currentEnemies.map((e) => 
                   rageResult1.rageUpdates[e.id] ? { ...e, rage: Math.min(100, (e.rage ?? 0) + rageResult1.rageUpdates[e.id]) } : e
                 )
               );
-              const rageResult2 = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe');
+              const rageResult2 = applyEnemyAttacksToPlayer([rageEnemy], playerSnap, mod.dodgeBonus, attackType === 'safe', getTotalResolve());
               playerSnap = rageResult2.playerSnap;
               setEnemies((currentEnemies: Enemy[]) =>
                 currentEnemies.map((e) => 
@@ -597,9 +679,16 @@ export default function useCombat({
     }
 
     // Apply passive rage gain to all alive enemies (20% = +20 rage per turn)
+    // ANTI-RAGE SKILL: Prevent the +20% passive rage boost
+    // RESOLVE STAT: Reduce rage gain by resolve percentage (0-100%)
+    let passiveRageGain = hasWeaponSkillByType(getEquippedWeaponType(), 'anti_rage') ? 0 : 20;
+    const resolveValue = getTotalResolve();
+    const rageReduction = Math.min(100, resolveValue); // Clamp resolve to 100% max
+    passiveRageGain = Math.round(passiveRageGain * (1 - rageReduction / 100));
+    
     setEnemies((currentEnemies: Enemy[]) =>
       currentEnemies.map((e) =>
-        e.hp > 0 ? { ...e, rage: Math.min(100, (e.rage ?? 0) + 20) } : e
+        e.hp > 0 ? { ...e, rage: Math.min(100, (e.rage ?? 0) + passiveRageGain) } : e
       )
     );
 
@@ -607,7 +696,7 @@ export default function useCombat({
     setTimeout(() => {
       lockedRef.current = false;
     }, 120);
-  }, [enemies, player, setEnemies, setPlayer, addXp, pushLog, endEncounter, rollChance, calcDamage, saveCoreGame, turnModifier, onModifierChange, safeCooldown, riskyCooldown, onSafeCooldownChange, onRiskyCooldownChange, getBonusHitsChance, getSpeedRageMultiplier, onEffect]);
+  }, [enemies, player, setEnemies, setPlayer, addXp, pushLog, endEncounter, rollChance, calcDamage, saveCoreGame, turnModifier, onModifierChange, safeCooldown, riskyCooldown, onSafeCooldownChange, onRiskyCooldownChange, getBonusHitsChance, getSpeedRageMultiplier, onEffect, getTotalResolve, getEquippedWeaponType]);
 
   const onRun = useCallback(() => {
     if (lockedRef.current) {

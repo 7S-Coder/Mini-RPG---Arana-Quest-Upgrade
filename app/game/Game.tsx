@@ -815,15 +815,18 @@ export default function Game() {
     // Save the game state after encounter ends (including any HP changes)
     try { saveGameWithEvents && saveGameWithEvents(null, 'end_encounter'); } catch (e) {}
     // schedule clearing the logs after a short delay so player can read result
+    // BUT: don't clear logs on death so player can see what happened
     if (logClearRef.current) clearTimeout(logClearRef.current);
     const currentSessionId = encounterSessionRef.current; // capture current session
-    logClearRef.current = window.setTimeout(() => {
-      // Only clear if we're still in the same encounter session
-      if (encounterSessionRef.current === currentSessionId) {
-        clearLogs();
-      }
-      logClearRef.current = null;
-    }, 1000);
+    if (opts?.type !== 'death') {
+      logClearRef.current = window.setTimeout(() => {
+        // Only clear if we're still in the same encounter session
+        if (encounterSessionRef.current === currentSessionId) {
+          clearLogs();
+        }
+        logClearRef.current = null;
+      }, 1000);
+    }
   }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect, showNarration, setSafeCooldown, setRiskyCooldown, setNextTurnModifier, enemies, consecWins, saveGameWithEvents, achievements, tryTriggerEvent, decrementEventDuration, endActiveEvent, getMapStreak, getActiveEventEffects]);
 
   // clear timeout on unmount
@@ -837,7 +840,7 @@ export default function Game() {
 
   // damage calculation extracted to game/damage.ts (calcDamage)
 
-  const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, saveCoreGame, onModifierChange: setNextTurnModifier, turnModifier: nextTurnModifier, onSafeCooldownChange: setSafeCooldown, onRiskyCooldownChange: setRiskyCooldown, safeCooldown, riskyCooldown, selectedTargetId, onDrop: (enemy: any) => {
+  const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, saveCoreGame, onModifierChange: setNextTurnModifier, turnModifier: nextTurnModifier, onSafeCooldownChange: setSafeCooldown, onRiskyCooldownChange: setRiskyCooldown, safeCooldown, riskyCooldown, selectedTargetId, equipment, onDrop: (enemy: any) => {
     const isDungeonRoom = !!enemy.roomId;
     const droppedItem = maybeDropFromEnemy(enemy, selectedMapId, !!enemy.isBoss, isDungeonRoom);
     

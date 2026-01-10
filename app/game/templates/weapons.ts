@@ -11,6 +11,7 @@ import type { WeaponStats } from "../types";
  * - multiHitBonus: multiplier on speed/200 (multi-hit chance)
  * - missChance: 0-100 chance to miss attack
  * - rageModifier: 1.0 neutral, >1 increases enemy rage, <1 decreases
+ * - skill: special weapon ability (counter, multi_hit, boss_damage, anti_rage)
  */
 
 export const WEAPON_TEMPLATES: Record<string, WeaponStats> = {
@@ -39,6 +40,7 @@ export const WEAPON_TEMPLATES: Record<string, WeaponStats> = {
     multiHitBonus: 2.0, // x2 multi-hit chance (30-50% instead of 15-25%)
     missChance: 6, // 6% miss chance
     rageModifier: 1.1, // +10% enemy rage (aggressive)
+    skill: 'multi_hit', // Signature skill: multiple hits per turn
     role: 'Burst RNG / Kill before scaling',
   },
 
@@ -53,6 +55,7 @@ export const WEAPON_TEMPLATES: Record<string, WeaponStats> = {
     multiHitBonus: 1.2, // 1.2x multi-hit chance (18-30% instead of 15-25%)
     missChance: 0,
     rageModifier: 1.0, // neutral (no malus)
+    skill: 'counter', // Signature skill: dodge turns into counter-attack
     role: 'Consistent DPS / All-purpose',
   },
 
@@ -67,7 +70,9 @@ export const WEAPON_TEMPLATES: Record<string, WeaponStats> = {
     multiHitBonus: 0, // NO multi-hit (heavy, single hit)
     missChance: 12, // 12% miss chance (unwieldy)
     rageModifier: 1.15, // +15% enemy rage (provokes)
-    boss_bonus: 1.25, // +25% damage vs bosses/elites
+    skill: 'boss_damage', // Signature skill: bonus damage vs bosses (scales with rarity)
+    penetration: 0.25, // 25% armor penetration base
+    boss_bonus: 1.25, // +25% damage vs bosses/elites (base)
     role: 'All-in lethality / Heavy strike',
   },
 
@@ -82,6 +87,7 @@ export const WEAPON_TEMPLATES: Record<string, WeaponStats> = {
     multiHitBonus: 1.5, // 1.5x multi-hit chance (22-37% instead of 15-25%)
     missChance: 0,
     rageModifier: 0.85, // -15% enemy rage (poke from distance)
+    skill: 'anti_rage', // Signature skill: prevents +20% rage per turn
     swarm_bonus: 1.15, // +15% damage vs multiple enemies
     role: 'Control / Anti-horde / Safe scaling',
   },

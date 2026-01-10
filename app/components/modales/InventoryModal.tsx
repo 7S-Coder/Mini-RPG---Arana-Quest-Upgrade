@@ -34,6 +34,14 @@ const RARITY_COLOR: Record<string, string> = {
   mythic: '#ff7b7b',
 };
 
+const WEAPON_TYPE_COLOR: Record<string, string> = {
+  barehand: '#999',
+  dagger: '#ff6b6b',
+  sword: '#4ecdc4',
+  axe: '#ffa500',
+  spear: '#95e1d3',
+};
+
 const SLOT_LABELS: Record<string, string> = {
   hat: 'Hat',
   familiar: 'Familiar',
@@ -282,18 +290,33 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                   <>
                     <h2 style={{ marginTop: 0, marginBottom: '0.8vw' }}>Equipment</h2>
                     <div style={{ width: '100%' }}>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.8vw', gridAutoRows: '6vw', alignItems: 'stretch', position: 'relative' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.8vw', gridAutoRows: '6vw', alignItems: 'stretch', position: 'relative', overflow: 'visible' }}>
                         {SLOT_ORDER.map((slot) => {
                           const it = (equipment as any)[slot];
                           const spanStyle: React.CSSProperties = slot === 'hat' ? { gridColumn: '1 / -1' } : {};
+                          const tooltipId = `weapon-${slot}`;
                           return (
-                            <div key={slot} style={{ boxSizing: 'border-box', ...spanStyle }}>
-                              <div style={{ background: it && it.isForged ? 'rgba(255, 193, 7, 0.12)' : '#111', border: it && it.isForged ? '1px solid rgba(255, 193, 7, 0.5)' : '1px solid rgba(255,255,255,0.04)', padding: '0.6vw', borderRadius: '0.6vw', textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', overflow: 'hidden', cursor: 'pointer' }} onClick={() => it && (setActiveTab('forge'), setSelectedItemForAction(it))}>
-                                <div style={{ fontSize: '0.85vw', color: '#bbb' }}>{SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}</div>
+                            <div key={slot} style={{ boxSizing: 'border-box', ...spanStyle, position: 'relative' }}>
+                              <div style={{ background: it && it.isForged ? 'rgba(255, 193, 7, 0.12)' : '#111', border: it && it.isForged ? '1px solid rgba(255, 193, 7, 0.5)' : '1px solid rgba(255,255,255,0.04)', padding: '0.6vw', borderRadius: '0.6vw', textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', cursor: 'pointer', position: 'relative' }} onClick={() => it && (setActiveTab('forge'), setSelectedItemForAction(it))} onMouseEnter={() => slot === 'weapon' && it && setHoveredTooltip(tooltipId)} onMouseLeave={() => slot === 'weapon' && setHoveredTooltip(null)}>
+                                <div style={{ fontSize: '0.85vw', color: '#bbb', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4vw' }}>
+                                  {SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}
+                                  {slot === 'weapon' && it && it.weaponType && (
+                                    <span style={{ display: 'inline-block', background: WEAPON_TYPE_COLOR[it.weaponType] || '#666', color: '#000', padding: '0.15vw 0.35vw', borderRadius: '0.3vw', fontSize: '0.7vw', fontWeight: 600, textTransform: 'capitalize' }}>
+                                      {it.weaponType}
+                                    </span>
+                                  )}
+                                </div>
                                 <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: '0.3vw', overflowWrap: 'anywhere', fontSize: '0.9vw', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4vw' }}>
                                   <span>{it ? it.name : 'empty'}</span>
                                   {it && it.isForged && <span style={{ fontSize: '0.75vw', color: '#ffc107', fontWeight: 600 }}>FORGED</span>}
                                 </div>
+                                {hoveredTooltip === tooltipId && it && (
+                                  <div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: '0.5vw', padding: '0.8vw', fontSize: '0.8vw', color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: '0.6vw', lineHeight: 1.4, minWidth: '15vw', maxWidth: '20vw' }}>
+                                    <div style={{ color: '#bbb', fontSize: '0.75vw' }}>
+                                      {(it.description || getItemDescription(it)).replace(/^[^\w]+ /, '')}
+                                    </div>
+                                  </div>
+                                )}
                                 {it ? (
                                   <>
                                     <div style={{ fontSize: '0.75vw', color: '#999', marginTop: '0.15vw' }}>{Object.entries(it.stats || {}).map(([k, v]) => `${k}: ${v}`).join(' • ')}</div>

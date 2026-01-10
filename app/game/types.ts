@@ -171,6 +171,15 @@ export type ActiveGameEvent = GameEvent & {
 // === WEAPON SYSTEM ===
 export type WeaponType = 'barehand' | 'dagger' | 'sword' | 'axe' | 'spear';
 
+/**
+ * Weapon skills/abilities with scaling based on rarity
+ */
+export type WeaponSkill = 
+  | 'counter'           // dodge → riposte (riposte = counter-attack)
+  | 'multi_hit'         // increased chance of multiple hits per turn
+  | 'boss_damage'       // bonus damage against bosses (scales with rarity)
+  | 'anti_rage';        // prevents enemy +20% rage per turn
+
 export type WeaponStats = {
   type: WeaponType;
   name: string;
@@ -184,6 +193,10 @@ export type WeaponStats = {
   multiHitBonus: number; // multiplier on speed/200 (1.0 = no change, 1.5 = +50% chance)
   missChance: number; // 0-100, chance to miss
   rageModifier: number; // 1.0 = neutral, 1.1 = +10% rage to enemy, 0.9 = -10%
+  // Weapon skill/ability
+  skill?: WeaponSkill; // special ability for this weapon type
+  // Armor penetration (reduces enemy def)
+  penetration?: number; // 0-1, percentage of enemy def ignored (e.g., 0.25 = 25% def ignored)
   // Scaling and progression
   essence_scaling?: boolean; // scales with essence
   boss_bonus?: number; // extra dmg vs bosses/elites
@@ -196,4 +209,5 @@ export type EquippedWeapon = {
   type: WeaponType;
   rarity?: Rarity;
   stats?: Record<string, number>; // override stats if forged/enhanced
+  skill?: WeaponSkill; // inherited skill from weapon type
 };

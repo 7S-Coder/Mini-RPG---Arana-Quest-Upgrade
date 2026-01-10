@@ -1,4 +1,4 @@
-import type { Player, WeaponStats, Rarity } from "./types";
+import type { Player, WeaponStats, Rarity, WeaponSkill } from "./types";
 import { getWeaponStats } from "./templates/weapons";
 
 /**
@@ -29,6 +29,14 @@ export function getPlayerWeaponStats(player: Player): WeaponStats {
     return getWeaponStats('barehand');
   }
   return getWeaponStats(player.equippedWeapon.type);
+}
+
+/**
+ * Get weapon stats by type directly
+ * Used when passing weaponType from equipment object
+ */
+export function getWeaponStatsByType(weaponType?: string): WeaponStats {
+  return getWeaponStats(weaponType || 'barehand');
 }
 
 /**
@@ -121,6 +129,115 @@ export function getWeaponSwarmBonus(player: Player): number {
 }
 
 /**
+ * Get armor penetration value (with rarity bonus)
+ * Penetration reduces enemy defense percentage
+ */
+export function getWeaponPenetration(player: Player): number {
+  const weaponStats = getPlayerWeaponStats(player);
+  const rarityMult = getRarityMultiplier(player.equippedWeapon?.rarity);
+  const basePenetration = weaponStats.penetration ?? 0;
+  // Rarity increases penetration effectiveness: common=25%, epic=50%, mythic=112.5%
+  return basePenetration * rarityMult;
+}
+
+/**
+ * Get weapon skill for current weapon
+ */
+export function getWeaponSkill(player: Player): WeaponSkill | undefined {
+  const weaponStats = getPlayerWeaponStats(player);
+  return weaponStats.skill;
+}
+
+/**
+ * Get weapon skill by type directly
+ */
+export function getWeaponSkillByType(weaponType?: string): WeaponSkill | undefined {
+  const weaponStats = getWeaponStatsByType(weaponType);
+  return weaponStats.skill;
+}
+
+/**
+ * Check if player has a specific weapon skill
+ */
+export function hasWeaponSkill(player: Player, skill: WeaponSkill): boolean {
+  return getWeaponSkill(player) === skill;
+}
+
+/**
+ * Check if weapon type has a specific skill
+ */
+export function hasWeaponSkillByType(weaponType?: string, skill?: WeaponSkill): boolean {
+  if (!skill) return false;
+  return getWeaponSkillByType(weaponType) === skill;
+}
+
+/**
+ * Get counter-attack damage (scaled from player's dmg)
+ * Counter is a riposte when you dodge an attack
+ */
+export function getCounterDamage(playerDmg: number, player: Player): number {
+  const rarityMult = getRarityMultiplier(player.equippedWeapon?.rarity);
+  const baseDamage = playerDmg * 0.8; // counter is 80% of player damage
+  return Math.max(1, Math.round(baseDamage * rarityMult));
+}
+
+/**
+ * Get boss damage bonus with skill scaling (scales with rarity)
+ * Axe with boss_damage skill: bonus increases per rarity tier
+ */
+export function getSkillBossDamageBonus(player: Player): number {
+  if (!hasWeaponSkill(player, 'boss_damage')) return 1.0;
+  
+  const baseBonus = getWeaponBossBonus(player); // base is 1.25
+  const rarityMult = getRarityMultiplier(player.equippedWeapon?.rarity);
+  // Bonus scales: common=1.25, uncommon=1.31, rare=1.37, epic=1.56, legendary=1.87, mythic=2.5
+  return baseBonus + ((rarityMult - 1) * 0.3);
+}
+
+/**
+ * Check if anti-rage skill prevents rage gain
+ * Spear with anti_rage skill prevents the +20% rage boost
+ */
+export function shouldPreventRageBoost(player: Player): boolean {
+  return hasWeaponSkill(player, 'anti_rage');
+}
+
+/**
+ * Get multi-hit bonus text for UI display
+ */
+export function getMultiHitSkillInfo(player: Player): string {
+  if (!hasWeaponSkill(player, 'multi_hit')) return '';
+  const weaponStats = getPlayerWeaponStats(player);
+  return `⚔️ Multi-Hit: ${weaponStats.multiHitBonus}x chance bonus`;
+}
+
+/**
+ * Get human-readable weapon skill info for UI
+ */
+export function getWeaponSkillInfo(player: Player): string {
+  const skill = getWeaponSkill(player);
+  if (!skill) return '';
+  
+  const rarityMult = getRarityMultiplier(player.equippedWeapon?.rarity);
+  const rarityPercent = Math.round((rarityMult - 1) * 100);
+  const rarityBonus = rarityPercent > 0 ? ` (${rarityPercent}% boost)` : '';
+  
+  switch (skill) {
+    case 'counter':
+      return `🛡️ Counter: Dodge → Riposte${rarityBonus}`;
+    case 'multi_hit':
+      return `⚔️ Multi-Hit: ${getWeaponStats(player.equippedWeapon?.type ?? 'barehand').multiHitBonus}x bonus${rarityBonus}`;
+    case 'boss_damage':
+      const bossBonus = Math.round((getSkillBossDamageBonus(player) - 1) * 100);
+      return `👑 Boss Damage: +${bossBonus}% vs Bosses${rarityBonus}`;
+    case 'anti_rage':
+      return `🔥 Anti-Rage: Prevents +20% rage boost${rarityBonus}`;
+    default:
+      return '';
+  }
+}
+
+/**
  * Get human-readable weapon info for UI
  */
 export function getWeaponDescription(player: Player): string {
@@ -130,6 +247,12 @@ export function getWeaponDescription(player: Player): string {
     stats.name,
     `Role: ${stats.role}`,
   ];
+
+  // Add skill if present
+  const skillInfo = getWeaponSkillInfo(player);
+  if (skillInfo) {
+    parts.push(skillInfo);
+  }
 
   // Add rarity bonus if present
   if (player.equippedWeapon?.rarity && rarityMult > 1.0) {

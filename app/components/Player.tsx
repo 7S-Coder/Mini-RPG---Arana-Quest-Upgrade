@@ -10,6 +10,7 @@ import SpeedSVG from "@/app/assets/stats/speed.svg";
 import RegenSVG from "@/app/assets/stats/regen.svg";
 import DamageSVG from "@/app/assets/stats/damage.svg";
 import DefenseSVG from "@/app/assets/stats/defense.svg";
+import ResolveSVG from "@/app/assets/stats/resolve.svg";
 
 import EssenceDustSVG from "@/app/assets/forges/essence.svg";
 import MithrilOreSVG from "@/app/assets/forges/mithril.svg";
@@ -25,6 +26,7 @@ type Props = {
 	xp?: number;
 	dmg?: number;
 	def?: number;
+	resolve?: number;
 	dodge?: number;
 	crit?: number;
 	speed?: number;
@@ -42,7 +44,7 @@ type Props = {
 	};
 };
 
-export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, crit, speed, regen, lastLevelUpAt, onOpenModal, gold, essence, inCombat, materials }: Props) {
+export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, resolve, dodge, crit, speed, regen, lastLevelUpAt, onOpenModal, gold, essence, inCombat, materials }: Props) {
 	const [showLevelUp, setShowLevelUp] = useState(false);
 	const [damageFlash, setDamageFlash] = useState<{ amount: number; key: string } | null>(null);
 	const [hoveredStat, setHoveredStat] = useState<string | null>(null);
@@ -67,6 +69,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 		xp: 'Experience points earned from defeating enemies. Level up at the threshold.',
 		damage: 'Physical damage dealt to enemies. Scales with level and equipment.',
 		defense: 'Reduces damage taken from enemies. Higher defense = less damage.',
+		resolve: 'Mental fortitude. Reduces enemy passive rage gain by your Resolve %. At 20+ Resolve, prevents fatal damage (leaving you at 1 HP).',
 		dodge: 'Chance to avoid incoming attacks completely. Stacks with other defenses.',
 		crit: 'Chance to deal 50% extra damage on an attack. Scales with equipment.',
 		regen: 'Health recovered per second out of combat. Removed in battle.',
@@ -205,7 +208,7 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 			{/* Stats primaires */}
 			<div style={{ 
 				display: 'grid', 
-				gridTemplateColumns: '1fr 1fr', 
+				gridTemplateColumns: '1fr 1fr 1fr', 
 				gap: 12,
 				fontSize: 12,
 				fontWeight: 600,
@@ -228,6 +231,15 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, dodge, cr
 					{hoveredStat === 'defense' && (
 						<div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4, minWidth: 160 }}>
 							{STAT_TOOLTIPS.defense}
+						</div>
+					)}
+				</div>
+				<div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }} onMouseEnter={() => setHoveredStat('resolve')} onMouseLeave={() => setHoveredStat(null)}>
+					<div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}><img src={ResolveSVG.src} alt="Resolve" style={{ width: 24, height: 24 }} /> Resolve</div>
+					<div style={{ fontSize: 14, fontWeight: 700, marginTop: 2 }}>{resolve ?? 0}</div>
+					{hoveredStat === 'resolve' && (
+						<div style={{ position: 'absolute', bottom: '105%', left: '50%', transform: 'translateX(-50%)', background: '#111', border: '1px solid #666', borderRadius: 6, padding: '12px 16px', fontSize: 11, color: '#ccc', zIndex: 10, whiteSpace: 'normal', marginBottom: 8, lineHeight: 1.4, minWidth: 160 }}>
+							{STAT_TOOLTIPS.resolve}
 						</div>
 					)}
 				</div>
