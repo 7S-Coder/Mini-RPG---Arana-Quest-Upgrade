@@ -708,7 +708,7 @@ export default function Game() {
           // Special handling for Fire Overlord (final boss)
           if (opts.bossName === 'Fire Overlord' && selectedMapId === 'final_arena') {
             try {
-              addToast('🏆 VICTORY! You have conquered the world!', 'ok', 5000);
+              addToast('VICTORY! You have conquered the world!', 'ok', 5000);
               pushLog('▓▓▓▓▓ VICTORY ▓▓▓▓▓');
               pushLog('You have defeated the Fire Overlord and saved the world!');
               pushLog('Congratulations on completing Arena Quest!');
@@ -978,9 +978,9 @@ export default function Game() {
       {/* debug overlay removed in production */}
       <header className="app-header">
         <h1>Arena Quest</h1>
-        <p className="subtitle">Adventure mmorpg - v0.22</p>
+        <p className="subtitle">Adventure mmorpg - v0.30</p>
         <div style={{ position: 'absolute', right: 28, top: 50, transform: 'translateY(-50%)', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
-          Press <span style={{ background: 'rgba(255, 215, 0, 0.2)', border: '1px solid rgba(255, 215, 0, 0.5)', borderRadius: '4px', padding: '0.2rem 0.4rem', fontFamily: 'monospace' }}>ESC</span> to pause
+          Press <span style={{ background: '#a85638ff', border: '1px solid #a85638ff', borderRadius: '4px', padding: '0.2rem 0.4rem', fontFamily: 'monospace' }}>ESC</span> to pause
         </div>
       </header>
 

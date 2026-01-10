@@ -76,9 +76,9 @@ export default function PauseModal({ isOpen, onClose }: PauseModalProps) {
       <div className="pause-modal-content">
         <h1 className="pause-title">PAUSED</h1>
         
-        <div className="pause-info">
+        {/* <div className="pause-info">
           <p>Press <span className="key">ESC</span> to resume</p>
-        </div>
+        </div> */}
 
         <div className="pause-actions">
           <button 
