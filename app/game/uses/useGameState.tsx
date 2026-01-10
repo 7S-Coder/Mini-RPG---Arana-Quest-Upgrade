@@ -503,6 +503,7 @@ export function useGameState() {
       stats: scaleStats(chosen.stats, finalRarity),
       cost: computeItemCost(scaleStats(chosen.stats, finalRarity) as Record<string, number> | undefined, finalRarity),
       weight: chosen.weight ?? 1,
+      weaponType: (chosen as any).weaponType,
     };
 
     // spawn the item as a pickup at the enemy location (player must collect)
@@ -847,6 +848,7 @@ export function useGameState() {
       stats,
       cost: computeItemCost(stats as Record<string, number> | undefined, finalRarity),
       weight: tmpl.weight ?? 1,
+      weaponType: (tmpl as any).weaponType,
     };
     if (addToInv) addToInventory(item);
     return item;
@@ -901,6 +903,7 @@ export function useGameState() {
         cost: sample.cost ?? computeItemCost(boosted as Record<string, number> | undefined, 'rare'),
         weight: sample.weight ?? 1,
         isForged: true,
+        weaponType: sample.weaponType,
       } as any;
 
       // create forged item without auto-adding, then update inventory snapshot and save

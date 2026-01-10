@@ -300,10 +300,14 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                               <div style={{ background: it && it.isForged ? 'rgba(255, 193, 7, 0.12)' : '#111', border: it && it.isForged ? '1px solid rgba(255, 193, 7, 0.5)' : '1px solid rgba(255,255,255,0.04)', padding: '0.6vw', borderRadius: '0.6vw', textAlign: 'center', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', cursor: 'pointer', position: 'relative' }} onClick={() => it && (setActiveTab('forge'), setSelectedItemForAction(it))} onMouseEnter={() => slot === 'weapon' && it && setHoveredTooltip(tooltipId)} onMouseLeave={() => slot === 'weapon' && setHoveredTooltip(null)}>
                                 <div style={{ fontSize: '0.85vw', color: '#bbb', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4vw' }}>
                                   {SLOT_LABELS[slot] ?? (slot.charAt(0).toUpperCase() + slot.slice(1))}
-                                  {slot === 'weapon' && it && it.weaponType && (
-                                    <span style={{ display: 'inline-block', background: WEAPON_TYPE_COLOR[it.weaponType] || '#666', color: '#000', padding: '0.15vw 0.35vw', borderRadius: '0.3vw', fontSize: '0.7vw', fontWeight: 600, textTransform: 'capitalize' }}>
-                                      {it.weaponType}
-                                    </span>
+                                  {slot === 'weapon' && it && (
+                                    <>
+                                      {(it.weaponType || it.type) && (
+                                        <span style={{ display: 'inline-block', background: WEAPON_TYPE_COLOR[it.weaponType || it.type || 'barehand'] || '#666', color: '#000', padding: '0.15vw 0.35vw', borderRadius: '0.3vw', fontSize: '0.7vw', fontWeight: 600, textTransform: 'capitalize' }}>
+                                          {(it.weaponType || it.type || 'barehand').toLowerCase()}
+                                        </span>
+                                      )}
+                                    </>
                                   )}
                                 </div>
                                 <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: '0.3vw', overflowWrap: 'anywhere', fontSize: '0.9vw', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4vw' }}>
