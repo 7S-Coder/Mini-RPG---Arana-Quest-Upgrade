@@ -93,7 +93,7 @@ export default function TavernModal({ isOpen, onClose, playerLevel }: TavernModa
           </div>
           
           <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '16px', color: '#c9a961', fontWeight: 700, marginBottom: '8px' }}>
+            <div style={{ fontSize: '16px', color: 'var(--accent)', fontWeight: 700, marginBottom: '8px' }}>
               {npc?.title}
             </div>
             <p style={{ fontSize: '13px', color: '#ccc', lineHeight: '1.7', margin: 0 }}>
@@ -151,7 +151,7 @@ export default function TavernModal({ isOpen, onClose, playerLevel }: TavernModa
               }}
               onMouseEnter={(e) => {
                 const el = e.currentTarget;
-                el.style.borderColor = 'rgba(201, 169, 97, 0.4)';
+                el.style.borderColor = '#a85638';
                 el.style.boxShadow = '0 0.75rem 1.5rem rgba(0, 0, 0, 0.5)';
               }}
               onMouseLeave={(e) => {
@@ -208,7 +208,7 @@ export default function TavernModal({ isOpen, onClose, playerLevel }: TavernModa
                 <div style={{ fontWeight: 700, fontSize: '0.8125rem', color: '#fff' }}>
                   {npc.name}
                 </div>
-                <div style={{ fontSize: '0.6875rem', color: '#c9a961', fontWeight: 600 }}>
+                <div style={{ fontSize: '0.6875rem', color: 'var(--accent)', fontWeight: 600 }}>
                   {npc.title}
                 </div>
                 <div style={{ fontSize: '0.625rem', color: '#ddd', lineHeight: '1.3' }}>
