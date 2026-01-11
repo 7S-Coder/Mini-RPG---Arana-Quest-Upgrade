@@ -45,6 +45,7 @@ export interface DialogueChoice {
     minLevel?: number;
     hasMemoryEvent?: string;
   };
+  nextDialogueId?: string; // ID du prochain dialogue après ce choix
 }
 
 /**
@@ -73,6 +74,7 @@ export interface DialogueNode {
   choices?: DialogueChoice[];
   isRomanceOption?: boolean;
   isCritical?: boolean; // Cannot be avoided
+  initiatedBy?: 'npc' | 'player'; // Who starts the conversation (default: 'npc')
 }
 
 /**

@@ -1,0 +1,390 @@
+{
+  "lya": {
+    "playerAsks": [
+      {
+        "id": "tavern_ask_training",
+        "category": "combat",
+        "question": "How did you learn to fight like that?",
+        "baseGains": {
+          "trust": 2,
+          "affection": 0,
+          "respect": 1
+        },
+        "variants": {
+          "cold": {
+            "trust": "0-30",
+            "text": "It's a long story. I had to learn or die."
+          },
+          "warm": {
+            "trust": "31-70",
+            "text": "The years have been my best teacher. Each scar tells a lesson."
+          },
+          "intimate": {
+            "trust": "71-100",
+            "affection": "50+",
+            "text": "It wasn't easy... but now, I'm happy to share this knowledge with you.",
+            "extraGains": {
+              "affection": 2,
+              "intimacy": 1
+            }
+          }
+        }
+      },
+      {
+        "id": "tavern_ask_past",
+        "category": "personal",
+        "question": "Where do you really come from?",
+        "baseGains": {
+          "trust": 2,
+          "affection": 1
+        },
+        "variants": {
+          "cold": {
+            "trust": "0-25",
+            "text": "From somewhere I'd rather forget."
+          },
+          "guarded": {
+            "trust": "26-60",
+            "text": "I grew up in the northern mountains. That's where I learned to survive."
+          },
+          "open": {
+            "trust": "61-90",
+            "text": "I've known better times... and very dark shadows. But I'm here now, with you.",
+            "extraGains": {
+              "affection": 3,
+              "intimacy": 2
+            }
+          }
+        }
+      },
+      {
+        "id": "tavern_ask_goals",
+        "category": "philosophy",
+        "question": "What really interests you? Beyond combat?",
+        "baseGains": {
+          "trust": 3,
+          "affection": 2
+        },
+        "variants": {
+          "dismissive": {
+            "trust": "0-20",
+            "text": "Combat is enough. Nothing else matters."
+          },
+          "honest": {
+            "trust": "21-70",
+            "text": "Finding something worth fighting for. Something... or someone."
+          },
+          "vulnerable": {
+            "trust": "71-100",
+            "affection": "60+",
+            "text": "You already know. It's you who interests me now.",
+            "extraGains": {
+              "affection": 4,
+              "intimacy": 3
+            }
+          }
+        }
+      },
+      {
+        "id": "tavern_ask_strength",
+        "category": "combat",
+        "question": "What makes you so strong?",
+        "baseGains": {
+          "trust": 1,
+          "respect": 2
+        },
+        "variants": {
+          "cold": {
+            "trust": "0-30",
+            "text": "Survival instinct. Necessity. And discipline."
+          },
+          "analytical": {
+            "trust": "31-70",
+            "text": "It's a blend of technique, experience, and willpower. Nothing supernatural."
+          },
+          "intimate": {
+            "trust": "71-100",
+            "affection": "50+",
+            "text": "Lately? Knowing someone waits for me. That someone truly counts on me.",
+            "extraGains": {
+              "affection": 3,
+              "intimacy": 2
+            }
+          }
+        }
+      },
+      {
+        "id": "tavern_ask_fears",
+        "category": "personal",
+        "question": "Are you afraid of anything?",
+        "baseGains": {
+          "trust": 4,
+          "affection": 2
+        },
+        "requirements": {
+          "minTrust": 40
+        },
+        "variants": {
+          "guarded": {
+            "trust": "40-70",
+            "text": "Fear is a luxury I can't afford."
+          },
+          "vulnerable": {
+            "trust": "71-90",
+            "text": "Yes... The volcano. And what it represents. Ancient secrets. Melethor.",
+            "extraGains": {
+              "trust": 2,
+              "affection": 2
+            }
+          },
+          "openHeart": {
+            "trust": "91-100",
+            "affection": "60+",
+            "text": "I'm afraid of losing you. That's the only thing that truly terrifies me.",
+            "extraGains": {
+              "affection": 5,
+              "intimacy": 4
+            }
+          }
+        }
+      },
+      {
+        "id": "tavern_ask_future",
+        "category": "philosophy",
+        "question": "What do you want for the future?",
+        "baseGains": {
+          "trust": 2,
+          "affection": 2
+        },
+        "variants": {
+          "practical": {
+            "trust": "0-40",
+            "text": "To survive. To be useful. The rest will follow."
+          },
+          "hopeful": {
+            "trust": "41-75",
+            "text": "A world without lies. Where people like you can shine without fear."
+          },
+          "romantic": {
+            "trust": "76-100",
+            "affection": "60+",
+            "text": "A future with you. No matter where it leads us.",
+            "extraGains": {
+              "affection": 4,
+              "intimacy": 3
+            }
+          }
+        }
+      },
+      {
+        "id": "tavern_ask_opinion",
+        "category": "personal",
+        "question": "What do you think of me... honestly?",
+        "baseGains": {
+          "trust": 1,
+          "affection": 3
+        },
+        "variants": {
+          "lukewarm": {
+            "trust": "0-30",
+            "text": "You have potential. Keep it up."
+          },
+          "impressed": {
+            "trust": "31-70",
+            "affection": "30+",
+            "text": "You impress me. You're stronger than most... and you have a good heart."
+          },
+          "devoted": {
+            "trust": "71-100",
+            "affection": "70+",
+            "text": "I think you're extraordinary. Brave. Worthy. I'm proud of you.",
+            "extraGains": {
+              "affection": 5,
+              "intimacy": 2
+            }
+          }
+        }
+      }
+    ],
+    "npcAsks": [
+      {
+        "id": "tavern_lya_asks_goal",
+        "category": "personal",
+        "question": "Why do you keep going? What really drives you?",
+        "playerChoices": [
+          {
+            "id": "choice_honest",
+            "text": "To become stronger. And maybe... for you.",
+            "gains": {
+              "trust": 4,
+              "affection": 3,
+              "intimacy": 2
+            }
+          },
+          {
+            "id": "choice_deflect",
+            "text": "It's just what I have to do.",
+            "gains": {
+              "trust": 1,
+              "affection": -1
+            }
+          },
+          {
+            "id": "choice_vulnerable",
+            "text": "I'm lost without direction... until you appeared.",
+            "requirements": {
+              "minTrust": 50
+            },
+            "gains": {
+              "trust": 5,
+              "affection": 5,
+              "intimacy": 4
+            }
+          }
+        ]
+      },
+      {
+        "id": "tavern_lya_asks_fear",
+        "category": "personal",
+        "question": "Have you never thought about giving up? Running from all this?",
+        "playerChoices": [
+          {
+            "id": "choice_determined",
+            "text": "No. I have to face my challenges.",
+            "gains": {
+              "trust": 3,
+              "respect": 3
+            }
+          },
+          {
+            "id": "choice_admit",
+            "text": "Yes... but not now. Not with you here.",
+            "gains": {
+              "trust": 4,
+              "affection": 4,
+              "intimacy": 2
+            }
+          },
+          {
+            "id": "choice_flirt",
+            "text": "Why would I run when I have a reason to stay?",
+            "requirements": {
+              "minAffection": 50
+            },
+            "gains": {
+              "affection": 5,
+              "intimacy": 4
+            }
+          }
+        ]
+      },
+      {
+        "id": "tavern_lya_asks_bond",
+        "category": "relationship",
+        "question": "Do you think there's something between us? Really?",
+        "playerChoices": [
+          {
+            "id": "choice_cautious",
+            "text": "I don't know yet... it's complicated.",
+            "gains": {
+              "trust": 2,
+              "affection": 1
+            }
+          },
+          {
+            "id": "choice_honest",
+            "text": "Yes. You matter to me.",
+            "gains": {
+              "trust": 5,
+              "affection": 5,
+              "intimacy": 3
+            }
+          },
+          {
+            "id": "choice_romantic",
+            "text": "I think I'm falling for you.",
+            "requirements": {
+              "minAffection": 70,
+              "minTrust": 70
+            },
+            "gains": {
+              "affection": 8,
+              "intimacy": 6
+            }
+          }
+        ]
+      },
+      {
+        "id": "tavern_lya_asks_choice",
+        "category": "philosophy",
+        "question": "If you had to choose... power or happiness?",
+        "playerChoices": [
+          {
+            "id": "choice_power",
+            "text": "Power. I need to be strong.",
+            "gains": {
+              "respect": 3
+            }
+          },
+          {
+            "id": "choice_happiness",
+            "text": "Happiness. What's strength without it?",
+            "gains": {
+              "affection": 3,
+              "intimacy": 2
+            }
+          },
+          {
+            "id": "choice_both",
+            "text": "Why not both? With you.",
+            "requirements": {
+              "minAffection": 60
+            },
+            "gains": {
+              "affection": 5,
+              "trust": 4,
+              "intimacy": 3
+            }
+          }
+        ]
+      },
+      {
+        "id": "tavern_lya_asks_sacrifice",
+        "category": "philosophy",
+        "question": "Would you sacrifice something important for me?",
+        "playerChoices": [
+          {
+            "id": "choice_yes",
+            "text": "Without hesitation.",
+            "requirements": {
+              "minAffection": 60,
+              "minTrust": 60
+            },
+            "gains": {
+              "trust": 6,
+              "affection": 6,
+              "intimacy": 5
+            }
+          },
+          {
+            "id": "choice_depends",
+            "text": "It depends on what we're talking about.",
+            "gains": {
+              "trust": 2,
+              "affection": 1
+            }
+          },
+          {
+            "id": "choice_no",
+            "text": "No. I have to think of myself first.",
+            "gains": {
+              "trust": -2,
+              "affection": -2,
+              "anger": 2
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

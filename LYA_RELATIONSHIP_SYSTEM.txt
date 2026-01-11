@@ -1,0 +1,954 @@
+═══════════════════════════════════════════════════════════════════════════════
+                 SYSTÈME DE RELATION LYA - SPÉCIFICATION COMPLÈTE
+═══════════════════════════════════════════════════════════════════════════════
+
+1. STATS PRINCIPALES
+═════════════════════════════════════════════════════════════════════════════
+
+CONFIANCE (Trust) [5 - 100]
+  Représente: Combien Lya croit en toi et fait confiance à ton jugement
+  Initial: 5 (elle ne te connaît pas encore)
+  
+  Paliers:
+    5-20:     MÉFIANCE - Elle te teste, distance, pragmatique
+              - Dialogues froids
+              - Ne partage pas d'infos perso
+              - Gains d'affection minimes
+    
+    21-40:    CURIOSITÉ - Elle remarque tes choix et ta stratégie
+              - Ton légèrement plus chaud
+              - Commence à partager des histoires
+              - Gains d'affection deviennent possibles
+    
+    41-70:    CONNEXION - Elle devient mentore active
+              - Conseils sincères et utiles
+              - S'ouvre sur son passé
+              - Gains d'affection accélèrent
+    
+    71-90:    ENGAGEMENT - Confiance profonde se forme
+              - Révèle ses vulnérabilités (volcan, Mélethor)
+              - Priorise ta sécurité
+              - Gains d'intimité disponibles
+    
+    91-100:   UNION - Confiance complète, elle est entièrement investie
+              - Vulnérable et protectrice en même temps
+              - Devient ta plus grande force
+              - Tous les dialogues se déverrouillent
+
+
+AFFECTION (Affection) [0 - 100]
+  Représente: Chaleur émotionnelle, tendresse, attraction
+  Initial: 0 (neutre)
+  Vérrou: Requiert CONFIANCE ≥ 20 ET RESPECT ≥ 20 (pas de gains avant)
+  
+  Paliers:
+    0-25:     INDIFFÉRENT - Elle te tolère, rien de plus
+              - Ton pragmatique
+              - Pas de contact physique
+              - Pas de dialogue intime
+    
+    26-50:    AMICAL - Elle apprécie vraiment ta compagnie
+              - Ton plus chaud et ouvert
+              - Blagues et sourires occasionnels
+              - Références à "tenir à toi"
+    
+    51-75:    ATTENTIONNÉE - Connexion émotionnelle profonde
+              - Moments tendres
+              - Volonté d'être vulnérable
+              - Mentions de "compter pour elle"
+    
+    76-80:    TRÈS PROCHE - Elle tombe pour toi (territoire romance)
+              - Utilise des termes affectueux
+              - Proximité physique augmente
+              - Confession possible
+    
+    81-100:   AMOUREUSE - Dévouement romantique complet
+              - Déclarations inconditionnelles
+              - Prête à se sacrifier pour toi
+              - Ouverture complète émotionnelle et physique
+
+
+COLÈRE (Anger) [0 - 100]
+  Représente: Frustration, ressentiment, déception
+  Initial: 0 (neutre)
+  
+  Paliers:
+    0-25:     CALME - Elle est patiente, aucun problème
+              - Dialogue normal
+              - Gains d'autres stats normaux
+    
+    26-50:    IRRITÉE - Elle est agacée mais se contrôle
+              - Sarcasme augmente
+              - Réponses plus courtes
+              - Certains gains réduits de 30%
+    
+    51-75:    FRUSTRÉE - Elle est contrariée, perd patience
+              - Ton froid revient même avec confiance élevée
+              - Tous les gains réduits de 50%
+              - Gains d'affection bloqués jusqu'à colère <50
+    
+    76-80:    FURIEUSE - Elle est vraiment en colère
+              - N'aide pas (dialogues indisponibles)
+              - Pertes d'affection possibles
+              - Pertes de respect possibles
+    
+    81-100:   TRAHIE - État critique, relation endommagée
+              - Dialogues majeurs verrouillés
+              - Pénalités lourdes sur confiance/affection
+              - Demande effort significatif pour récupérer
+
+
+RESPECT (Respect) [0 - 100]
+  Représente: Admiration pour tes capacités et ton caractère
+  Initial: 0 (elle n'a pas vu de quoi tu es capable)
+  
+  Paliers:
+    0-25:     INCOMPÉTENT - Tu es faible, à peine survivant
+              - Elle doute de tes capacités
+              - Ne t'a pas comme mentore
+              - Gains d'affection bloqués
+    
+    26-50:    CAPABLE - Tu es compétent, tu te débrouilles
+              - Elle voit du potentiel
+              - Le mentorat commence
+              - Gains d'affection activés
+    
+    51-75:    COMPÉTENT - Tu impressionnes vraiment
+              - Elle se vante de toi aux autres
+              - Vulnérabilité augmente en dialogue
+              - Gains d'affection plus forts
+    
+    76-80:    EXEMPLAIRE - Tu es presque aussi bon qu'elle
+              - Elle te voit comme un égal
+              - Vulnérabilité complète déverrouillée
+              - Gains d'intimité possibles
+    
+    81-100:   LÉGENDAIRE - Tu dépasses ses attentes
+              - Elle adore ta progression
+              - Dialogues romance les plus profonds
+              - Elle devient complètement dévouée
+
+
+INTIMITÉ (Intimacy) [0 - 100]
+  Représente: Attraction romantique/physique et connexion émotionnelle
+  Initial: 0 (pas encore pertinent)
+  Vérrous: AFFECTION ≥ 60 ET CONFIANCE ≥ 70 (vérrou strict)
+  
+  Accessible uniquement via:
+    - Choix de dialogue spécifiques (options romance)
+    - Événements mémoriels (moments romantiques)
+    - Interactions haute affection
+  
+  Paliers:
+    0-25:     DISTANT - Pas de romance, platonique
+              - Dialogues amitié
+              - Interaction physique minime
+    
+    26-50:    FLIRTANT - Indices d'attraction
+              - Taquinerie ludique
+              - Rougeur occasionnelle
+              - Moments mains qui se frôlent
+    
+    51-75:    ROMANTIQUE - Tension romantique claire
+              - Conversations intimes
+              - Plus de proximité physique
+              - Elle initie l'affection
+    
+    76-80:    PASSIONNEL - Lien romantique fort
+              - Moments intimes profonds
+              - Vulnérabilité à son apogée
+              - Elle parle d'amour
+    
+    81-100:   ÂME SŒUR - Union romantique complète
+              - Dialogue intime complet
+              - Entièrement dévouée
+              - Fin romance devient disponible
+
+
+═════════════════════════════════════════════════════════════════════════════
+2. FORMULES & ACTIONS DE GAINS
+═════════════════════════════════════════════════════════════════════════════
+
+GAINS DE CONFIANCE:
+  ┌─ Liés aux combats ────────────────────┐
+  │ 15 victoires consécutives    = +3 Confiance│
+  │ 50 défaites consécutives     = -10 Confiance│
+  │ Première victoire après 5+ L = +5 Confiance│
+  └───────────────────────────────────────┘
+  
+  ┌─ Liés aux donjons ────────────────────┐
+  │ Compléter un donjon         = +5 Confiance│
+  │ Donjon + HP élevé           = +7 Confiance│
+  │ Donjon échoué               = -3 Confiance│
+  └───────────────────────────────────────┘
+  
+  ┌─ Liés aux dialogues ──────────────────┐
+  │ Choix dialogue par défaut   = +2 Confiance│
+  │ "Tu m'as manqué"            = +3 Confiance│
+  │ Demander un conseil         = +2 Confiance│
+  │ Refuser son aide            = -3 Confiance│
+  │ Réponse honnête/vulnérable  = +4 Confiance│
+  └───────────────────────────────────────┘
+  
+  ┌─ Basés sur le temps ──────────────────┐
+  │ Ne pas lui parler >1 jour   = -2 Confiance│
+  │ Interactions quotidiennes   = +1 Confiance│
+  └───────────────────────────────────────┘
+
+
+GAINS D'AFFECTION (VÉRROU: Confiance ≥ 20 + Respect ≥ 20):
+  ┌─ Choix dialogues ─────────────────────┐
+  │ Vulnérabilité émotionnelle  = +3 Affection│
+  │ "Tu comptes pour moi"       = +4 Affection│
+  │ Option dialogue romantique  = +5 Affection│
+  │ Événement mémorial (lien)   = +3 Affection│
+  │ Réponse dismissive          = -2 Affection│
+  │ Réponse flirt               = +3 Affection│
+  └───────────────────────────────────────┘
+  
+  ┌─ Modificateurs d'interaction ─────────┐
+  │ Si Colère >50: Gains BLOQUÉS            │
+  │ Si Colère >25: Gains -30%              │
+  │ Si Respect <20: Gains -50%             │
+  └───────────────────────────────────────┘
+
+
+GÉNÉRATION DE COLÈRE (Réduit autres stats):
+  ┌─ Déclencheurs dialogues ──────────────┐
+  │ Réponse froide/rude         = +3 Colère│
+  │ Rejeter son aide            = +2 Colère│
+  │ Choisir autre NPC sur elle  = +4 Colère│
+  │ Flirter avec autres NPCs    = +5 Colère│
+  │ Être dismissif              = +2 Colère│
+  └───────────────────────────────────────┘
+  
+  ┌─ Basés sur le temps ──────────────────┐
+  │ Ne pas parler >1 jour       = +2 Colère│
+  │ Ne pas parler >3 jours      = +4 Colère│
+  │ Ne pas parler >7 jours      = +6 Colère│
+  └───────────────────────────────────────┘
+  
+  ┌─ Réduction de colère ─────────────────┐
+  │ Dialogue d'excuses          = -5 Colère│
+  │ Geste/dialogue romantique   = -3 Colère│
+  │ Combat réussi + discussion  = -2 Colère│
+  │ Cadeau ou faveur            = -3 Colère│
+  │ Passage du temps (1 jour)   = -1 Colère│
+  └───────────────────────────────────────┘
+
+
+GAINS DE RESPECT:
+  ┌─ Liés aux combats ────────────────────┐
+  │ 15 victoires consécutives   = +3 Respect│
+  │ 50 défaites consécutives    = -10 Respect│
+  │ Victoire contre élite       = +5 Respect│
+  │ Boss vaincu                 = +7 Respect│
+  └───────────────────────────────────────┘
+  
+  ┌─ Liés aux donjons ────────────────────┐
+  │ Compléter un donjon         = +5 Respect│
+  │ Donjon parfait              = +8 Respect│
+  │ Donjon échoué               = -3 Respect│
+  └───────────────────────────────────────┘
+  
+  ┌─ Liés aux dialogues ──────────────────┐
+  │ Montrer de la confiance     = +2 Respect│
+  │ Question pensée stratégique = +3 Respect│
+  │ Admettre faiblesse honnête  = +2 Respect│
+  │ Réponse arrogante/vantarde  = -3 Respect│
+  └───────────────────────────────────────┘
+  
+  ┌─ Seuils de niveaux ───────────────────┐
+  │ Atteindre niveau 15         = +3 Respect│
+  │ Atteindre niveau 30         = +5 Respect│
+  │ Atteindre niveau 50         = +7 Respect│
+  │ Atteindre niveau 75         = +10 Respect│
+  └───────────────────────────────────────┘
+
+
+GAINS D'INTIMITÉ (VÉRROU: Affection ≥ 60 + Confiance ≥ 70):
+  ┌─ Dialogues romantiques ───────────────┐
+  │ Choix dialogue romantique   = +4 Intimité│
+  │ Confession vulnérable       = +3 Intimité│
+  │ Équivalent "Je t'aime"      = +5 Intimité│
+  │ Dialogue proximité physique = +3 Intimité│
+  │ Événement mémorial (romance)= +4 Intimité│
+  └───────────────────────────────────────┘
+  
+  ┌─ Conditions spéciales ────────────────┐
+  │ Uniquement si Affection ≥60              │
+  │ Uniquement si Confiance ≥70             │
+  │ Ne pas gagner si Colère >30             │
+  │ Maximum 5 Intimité par jour             │
+  └───────────────────────────────────────┘
+
+
+═════════════════════════════════════════════════════════════════════════════
+3. INTERACTIONS ENTRE STATS
+═════════════════════════════════════════════════════════════════════════════
+
+MODIFICATEURS DE COLÈRE (affecte autres stats):
+  ├─ Si Colère 26-50:   Tous gains réduits de 30%
+  ├─ Si Colère 51-75:   Tous gains réduits de 50%, Affection bloquée
+  ├─ Si Colère 76-100:  Aucun dialogue, pénalités massives
+
+AFFECTION BLOQUÉE PAR:
+  ├─ Confiance < 20         (trop peu familier)
+  ├─ Respect < 20           (ne te respecte pas assez)
+  └─ Colère > 50            (trop contrariée)
+
+INTIMITÉ BLOQUÉE PAR:
+  ├─ Affection < 60         (pas assez proche émotionnellement)
+  ├─ Confiance < 70         (pas assez de foi)
+  ├─ Colère > 30            (trop frustrée)
+  └─ Respect < 50           (ne t'admire pas assez)
+
+FORCER DIALOGUE FROID:
+  Même confiance élevée, si Colère >50, dialogue devient froid/distant
+  (état émotionnel surpasse état logique)
+
+BONUS SYNÉRGIE:
+  ├─ Confiance 70+ + Affection 60+ + Colère 0-20  = +1 Affection dialogues
+  ├─ Confiance 80+ + Respect 80+                  = +1 tous gains
+  └─ Affection 80+ + Intimité 50+                 = Fin romance déverrouillée
+
+
+═════════════════════════════════════════════════════════════════════════════
+4. CARTOGRAPHIE DIALOGUE → GAINS STAT
+═════════════════════════════════════════════════════════════════════════════
+
+lya_ask_advice:
+  → lya_answer_combat:
+    "Juste mécanique"          = +2 Confiance
+    "Chaque cicatrice"         = +3 Confiance, +1 Affection
+    "Feu qui brûle"            = +3 Confiance, +2 Affection
+    "Force du cœur"            = +4 Confiance, +3 Affection, +2 Intimité
+  
+  → lya_answer_past:
+    "Aucune de tes affaires"   = -2 Confiance, +2 Colère
+    "Imprudente autrefois"     = +3 Confiance, +1 Affection
+    "Ombre & sens"             = +4 Confiance, +3 Affection, +1 Intimité
+    "Futur qui vaut"           = +5 Confiance, +4 Affection, +3 Intimité
+  
+  → lya_answer_feelings:
+    "Utile & capable"          = +1 Confiance, +1 Respect
+    "Potentiel & cœur"         = +2 Confiance, +2 Affection, +2 Respect
+    "Je tiens à toi"           = +3 Confiance, +4 Affection, +1 Intimité
+    "Tout & je t'aime"         = +4 Confiance, +5 Affection, +4 Intimité
+
+lya_ask_help:
+  → lya_offers_training:
+    "Si tu tiens"              = +1 Confiance, +2 Respect
+    "Soif de croissance"       = +3 Confiance, +2 Affection, +3 Respect
+    "Meilleur combattant"      = +4 Confiance, +3 Affection, +4 Respect
+  
+  → lya_supports_you:
+    "Stop te douter"           = +2 Confiance, +1 Respect
+    "Esprit extraordinaire"    = +3 Confiance, +4 Affection, +1 Intimité
+    "Digne & aimé"             = +5 Confiance, +5 Affection, +5 Intimité
+
+lya_ask_story:
+  → lya_shares_story:
+    "Perdu & cicatrices"       = +2 Confiance, +2 Affection
+    "Humain pas arme"          = +4 Confiance, +4 Affection, +2 Intimité
+    "Sauvé & cru"              = +5 Confiance, +5 Affection, +4 Intimité
+
+
+═════════════════════════════════════════════════════════════════════════════
+5. ÉVÉNEMENTS MÉMORIELS (Jalons de relation)
+═════════════════════════════════════════════════════════════════════════════
+
+lya_first_tutorial
+  Déclencheur: Premier dialogue avec Lya
+  Effet: +5 Confiance, Établit début relation
+  Impact dialogue: Ouvre options de dialogue basiques
+
+lya_watched_victory
+  Déclencheur: Première victoire après rencontre Lya
+  Effet: +3 Confiance, +2 Respect
+  Impact dialogue: Elle référence t'avoir vu gagner
+
+lya_confided
+  Déclencheur: Dialogue "shares_story" complété
+  Effet: +5 Confiance, +4 Affection, Déverrouille dialogues vulnérables
+  Impact dialogue: Elle est plus ouverte sur son passé
+
+lya_defended
+  Déclencheur: Choisir Lya plutôt que autre NPC
+  Effet: +5 Confiance, +3 Affection, -2 Colère (si présente)
+  Impact dialogue: Elle référence t'avoir protégé
+
+lya_betrayed
+  Déclencheur: Choix dialogue majeur contre ses intérêts
+  Effet: -10 Confiance, -5 Affection, +10 Colère
+  Impact dialogue: Tous futurs dialogues deviennent froids/hostiles
+
+lya_romance_choice
+  Déclencheur: Accepter choix dialogue romantique (Intimité ≥50)
+  Effet: +10 Affection, +5 Intimité, Déverrouille fin romance
+  Impact dialogue: Elle devient ouvertement affectueuse
+
+lya_fear_volcan
+  Déclencheur: Option dialogue spécifique (Confiance élevée seulement)
+  Effet: +8 Confiance, +6 Affection, Déverrouille vulnérabilité secrète
+  Impact dialogue: Elle partage peurs profondes du volcan
+
+lya_melethor_alliance
+  Déclencheur: Accord pour combattre Mélethor ensemble
+  Effet: +7 Confiance, +5 Respect, Établit arc final
+  Impact dialogue: Elle devient ton allié tactique
+
+lya_final_confession
+  Déclencheur: Intimité 75+ + Confiance 90+
+  Effet: +10 Affection, +10 Intimité, Déverrouille fin
+  Impact dialogue: Déclaration romantique ultime
+
+
+═════════════════════════════════════════════════════════════════════════════
+6. CONSIDÉRATIONS DE PERSONNALITÉ
+═════════════════════════════════════════════════════════════════════════════
+
+Patterns de parole de Lya selon stats:
+
+CONFIANCE <30:
+  - Évite le contact visuel dans descriptions
+  - Utilise "toi" plutôt que connexion perso
+  - Donne seulement conseils pratiques
+  - Pas de partage perso
+
+CONFIANCE 30-70:
+  - Chaleur occasionnelle qui perce
+  - Références à moments partagés
+  - Demande comment tu vas
+  - Langage protecteur émerge
+
+CONFIANCE 70+:
+  - Déclarations émotionnelles directes
+  - Utilise ton nom plus souvent
+  - Montre vulnérabilité
+  - Références à futur ensemble
+
+AFFECTION <25:
+  - Ton professionnel
+  - Pas de descriptions physiques
+  - Langage corporel distant
+
+AFFECTION 25-75:
+  - Ton plus chaud
+  - Proximité physique occasionnelle
+  - Plus disposée à se montrer
+
+AFFECTION 75+:
+  - Utilise termes affectueux
+  - Initie proximité physique
+  - S'ouvre complètement
+
+COLÈRE >50:
+  - Toute chaleur disparaît (même confiance élevée)
+  - Utilise langage dismissif
+  - Distance physique augmente
+  - Sarcasme devient mordant
+
+
+═════════════════════════════════════════════════════════════════════════════
+7. TIMELINE DE PROGRESSION (Suggérée)
+═════════════════════════════════════════════════════════════════════════════
+
+JEU PRÉCOCE (Niveaux 1-20):
+  Cible: Confiance 20-40, Respect 20-40, Affection 0-15
+  Focus: Construire relation basique via combats & dialogues basiques
+  Clé: "Phase de test" - elle t'évalue
+  
+JEU MEDIUM (Niveaux 25-50):
+  Cible: Confiance 40-70, Respect 40-70, Affection 25-60
+  Focus: Dialogues plus profonds, prouesse au combat, premiers gains affection
+  Clé: "Phase d'ouverture" - elle partage plus
+  Jalon: Choix romance disponible au niveau 50
+  
+JEU AVANCÉ (Niveaux 55-80):
+  Cible: Confiance 70-90, Respect 70-90, Affection 60-85, Intimité 30-75
+  Focus: Dialogues intimes, vulnérabilité, gains intimité
+  Clé: "Phase engagement" - entièrement investie
+  
+ENDGAME (Niveaux 85-100):
+  Cible: Confiance 90-100, Respect 90-100, Affection 85-100, Intimité 80-100
+  Focus: Confessions finales, fin romance verrouillage
+  Clé: "Phase union" - dévouement complet
+  Finale: Dialogue romance ultime + fin
+
+
+═════════════════════════════════════════════════════════════════════════════
+FIN DE LA SPÉCIFICATION
+═════════════════════════════════════════════════════════════════════════════
+  
+  Paliers:
+    5-20:     MÉFIANCE - She's testing you, distant, pragmatic
+              - Cold dialogue responses
+              - Won't share personal info
+              - Minimal affection gains possible
+    
+    21-40:    CURIOSITÉ - She's noticing your choices and strategy
+              - Slightly warmer tone
+              - Begins to share minor stories
+              - Affection gains become available
+    
+    41-70:    CONNEXION - She becomes active mentor
+              - Genuinely helpful advice
+              - Opens up about past
+              - Affection gains accelerate
+    
+    71-90:    ENGAGEMENT - Deep trust forming
+              - Reveals vulnerabilities (volcano, Melethor)
+              - Prioritizes your safety
+              - Intimacy gains available
+    
+    91-100:   UNION - Complete trust, she's fully invested
+              - Vulnerable and protective simultaneously
+              - Acts as your greatest strength
+              - All dialogue options unlock
+
+
+AFFECTION (Affection) [0 - 100]
+  Represents: Emotional warmth, fondness, attraction
+  Initial: 0 (neutral)
+  Gate: Requires BOTH Trust ≥ 20 AND Respect ≥ 20 (won't gain before this)
+  
+  Paliers:
+    0-25:     INDIFFÉRENT - She tolerates you, nothing more
+              - Pragmatic tone
+              - No physical contact
+              - No intimate dialogue
+    
+    26-50:    AMICAL - She genuinely enjoys your company
+              - Warmer, more open tone
+              - Occasional jokes and smiles
+              - References to "caring about you"
+    
+    51-75:    CARING - Deep emotional connection forming
+              - Tender moments
+              - Willingness to be vulnerable
+              - Mentions of "mattering" to her
+    
+    76-80:    VERY CLOSE - She's falling for you (romance territory)
+              - Uses terms of endearment
+              - Physical closeness increases
+              - Confession of feelings possible
+    
+    81-100:   IN LOVE - Full romantic devotion
+              - Unconditional statements
+              - Will sacrifice for you
+              - Complete emotional and physical openness
+
+
+COLÈRE (Anger) [0 - 100]
+  Represents: Frustration, resentment, disappointment
+  Initial: 0 (neutral)
+  
+  Paliers:
+    0-25:     CALM - She's patient, no issues
+              - Normal dialogue
+              - Can gain other stats normally
+    
+    26-50:    IRRITATED - She's annoyed but controlling it
+              - Sarcasm increases
+              - Shorter responses
+              - Some stat gains reduced by 30%
+    
+    51-75:    FRUSTRATED - She's upset, losing patience
+              - Cold tone returns even at high Trust
+              - All stat gains reduced by 50%
+              - Affection gains blocked until anger <50
+    
+    76-80:    FURIOUS - She's genuinely angry at you
+              - Won't help you (dialogue unavailable)
+              - Affection losses possible
+              - Respect losses possible
+    
+    81-100:   BETRAYED - Critical state, relationship damaged
+              - Major dialogue locked
+              - Trust/Affection heavy penalties
+              - Requires significant effort to recover
+
+
+RESPECT (Respect) [0 - 100]
+  Represents: Admiration for your abilities and character
+  Initial: 0 (she hasn't seen what you're capable of)
+  
+  Paliers:
+    0-25:     INCOMPETENT - You're weak, barely surviving
+              - She doubts your abilities
+              - Won't mentor you
+              - Affection gains blocked
+    
+    26-50:    CAPABLE - You're competent, handling yourself
+              - She sees potential
+              - Mentoring begins
+              - Affection gains enabled
+    
+    51-75:    SKILLED - You're genuinely impressive
+              - She boasts about you to others
+              - Increased dialogue vulnerability
+              - Stronger affection gains
+    
+    76-80:    EXEMPLARY - You're almost as good as her
+              - She sees you as an equal
+              - Full vulnerability unlocked
+              - Intimacy gains possible
+    
+    81-100:   LEGENDARY - You're beyond what she expected
+              - She worships your growth
+              - Deepest romance dialogue unlocks
+              - She becomes completely devoted
+
+
+INTIMITÉ (Intimacy) [0 - 100]
+  Represents: Romantic/physical attraction and emotional connection
+  Initial: 0 (not relevant yet)
+  Gate Requirements: BOTH Affection ≥ 60 AND Trust ≥ 70 (strict gating)
+  
+  Only accessible through:
+    - Specific dialogue choices (romance options)
+    - Memory events (romantic moments)
+    - High-affection interactions
+  
+  Paliers:
+    0-25:     DISTANT - No romance, platonic only
+              - Friend zone dialogue
+              - Physical interaction minimal
+    
+    26-50:    FLIRTING - Hints of attraction
+              - Playful teasing
+              - Occasional blush
+              - Hand brushing moments
+    
+    51-75:    ROMANTIC - Clear romantic tension
+              - Intimate conversations
+              - More physical closeness
+              - She initiates affection
+    
+    76-80:    PASSIONATE - Strong romantic bond
+              - Deep intimate moments
+              - Vulnerability at peak
+              - She speaks of love
+    
+    81-100:   SOULMATE - Complete romantic union
+              - Full intimate dialogue
+              - She's completely devoted
+              - Romance ending becomes available
+
+
+═════════════════════════════════════════════════════════════════════════════
+2. STAT GAIN FORMULAS & ACTIONS
+═════════════════════════════════════════════════════════════════════════════
+
+TRUST GAINS:
+  ┌─ Combat Related ──────────────────────┐
+  │ 15 consecutive combat wins    = +3 Trust│
+  │ 50 consecutive losses         = -10 Trust│
+  │ First victory after 5+ losses = +5 Trust │
+  └───────────────────────────────────────┘
+  
+  ┌─ Dungeon Related ─────────────────────┐
+  │ Completing dungeon (any)      = +5 Trust│
+  │ Completing dungeon + high HP  = +7 Trust│
+  │ Dungeon failure               = -3 Trust│
+  └───────────────────────────────────────┘
+  
+  ┌─ Dialogue Related ────────────────────┐
+  │ Default dialogue choice       = +2 Trust│
+  │ "I missed you" response       = +3 Trust│
+  │ Asking for advice             = +2 Trust│
+  │ Declining her help            = -3 Trust│
+  │ Honest/vulnerable response    = +4 Trust│
+  └───────────────────────────────────────┘
+  
+  ┌─ Time-based ──────────────────────────┐
+  │ Not speaking >1 day           = -2 Trust│
+  │ Regular daily interactions    = +1 Trust│
+  └───────────────────────────────────────┘
+
+
+AFFECTION GAINS (GATED: Trust ≥ 20 + Respect ≥ 20):
+  ┌─ Dialogue Choices ────────────────────┐
+  │ Emotional vulnerability       = +3 Affection│
+  │ "You mean a lot to me"        = +4 Affection│
+  │ Romantic dialogue option      = +5 Affection│
+  │ Memory event (bonding)        = +3 Affection│
+  │ Dismissive response           = -2 Affection│
+  │ Flirting response             = +3 Affection│
+  └───────────────────────────────────────┘
+  
+  ┌─ Interaction Modifiers ───────────────┐
+  │ If Anger >50:  Affection gains BLOCKED  │
+  │ If Anger >25:  Affection gains -30%    │
+  │ If Respect <20: Affection gains -50%   │
+  └───────────────────────────────────────┘
+
+
+ANGER GENERATION (Decreases other stats):
+  ┌─ Dialogue Triggers ───────────────────┐
+  │ Cold/rude response            = +3 Anger│
+  │ Rejecting her help            = +2 Anger│
+  │ Choosing another NPC over her = +4 Anger│
+  │ Flirting with other NPCs      = +5 Anger│
+  │ Being dismissive              = +2 Anger│
+  └───────────────────────────────────────┘
+  
+  ┌─ Time-based ──────────────────────────┐
+  │ Not speaking >1 day           = +2 Anger│
+  │ Not speaking >3 days          = +4 Anger│
+  │ Not speaking >7 days          = +6 Anger│
+  └───────────────────────────────────────┘
+  
+  ┌─ Anger Reduction ─────────────────────┐
+  │ Apologetic dialogue           = -5 Anger│
+  │ Romantic gesture/dialogue     = -3 Anger│
+  │ Successful combat + talking   = -2 Anger│
+  │ Gift or favor                 = -3 Anger│
+  │ Time passage (1 day)          = -1 Anger│
+  └───────────────────────────────────────┘
+
+
+RESPECT GAINS:
+  ┌─ Combat Related ──────────────────────┐
+  │ 15 consecutive combat wins    = +3 Respect│
+  │ 50 consecutive losses         = -10 Respect│
+  │ Victory against elite enemy   = +5 Respect│
+  │ Boss defeated                 = +7 Respect│
+  └───────────────────────────────────────┘
+  
+  ┌─ Dungeon Related ─────────────────────┐
+  │ Completing dungeon            = +5 Respect│
+  │ Completing dungeon perfectly  = +8 Respect│
+  │ Dungeon failure               = -3 Respect│
+  └───────────────────────────────────────┘
+  
+  ┌─ Dialogue Related ────────────────────┐
+  │ Showing confidence            = +2 Respect│
+  │ Strategic thinking question   = +3 Respect│
+  │ Admitting weakness honestly   = +2 Respect│
+  │ Boastful/arrogant response    = -3 Respect│
+  └───────────────────────────────────────┘
+  
+  ┌─ Level Thresholds ────────────────────┐
+  │ Reaching level 15             = +3 Respect│
+  │ Reaching level 30             = +5 Respect│
+  │ Reaching level 50             = +7 Respect│
+  │ Reaching level 75             = +10 Respect│
+  └───────────────────────────────────────┘
+
+
+INTIMACY GAINS (GATED: Affection ≥ 60 + Trust ≥ 70):
+  ┌─ Romantic Dialogue ───────────────────┐
+  │ Romantic dialogue choice      = +4 Intimacy│
+  │ Vulnerable confession         = +3 Intimacy│
+  │ "I love you" equivalent       = +5 Intimacy│
+  │ Physical closeness dialogue   = +3 Intimacy│
+  │ Memory event (romantic)       = +4 Intimacy│
+  └───────────────────────────────────────┘
+  
+  ┌─ Special Conditions ──────────────────┐
+  │ Only accessible if Affection ≥60       │
+  │ Only accessible if Trust ≥70          │
+  │ Cannot gain if Anger >30              │
+  │ Maximum 5 Intimacy per day            │
+  └───────────────────────────────────────┘
+
+
+═════════════════════════════════════════════════════════════════════════════
+3. STAT INTERACTIONS
+═════════════════════════════════════════════════════════════════════════════
+
+ANGER MODIFIERS (affects other stats):
+  ├─ If Anger 26-50:   All gains reduced by 30%
+  ├─ If Anger 51-75:   All gains reduced by 50%, Affection blocked
+  ├─ If Anger 76-100:  No dialogue available, massive penalties
+
+AFFECTION BLOCKED BY:
+  ├─ Trust < 20         (too unfamiliar)
+  ├─ Respect < 20       (doesn't respect you enough)
+  └─ Anger > 50         (too upset)
+
+INTIMACY BLOCKED BY:
+  ├─ Affection < 60     (not close enough emotionally)
+  ├─ Trust < 70         (not enough faith)
+  ├─ Anger > 30         (too frustrated)
+  └─ Respect < 50       (doesn't admire you enough)
+
+COLD DIALOGUE OVERRIDE:
+  Even at high Trust, if Anger >50, dialogue becomes cold/distant
+  (emotional state overrides logical state)
+
+SYNERGY BONUS:
+  ├─ Trust 70+ + Affection 60+ + Anger 0-20  = +1 Affection to all dialogue
+  ├─ Trust 80+ + Respect 80+                  = +1 to all gains
+  └─ Affection 80+ + Intimacy 50+             = Romance ending unlocks
+
+
+═════════════════════════════════════════════════════════════════════════════
+4. DIALOGUE MAPPING → STAT GAINS
+═════════════════════════════════════════════════════════════════════════════
+
+lya_ask_advice:
+  → lya_answer_combat:
+    "Just mechanical"          = +2 Trust
+    "Every scar teaches"       = +3 Trust, +1 Affection
+    "Fire burning brighter"    = +3 Trust, +2 Affection
+    "True strength spirit"     = +4 Trust, +3 Affection, +2 Intimacy
+  
+  → lya_answer_past:
+    "None of your concern"     = -2 Trust, +2 Anger
+    "Reckless once"            = +3 Trust, +1 Affection
+    "Darkness & meaning"       = +4 Trust, +3 Affection, +1 Intimacy
+    "Shadows & future"         = +5 Trust, +4 Affection, +3 Intimacy
+  
+  → lya_answer_feelings:
+    "Useful & capable"         = +1 Trust, +1 Respect
+    "Potential & heart"        = +2 Trust, +2 Affection, +2 Respect
+    "Care more than expected"  = +3 Trust, +4 Affection, +1 Intimacy
+    "Everything good & love"   = +4 Trust, +5 Affection, +4 Intimacy
+
+lya_ask_help:
+  → lya_offers_training:
+    "Fine if you handle it"    = +1 Trust, +2 Respect
+    "Hunger for growth"        = +3 Trust, +2 Affection, +3 Respect
+    "Finest fighter & shine"   = +4 Trust, +3 Affection, +4 Respect
+  
+  → lya_supports_you:
+    "Stop doubting yourself"   = +2 Trust, +1 Respect
+    "Spirit extraordinary"     = +3 Trust, +4 Affection, +1 Intimacy
+    "Worthy & loved forever"   = +5 Trust, +5 Affection, +5 Intimacy
+
+lya_ask_story:
+  → lya_shares_story:
+    "Lost & scars don't heal"  = +2 Trust, +2 Affection
+    "Human not weapon"         = +4 Trust, +4 Affection, +2 Intimacy
+    "Saved & believed"         = +5 Trust, +5 Affection, +4 Intimacy
+
+
+═════════════════════════════════════════════════════════════════════════════
+5. MEMORY EVENTS (Relationship Milestones)
+═════════════════════════════════════════════════════════════════════════════
+
+lya_first_tutorial
+  Trigger: First dialogue with Lya
+  Effect: +5 Trust, Sets relationship start
+  Dialogue impact: Opens basic dialogue options
+
+lya_watched_victory
+  Trigger: First victory after meeting Lya
+  Effect: +3 Trust, +2 Respect
+  Dialogue impact: She references watching you win
+
+lya_confided
+  Trigger: Any "shares_story" dialogue completed
+  Effect: +5 Trust, +4 Affection, Unlocks vulnerable dialogues
+  Dialogue impact: She's more open about past
+
+lya_defended
+  Trigger: Choose Lya over another NPC choice
+  Effect: +5 Trust, +3 Affection, -2 Anger (if any)
+  Dialogue impact: She references protecting you
+
+lya_betrayed
+  Trigger: Major dialogue choice against her interests
+  Effect: -10 Trust, -5 Affection, +10 Anger
+  Dialogue impact: All future dialogues become cold/hostile
+
+lya_romance_choice
+  Trigger: Accept romantic dialogue choice (Intimacy ≥50)
+  Effect: +10 Affection, +5 Intimacy, Unlocks romance ending
+  Dialogue impact: She becomes openly affectionate
+
+lya_fear_volcan
+  Trigger: Specific dialogue option (high Trust only)
+  Effect: +8 Trust, +6 Affection, Unlocks secret vulnerability
+  Dialogue impact: She shares deep fears about volcano
+
+lya_melethor_alliance
+  Trigger: Agreement to fight Melethor together
+  Effect: +7 Trust, +5 Respect, Sets final arc
+  Dialogue impact: She becomes your tactical ally
+
+lya_final_confession
+  Trigger: Reaching Intimacy 75+ + Trust 90+
+  Effect: +10 Affection, +10 Intimacy, Unlocks ending
+  Dialogue impact: Ultimate romantic declaration
+
+
+═════════════════════════════════════════════════════════════════════════════
+6. PERSONALITY CONSIDERATIONS
+═════════════════════════════════════════════════════════════════════════════
+
+Lya speech patterns based on stats:
+
+TRUST <30:
+  - Avoids eye contact in descriptions
+  - Uses "you" instead of personal connection
+  - Gives practical advice only
+  - No personal sharing
+
+TRUST 30-70:
+  - Occasional warmth breaking through
+  - References past shared moments
+  - Asks about your wellbeing
+  - Protective language emerges
+
+TRUST 70+:
+  - Direct emotional statements
+  - Uses your name more
+  - Shows vulnerability
+  - References future together
+
+AFFECTION <25:
+  - Professional tone
+  - No physical descriptions
+  - Distant body language
+
+AFFECTION 25-75:
+  - Warmer tone
+  - Occasional physical closeness
+  - More willing to be seen
+
+AFFECTION 75+:
+  - Uses terms of endearment
+  - Initiates physical closeness
+  - Opens completely
+
+ANGER >50:
+  - All warmth disappears (even if Trust high)
+  - Uses dismissive language
+  - Physical distance increases
+  - Sarcasm becomes biting
+
+
+═════════════════════════════════════════════════════════════════════════════
+7. PROGRESSION TIMELINE (Suggested)
+═════════════════════════════════════════════════════════════════════════════
+
+EARLY GAME (Levels 1-20):
+  Target: Trust 20-40, Respect 20-40, Affection 0-15
+  Focus: Building baseline relationship through combat & basic dialogues
+  Key: "Testing phase" - she's evaluating you
+  
+MID GAME (Levels 25-50):
+  Target: Trust 40-70, Respect 40-70, Affection 25-60
+  Focus: Deeper dialogues, combat prowess, first affection gains
+  Key: "Opening up phase" - she shares more
+  Milestone: Romance choice becomes available at level 50
+  
+LATE GAME (Levels 55-80):
+  Target: Trust 70-90, Respect 70-90, Affection 60-85, Intimacy 30-75
+  Focus: Intimate dialogues, vulnerability, intimacy gains
+  Key: "Commitment phase" - she's fully invested
+  
+ENDGAME (Levels 85-100):
+  Target: Trust 90-100, Respect 90-100, Affection 85-100, Intimacy 80-100
+  Focus: Final confessions, romance ending lock-in
+  Key: "Union phase" - complete devotion
+  Finale: Ultimate romance dialogue + ending
+
+
+═════════════════════════════════════════════════════════════════════════════
+END OF SPECIFICATION
+═════════════════════════════════════════════════════════════════════════════

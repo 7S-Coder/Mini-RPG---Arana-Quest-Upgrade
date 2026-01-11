@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 import Image from 'next/image';
+import DialogueView from '../DialogueView';
+import { loadAllLyaTavernDialogues } from '@/app/game/templates/dialogues/tavernDialogueLoader';
 
 interface NPC {
   id: string;
@@ -51,17 +53,47 @@ const TAVERN_NPCS: NPC[] = [
 
 export default function TavernModal({ isOpen, onClose, playerLevel }: TavernModalProps) {
   const [selectedNPC, setSelectedNPC] = useState<string | null>(null);
+  const [inDialogue, setInDialogue] = useState(false);
 
   if (!isOpen) return null;
 
   const handleNPCClick = (npcId: string) => {
     setSelectedNPC(npcId);
-    // TODO: Open dialogue with selected NPC
   };
 
   const handleBack = () => {
     setSelectedNPC(null);
   };
+
+  const handleStartDialogue = () => {
+    setInDialogue(true);
+  };
+
+  const handleEndDialogue = () => {
+    setInDialogue(false);
+    setSelectedNPC(null);
+  };
+
+  if (selectedNPC && inDialogue) {
+    const npc = TAVERN_NPCS.find((n) => n.id === selectedNPC);
+    
+    // Get appropriate dialogue for NPC
+    let dialogueNodes: any[] = [];
+    if (selectedNPC === 'lya') {
+      dialogueNodes = loadAllLyaTavernDialogues();
+    }
+    
+    return (
+      <Modal onClose={onClose} title={`Conversation with ${npc?.name}`}>
+        <DialogueView
+          npcId={selectedNPC as any}
+          npcName={npc?.name || 'NPC'}
+          onClose={handleEndDialogue}
+          dialogueNodes={dialogueNodes}
+        />
+      </Modal>
+    );
+  }
 
   if (selectedNPC) {
     const npc = TAVERN_NPCS.find((n) => n.id === selectedNPC);
@@ -111,9 +143,7 @@ export default function TavernModal({ isOpen, onClose, playerLevel }: TavernModa
             </button>
             <button
               className="btn primary"
-              onClick={() => {
-                // TODO: Start dialogue
-              }}
+              onClick={handleStartDialogue}
               style={{ flex: 1 }}
             >
               Talk
