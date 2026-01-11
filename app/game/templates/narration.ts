@@ -28,35 +28,35 @@ export const NPC_DATA: Record<NPCName, { name: string; title: string; }> = {
 
 // Map narrations removed - use level milestones instead
 
-// Tutorial messages (progressive learning)
+// Tutorial messages (progressive learning) - Lya as mentor
 export const TUTORIAL_MESSAGES: Record<string, NarrativeMessage> = {
   firstCombatTutorial: {
-    npc: 'eldran',
-    text: 'Click "Attack" to strike. Every blow tests your reflexes.',
+    npc: 'lya',
+    text: 'You swing. That\'s the first lesson. Everything else, you\'ll learn bleeding.',
   },
   firstVictoryTutorial: {
-    npc: 'eldran',
-    text: 'Victory! You have defeated your first enemy. Loot drops automatically.',
+    npc: 'lya',
+    text: 'So you won once. The dead don\'t care about your first victory. Neither should you.',
   },
   firstLootTutorial: {
-    npc: 'eldran',
-    text: 'Items drop during combat. Collect them or equip them to grow stronger.',
+    npc: 'lya',
+    text: 'The earth gives what it takes from corpses. Use it or die poorer than you lived.',
   },
   firstInventoryTutorial: {
-    npc: 'eldran',
-    text: 'Ctrl+I opens your inventory. Equip weapons and armor to become more powerful.',
+    npc: 'lya',
+    text: 'You carry more than just your body now. Equipment shapes survival. Choose carefully.',
   },
   firstBossTutorial: {
-    npc: 'eldran',
-    text: 'A boss arrives... far more powerful. Bosses test your strategy, not just your strength.',
+    npc: 'lya',
+    text: 'Some things don\'t just fight. They *decide* how you will die. Respect that difference.',
   },
   firstLevelUpTutorial: {
-    npc: 'eldran',
-    text: 'Level up! You can now allocate stat points. Be strategic.',
+    npc: 'lya',
+    text: 'You grow. Strength is not given—it is *chosen*. How you shape yourself matters.',
   },
   mapUnlockTutorial: {
-    npc: 'eldran',
-    text: 'You have unlocked a new map. Each region hides its secrets and dangers.',
+    npc: 'lya',
+    text: 'New paths open. The world is vast because vast things live in it. Tread carefully.',
   },
 };
 

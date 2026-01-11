@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arena Quest Auto Runner</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+      color: #eee;
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 1200px;
+      width: 100%;
+      background: rgba(20, 20, 40, 0.95);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      background: linear-gradient(90deg, #ff6b6b, #ffa5a5);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 2.5em;
+    }
+
+    .control-panel {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #103218, #144a2a);
+      color: #fff;
+      border: 2px solid #4a9d5f;
+    }
+
+    .btn-start:hover:not(:disabled) {
+      background: linear-gradient(135deg, #144a2a, #1a5d34);
+      box-shadow: 0 0 20px rgba(74, 157, 95, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-stop {
+      background: linear-gradient(135deg, #3b0b0b, #521010);
+      color: #fff;
+      border: 2px solid #d91e1e;
+    }
+
+    .btn-stop:hover:not(:disabled) {
+      background: linear-gradient(135deg, #521010, #6a1515);
+      box-shadow: 0 0 20px rgba(217, 30, 30, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-reset {
+      background: linear-gradient(135deg, #4a4a1a, #6a6a2a);
+      color: #fff;
+      border: 2px solid #d4a84a;
+    }
+
+    .btn-reset:hover:not(:disabled) {
+      background: linear-gradient(135deg, #6a6a2a, #7a7a3a);
+      box-shadow: 0 0 20px rgba(212, 168, 74, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-start:disabled, .btn-stop:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .config-section {
+      background: rgba(30, 30, 60, 0.6);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border: 1px solid rgba(100, 100, 200, 0.2);
+    }
+
+    .config-title {
+      font-size: 1.2em;
+      margin-bottom: 15px;
+      color: #4da6ff;
+    }
+
+    .config-item {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+
+    .config-item label {
+      min-width: 150px;
+      font-weight: 500;
+    }
+
+    .config-item input {
+      padding: 8px 12px;
+      background: rgba(40, 40, 80, 0.8);
+      border: 1px solid rgba(100, 100, 200, 0.3);
+      border-radius: 4px;
+      color: #eee;
+      width: 120px;
+    }
+
+    .config-item input:focus {
+      outline: none;
+      border-color: rgba(100, 200, 255, 0.6);
+      box-shadow: 0 0 10px rgba(100, 200, 255, 0.2);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .stat-card {
+      background: rgba(40, 40, 80, 0.6);
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #4da6ff;
+    }
+
+    .stat-card.progression {
+      border-left-color: #ff6b6b;
+    }
+
+    .stat-card.combat {
+      border-left-color: #ffa5a5;
+    }
+
+    .stat-card.loot {
+      border-left-color: #4ecdc4;
+    }
+
+    .stat-card.items {
+      border-left-color: #ffe66d;
+    }
+
+    .stat-card.economy {
+      border-left-color: #95e1d3;
+    }
+
+    .stat-card.time {
+      border-left-color: #c7ceea;
+    }
+
+    .stat-title {
+      font-size: 1.1em;
+      margin-bottom: 12px;
+      font-weight: 600;
+      color: #4da6ff;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(100, 100, 200, 0.1);
+      font-size: 0.95em;
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      color: #aaa;
+    }
+
+    .stat-value {
+      color: #4da6ff;
+      font-weight: 600;
+    }
+
+    .log-panel {
+      background: rgba(20, 20, 40, 0.8);
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 30px;
+      border: 1px solid rgba(100, 100, 200, 0.2);
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    .log-title {
+      font-size: 1.1em;
+      margin-bottom: 12px;
+      color: #4da6ff;
+    }
+
+    .log-entry {
+      padding: 4px 0;
+      color: #aaa;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .log-entry.success {
+      color: #4ecdc4;
+    }
+
+    .log-entry.warning {
+      color: #ffa5a5;
+    }
+
+    .log-entry.error {
+      color: #ff6b6b;
+    }
+
+    .status {
+      text-align: center;
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1.1em;
+    }
+
+    .status.running {
+      background: rgba(16, 50, 24, 0.6);
+      color: #4ecdc4;
+      border: 1px solid rgba(78, 205, 196, 0.3);
+    }
+
+    .status.idle {
+      background: rgba(60, 20, 20, 0.4);
+      color: #aaa;
+      border: 1px solid rgba(100, 100, 200, 0.2);
+    }
+
+    .pulse {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.6;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚔️ Arena Quest Auto Runner</h1>
+
+    <div class="control-panel">
+      <button class="btn-start" id="startBtn" onclick="startRunner()">▶ Start</button>
+      <button class="btn-stop" id="stopBtn" onclick="stopRunner()" disabled>⏹ Stop</button>
+      <button class="btn-reset" onclick="resetGame()">🔄 Reset Game</button>
+    </div>
+
+    <div class="status idle" id="status">Idle - Ready to start</div>
+
+    <div class="config-section">
+      <div class="config-title">⚙️ Configuration</div>
+      <div class="config-item">
+        <label>Combat Delay (ms):</label>
+        <input type="number" id="combatDelay" value="50" min="0" max="5000">
+      </div>
+      <div class="config-item">
+        <label>Max Level:</label>
+        <input type="number" id="maxLevel" value="90" min="1" max="200">
+      </div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="log-panel">
+      <div class="log-title">📋 Log</div>
+      <div id="logPanel"></div>
+    </div>
+  </div>
+
+  <script>
+    // ============ ARENA QUEST AUTO RUNNER - EMBEDDED VERSION ============
+    
+    (function() {
+      'use strict';
+
+      const CONFIG = {
+        COMBAT_DELAY: 50,
+        MAX_LEVEL: 90,
+        AUTO_EQUIP: true,
+        AUTO_FORGE: true,
+        AUTO_UPGRADE: true,
+      };
+
+      const STATS = {
+        startTime: Date.now(),
+        startLevel: 0,
+        startGold: 0,
+        startEssence: 0,
+        
+        combatsWon: 0,
+        combatsLost: 0,
+        totalCombats: 0,
+        
+        itemsLooted: { common: 0, uncommon: 0, rare: 0, epic: 0, legendary: 0, mythic: 0 },
+        itemsEquipped: 0,
+        itemsForged: 0,
+        itemsUpgraded: 0,
+        itemsSold: 0,
+        
+        goldEarned: 0,
+        goldSpent: 0,
+        essenceEarned: 0,
+        
+        bossesFought: 0,
+        bossesDefeated: 0,
+        
+        mapsVisited: new Set(),
+        
+        endLevel: 0,
+        endGold: 0,
+        endEssence: 0,
+        endTime: 0,
+      };
+
+      let gameState = null;
+      let isRunning = false;
+      let logBuffer = [];
+      let logCallback = null;
+
+      function log(msg) {
+        const timestamp = new Date().toLocaleTimeString();
+        const fullMsg = `[${timestamp}] ${msg}`;
+        console.log(fullMsg);
+        logBuffer.push(fullMsg);
+        if (logCallback && typeof logCallback === 'function') {
+          try {
+            logCallback(fullMsg);
+          } catch (e) {}
+        }
+      }
+
+      function getGameState() {
+        try {
+          // SCRIPT MODE: Always create fresh game state for auto-runner
+          const defaultState = {
+            player: {
+              id: 'player_' + Date.now(),
+              name: 'Adventurer',
+              level: 1,
+              xp: 0,
+              maxHp: 100,
+              hp: 100,
+              speed: 100,
+              regen: 5,
+              gold: 0, 
+              essence: 0, 
+              x: 100,
+              y: 100,
+              unlockedTiers: ['common'],
+            },
+            inventory: [],
+            equipment: {},
+            progression: {
+              allocationPoints: 5,
+              stats: { atk: 0, def: 0, spd: 0, vit: 0, crit: 0, dodge: 0 },
+            },
+            pickups: [],
+          };
+          
+          log('✅ Fresh game state created (Level 1)');
+          return defaultState;
+        } catch (e) {
+          log(`❌ Error creating game state: ${e.message}`);
+          return null;
+        }
+      }
+
+      function saveGameState(save) {
+        try {
+          localStorage.setItem('arenaquest_core_v1', JSON.stringify(save));
+        } catch (e) {
+          log(`⚠️ Error saving game state: ${e.message}`);
+        }
+      }
+
+      function optimizeEquipment(state) {
+        try {
+          let changed = false;
+          const slots = ['head', 'chest', 'legs', 'feet', 'hands', 'weapon1', 'weapon2'];
+          
+          for (const slot of slots) {
+            const bestItem = state.inventory.filter(it => it && it.slot === slot)
+              .sort((a, b) => {
+                const statsA = a.stats ? Object.values(a.stats).reduce((a, b) => a + b, 0) : 0;
+                const statsB = b.stats ? Object.values(b.stats).reduce((a, b) => a + b, 0) : 0;
+                return statsB - statsA;
+              })[0];
+            
+            if (bestItem && (!state.equipment[slot] || bestItem.id !== state.equipment[slot].id)) {
+              if (state.equipment[slot]) {
+                state.inventory.push(state.equipment[slot]);
+              }
+              state.equipment[slot] = bestItem;
+              state.inventory = state.inventory.filter(it => !it || it.id !== bestItem.id);
+              STATS.itemsEquipped++;
+              changed = true;
+            }
+          }
+          return changed;
+        } catch (e) {
+          log(`⚠️ Error optimizing equipment: ${e.message}`);
+          return false;
+        }
+      }
+
+      function autoForgeItems(state) {
+        try {
+          if (!CONFIG.AUTO_FORGE || !Array.isArray(state.inventory)) return false;
+          
+          const grouped = {};
+          state.inventory.forEach(it => {
+            if (!it) return;
+            const key = it.name;
+            if (!grouped[key]) grouped[key] = [];
+            grouped[key].push(it);
+          });
+          
+          let forged = false;
+          for (const [name, items] of Object.entries(grouped)) {
+            if (items.length >= 3) {
+              const toForge = items.slice(0, 3);
+              const forgedItem = {
+                ...toForge[0],
+                id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+                isForged: true,
+                stats: Object.keys(toForge[0].stats || {}).reduce((acc, key) => {
+                  acc[key] = (toForge[0].stats[key] || 0) * 1.15;
+                  return acc;
+                }, {}),
+              };
+              
+              state.inventory = state.inventory.filter(it => !toForge.includes(it));
+              state.inventory.push(forgedItem);
+              
+              STATS.itemsForged++;
+              forged = true;
+              log(`🔨 Forged 3x ${name}`);
+            }
+          }
+          
+          return forged;
+        } catch (e) {
+          log(`⚠️ Error forging items: ${e.message}`);
+          return false;
+        }
+      }
+
+      function autoSellCommon(state) {
+        try {
+          if (!Array.isArray(state.inventory)) return 0;
+          
+          const commonItems = state.inventory.filter(it => 
+            it && it.rarity === 'common'
+          );
+          
+          let goldGained = 0;
+          for (const item of commonItems) {
+            const price = item.cost || 10;
+            state.player.gold = (state.player.gold || 0) + price;
+            goldGained += price;
+            STATS.itemsSold++;
+          }
+          
+          state.inventory = state.inventory.filter(it => !commonItems.includes(it));
+          
+          if (goldGained > 0) {
+            log(`💰 Sold ${commonItems.length} common items (+${goldGained} g)`);
+            STATS.goldEarned += goldGained;
+          }
+          
+          return goldGained;
+        } catch (e) {
+          log(`⚠️ Error selling items: ${e.message}`);
+          return 0;
+        }
+      }
+
+      async function simulateCombat(state) {
+        try {
+          const player = state.player;
+          
+          // Calculate win chance based on player level
+          // Early game: more losses, late game: almost always win
+          const level = state.player.level;
+          let winChance = 0.5 + (level / (CONFIG.MAX_LEVEL * 2)); // 50% at level 1, 95% at level 90
+          winChance = Math.min(0.95, Math.max(0.3, winChance)); // Clamp between 30% and 95%
+          
+          const isWin = Math.random() < winChance;
+          
+          STATS.totalCombats++;
+          
+          if (isWin) {
+            // Combat won - gain resources and loot
+            const baseGold = 0.5 + Math.random() * 2;
+            const gold = Number(baseGold.toFixed(2));
+            
+            player.gold = (player.gold || 0) + gold;
+            
+            // Rarity distribution based on game progression:
+            // Spawn (1-5): Common, Uncommon
+            // Forest (6-15): Common, Uncommon, Rare
+            // Caves (16-29): Uncommon, Rare, Epic
+            // Ruins (30-49): Rare, Epic, Legendary
+            // Volcano (50+): Epic, Legendary, Mythic
+            
+            let rarities = [];
+            
+            if (level < 6) {
+              rarities = ['common', 'common', 'common', 'uncommon'];
+            } else if (level < 16) {
+              rarities = ['common', 'uncommon', 'uncommon', 'rare'];
+            } else if (level < 30) {
+              rarities = ['uncommon', 'uncommon', 'rare', 'rare', 'epic'];
+            } else if (level < 50) {
+              rarities = ['rare', 'rare', 'epic', 'epic', 'legendary'];
+            } else {
+              rarities = ['epic', 'epic', 'legendary', 'legendary', 'mythic'];
+            }
+            
+            const rarity = rarities[Math.floor(Math.random() * rarities.length)];
+            
+            const itemName = ['Sword', 'Shield', 'Helmet', 'Armor', 'Boots', 'Gauntlets', 'Amulet', 'Ring'];
+            const name = itemName[Math.floor(Math.random() * itemName.length)] + ` (${rarity})`;
+            
+            state.inventory = state.inventory || [];
+            state.inventory.push({
+              id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+              name: name,
+              slot: ['head', 'chest', 'legs', 'feet', 'hands'][Math.floor(Math.random() * 5)],
+              rarity: rarity,
+              category: 'armor',
+              cost: (10 + Math.random() * 100) * (rarity === 'mythic' ? 5 : rarity === 'legendary' ? 3 : rarity === 'epic' ? 2 : rarity === 'rare' ? 1.5 : 1),
+              stats: {
+                hp: 5 + Math.random() * 15,
+                atk: 3 + Math.random() * 10,
+                def: 2 + Math.random() * 8,
+              },
+            });
+            
+            STATS.itemsLooted[rarity]++;
+            STATS.combatsWon++;
+            STATS.goldEarned += gold;
+          } else {
+            // Combat lost
+            STATS.combatsLost++;
+            // No loot, no XP gain on loss
+          }
+          
+          return isWin;
+        } catch (e) {
+          log(`⚠️ Combat error: ${e.message}`);
+          return false;
+        }
+      }
+
+      function applyXP(state) {
+        // More realistic XP formula: less XP per combat
+        const xpGain = 15 + Math.random() * 25; // 15-40 XP instead of 50-100
+        
+        state.player.xp = (state.player.xp || 0) + xpGain;
+        
+        let leveledUp = false;
+        // Keep leveling up while we have enough XP
+        while (state.player.level < CONFIG.MAX_LEVEL) {
+          const xpRequiredForNextLevel = (state.player.level + 1) * 100;
+          if (state.player.xp >= xpRequiredForNextLevel) {
+            state.player.xp -= xpRequiredForNextLevel;
+            state.player.level++;
+            state.player.maxHp = (state.player.maxHp || 100) + 10;
+            state.player.hp = state.player.maxHp;
+            
+            log(`📈 Level up! Now level ${state.player.level}`);
+            leveledUp = true;
+          } else {
+            break; // Not enough XP for next level
+          }
+        }
+        
+        return leveledUp;
+      }
+
+      async function runAutoLoop() {
+        isRunning = true;
+        log('🎮 AUTO RUNNER STARTED');
+        log(`⚙️ Max Level: ${CONFIG.MAX_LEVEL}`);
+        log('━'.repeat(50));
+        
+        gameState = getGameState();
+        if (!gameState || !gameState.player) {
+          log('❌ Failed to initialize game state');
+          isRunning = false;
+          return;
+        }
+        
+        gameState.inventory = gameState.inventory || [];
+        gameState.equipment = gameState.equipment || {};
+        gameState.player.xp = gameState.player.xp || 0;
+        gameState.player.level = gameState.player.level || 1;
+        gameState.player.gold = gameState.player.gold || 100;
+        gameState.player.essence = gameState.player.essence || 0;
+        
+        STATS.startLevel = gameState.player.level;
+        STATS.startGold = gameState.player.gold;
+        STATS.startEssence = gameState.player.essence;
+        
+        log(`📊 Starting Level: ${STATS.startLevel}`);
+        log(`💰 Starting Gold: ${STATS.startGold.toFixed(2)}`);
+        log(`✨ Starting Essence: ${STATS.startEssence}`);
+        log('━'.repeat(50));
+        
+        let combatCount = 0;
+        
+        while (isRunning && gameState.player.level < CONFIG.MAX_LEVEL) {
+          try {
+            const combatWon = await simulateCombat(gameState);
+            if (combatWon) {
+              applyXP(gameState);
+            }
+            combatCount++;
+            
+            if (combatCount % 5 === 0) {
+              optimizeEquipment(gameState);
+              autoForgeItems(gameState);
+              autoSellCommon(gameState);
+              
+              if (combatCount % 25 === 0) {
+                const xpForNextLevel = gameState.player.level * 100;
+                log(`🔄 Progress: Level ${gameState.player.level}/${CONFIG.MAX_LEVEL} | XP: ${Math.floor(gameState.player.xp)}/${xpForNextLevel} | Combats: ${STATS.totalCombats}`);
+              }
+            }
+            
+            if (combatCount % 50 === 0) {
+              saveGameState(gameState);
+            }
+            
+            if (CONFIG.COMBAT_DELAY > 0) {
+              await new Promise(resolve => setTimeout(resolve, CONFIG.COMBAT_DELAY));
+            }
+            
+            if (gameState.player.level >= CONFIG.MAX_LEVEL) {
+              break;
+            }
+          } catch (e) {
+            log(`⚠️ Error: ${e.message}`);
+          }
+        }
+        
+        saveGameState(gameState);
+        
+        STATS.endTime = Date.now();
+        STATS.endLevel = gameState.player.level;
+        STATS.endGold = gameState.player.gold || 0;
+        STATS.endEssence = gameState.player.essence || 0;
+        
+        log('━'.repeat(50));
+        log('✅ AUTO RUNNER COMPLETED');
+        generateReport();
+        
+        isRunning = false;
+      }
+
+      function generateReport() {
+        const duration = STATS.endTime - STATS.startTime;
+        const hours = Math.floor(duration / 3600000);
+        const minutes = Math.floor((duration % 3600000) / 60000);
+        const seconds = Math.floor((duration % 60000) / 1000);
+        
+        const report = [
+          '═'.repeat(70),
+          '                    ARENA QUEST - AUTO RUNNER REPORT',
+          '═'.repeat(70),
+          '',
+          `Level: ${STATS.startLevel} → ${STATS.endLevel}`,
+          `Total Combats: ${STATS.totalCombats}`,
+          `Items Looted: ${Object.values(STATS.itemsLooted).reduce((a, b) => a + b, 0)}`,
+          `Gold: ${STATS.startGold.toFixed(2)} → ${STATS.endGold.toFixed(2)}`,
+          `Duration: ${hours}h ${minutes}m ${seconds}s`,
+          '═'.repeat(70),
+        ];
+        
+        const reportText = report.join('\n');
+        log(reportText);
+      }
+
+      window.ArenaQuestAutoRunner = {
+        start: () => runAutoLoop(),
+        stop: () => { isRunning = false; log('⏹️ Auto runner stopped'); },
+        getStats: () => STATS,
+        config: CONFIG,
+        setLogCallback: (callback) => { logCallback = callback; },
+      };
+
+      log('✅ Auto Runner Ready!');
+    })();
+
+    // ============ UI CONTROLLER ============
+    
+    let autoRunner = null;
+    let logContainer = null;
+
+    function initLogContainer() {
+      logContainer = document.getElementById('logPanel');
+    }
+
+    function addLog(message, type = 'normal') {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry ' + type;
+      entry.textContent = message;
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function updateStats() {
+      if (!autoRunner) return;
+
+      const stats = autoRunner.getStats();
+      const statsGrid = document.getElementById('statsGrid');
+
+      statsGrid.innerHTML = `
+        <div class="stat-card progression">
+          <div class="stat-title">📈 Game Progression</div>
+          <div class="stat-row"><span class="stat-label">Level</span><span class="stat-value">${stats.startLevel} → ${stats.endLevel || stats.startLevel}</span></div>
+          <div class="stat-row"><span class="stat-label">Max Level</span><span class="stat-value">${autoRunner.config.MAX_LEVEL}</span></div>
+          <div class="stat-row"><span class="stat-label">Gold</span><span class="stat-value">${stats.startGold.toFixed(2)} → ${stats.endGold.toFixed(2)}g</span></div>
+        </div>
+        <div class="stat-card combat">
+          <div class="stat-title">⚔️ Combat</div>
+          <div class="stat-row"><span class="stat-label">Total Combats</span><span class="stat-value">${stats.totalCombats}</span></div>
+          <div class="stat-row"><span class="stat-label">Won</span><span class="stat-value">${stats.combatsWon}</span></div>
+          <div class="stat-row"><span class="stat-label">Lost</span><span class="stat-value">${stats.combatsLost}</span></div>
+        </div>
+        <div class="stat-card loot">
+          <div class="stat-title">💎 Loot</div>
+          <div class="stat-row"><span class="stat-label">Common</span><span class="stat-value">${stats.itemsLooted.common}</span></div>
+          <div class="stat-row"><span class="stat-label">Uncommon</span><span class="stat-value">${stats.itemsLooted.uncommon}</span></div>
+          <div class="stat-row"><span class="stat-label">Rare</span><span class="stat-value">${stats.itemsLooted.rare}</span></div>
+          <div class="stat-row"><span class="stat-label">Epic</span><span class="stat-value">${stats.itemsLooted.epic}</span></div>
+          <div class="stat-row"><span class="stat-label">Legendary</span><span class="stat-value">${stats.itemsLooted.legendary}</span></div>
+          <div class="stat-row"><span class="stat-label">Mythic</span><span class="stat-value">${stats.itemsLooted.mythic}</span></div>
+        </div>
+        <div class="stat-card items">
+          <div class="stat-title">🛠️ Items</div>
+          <div class="stat-row"><span class="stat-label">Equipped</span><span class="stat-value">${stats.itemsEquipped}</span></div>
+          <div class="stat-row"><span class="stat-label">Forged</span><span class="stat-value">${stats.itemsForged}</span></div>
+          <div class="stat-row"><span class="stat-label">Sold</span><span class="stat-value">${stats.itemsSold}</span></div>
+        </div>
+      `;
+    }
+
+    function startRunner() {
+      initLogContainer();
+      
+      if (!autoRunner) {
+        autoRunner = window.ArenaQuestAutoRunner;
+      }
+
+      const delay = parseInt(document.getElementById('combatDelay').value) || 50;
+      const maxLevel = parseInt(document.getElementById('maxLevel').value) || 90;
+
+      autoRunner.config.COMBAT_DELAY = delay;
+      autoRunner.config.MAX_LEVEL = maxLevel;
+
+      autoRunner.setLogCallback((msg) => {
+        addLog(msg, 'normal');
+      });
+
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = false;
+      const statusEl = document.getElementById('status');
+      statusEl.className = 'status running pulse';
+      statusEl.textContent = '🎮 Running...';
+
+      addLog('✅ Auto Runner Started', 'success');
+      autoRunner.start();
+
+      const updateInterval = setInterval(() => {
+        updateStats();
+        if (document.getElementById('startBtn').disabled === false) {
+          clearInterval(updateInterval);
+          statusEl.className = 'status idle';
+          statusEl.textContent = 'Completed!';
+        }
+      }, 500);
+    }
+
+    function stopRunner() {
+      if (autoRunner) {
+        autoRunner.stop();
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('stopBtn').disabled = true;
+        document.getElementById('status').className = 'status idle';
+        document.getElementById('status').textContent = 'Stopped';
+        addLog('⏹️ Stopped', 'warning');
+      }
+    }
+
+    function resetGame() {
+      if (confirm('⚠️ Reset the game? This will clear the current save.')) {
+        try {
+          localStorage.removeItem('arenaquest_core_v1');
+          location.reload();
+        } catch (e) {
+          addLog('❌ Error resetting game', 'error');
+        }
+      }
+    }
+
+    window.addEventListener('load', () => {
+      initLogContainer();
+      addLog('🎮 Arena Quest Auto Runner Loaded', 'success');
+      addLog('Press Start to begin', 'normal');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+================================================================================
+        ARENA QUEST - ROADMAP TUTORIELS & PROGRESSION AVEC LYA
+                    Niveaux 1-10 (Apprentissage Initial)
+================================================================================
+
+DATE: Janvier 2026
+STATUT: ✅ IMPLÉMENTÉ EN CODE - narration.ts (TUTORIAL_MESSAGES)
+
+================================================================================
+CONCEPT PRINCIPAL
+================================================================================
+
+LYA est la mentor des tutoriels (remplace Eldran qui reste distant/mystique).
+
+POURQUOI LYA?
+  ✓ Elle est commerçante → elle observe et enseigne naturellement
+  ✓ Elle est pragmatique → elle explique la réalité (survie, adaptation)
+  ✓ Elle observe les combattants → elle voit les erreurs et les forces
+  ✓ Elle survit seule → elle sait ce qui marche vraiment
+  ✓ Elle est sympathique → fondation pour arc romance futur
+
+STYLE NARRATIF (respecte la tonalité du jeu):
+  → Phrases courtes et impactantes
+  → Métaphores plutôt qu'explications mécaniques
+  → Ton pragmatique mais non froid
+  → Jamais "Ceci est un tutoriel" (intégration narrative)
+  → Chaque leçon reflète l'observation de Lya
+
+================================================================================
+PROGRESSION DES 7 TUTORIELS
+================================================================================
+
+[TUTORIEL 1] FIRST COMBAT - "You swing. That's the first lesson."
+────────────────────────────────────────────────────────────────
+Trigger: Première attaque en combat
+NPC: Lya
+Texte Complet:
+  "You swing. That's the first lesson. Everything else, you'll learn bleeding."
+  
+Signification: 
+  → Le joueur apprend en FAISANT, pas en écoutant
+  → Lya reconnaît le courage/folie du joueur
+  → Ton: sec mais avec une pointe d'humour noir
+
+---
+
+[TUTORIEL 2] FIRST VICTORY - "So you won once."
+────────────────────────────────────────────────────────────────
+Trigger: Première victoire en combat
+NPC: Lya
+Texte Complet:
+  "So you won once. The dead don't care about your first victory. Neither should you."
+  
+Signification:
+  → Tempère l'enthousiasme du joueur
+  → Lya maintient la perspective: une victoire = rien de special
+  → Message: La survie est ce qui compte, pas la gloire
+  → Ton: cynique, réaliste
+
+---
+
+[TUTORIEL 3] FIRST LOOT - "The earth gives what it takes"
+────────────────────────────────────────────────────────────────
+Trigger: Première récupération de butin
+NPC: Lya
+Texte Complet:
+  "The earth gives what it takes from corpses. Use it or die poorer than you lived."
+  
+Signification:
+  → Les ressources viennent de ce qu'on tue
+  → Lya conseille l'utilisation pratique (pas l'accumulation)
+  → Message: Les morts te donnent une chance, ne la gaspille pas
+  → Ton: sombre, pragmatique
+
+---
+
+[TUTORIEL 4] FIRST INVENTORY - "You carry more than just your body"
+────────────────────────────────────────────────────────────────
+Trigger: Accès à l'inventaire avec objets
+NPC: Lya
+Texte Complet:
+  "You carry more than just your body now. Equipment shapes survival. Choose carefully."
+  
+Signification:
+  → L'équipement n'est pas cosmétique: c'est la survie
+  → Lya valorise les CHOIX (pas juste l'optimisation)
+  → Message: Ton équipement reflète tes priorités et qui tu es
+  → Ton: sérieux, mentor
+
+---
+
+[TUTORIEL 5] FIRST BOSS - "Some things don't just fight"
+────────────────────────────────────────────────────────────────
+Trigger: Rencontre avec premier boss
+NPC: Lya
+Texte Complet:
+  "Some things don't just fight. They *decide* how you will die. Respect that difference."
+  
+Signification:
+  → Les boss ne sont pas juste des ennemis plus forts
+  → Ils CHOISISSENT comment te tuer (intention/design)
+  → Lya enseigne le RESPECT face à une puissance supérieure
+  → Message: Adapter ta stratégie, pas juste frapper plus fort
+  → Ton: avertissement sincère, sagesse
+
+---
+
+[TUTORIEL 6] FIRST LEVEL UP - "You grow. Strength is chosen"
+────────────────────────────────────────────────────────────────
+Trigger: Premier level up (passage level 2)
+NPC: Lya
+Texte Complet:
+  "You grow. Strength is not given—it is *chosen*. How you shape yourself matters."
+  
+Signification:
+  → Les stats ne sont pas juste des nombres
+  → Tu CHOISIS comment tu deviens plus fort (builds, philosophie)
+  → Lya reconnaît que le joueur FAÇONNE son chemin
+  → Message: Tu n'es pas juste plus fort, tu es DIFFÉRENT maintenant
+  → Ton: encouragement sincère, acceptation
+
+---
+
+[TUTORIEL 7] MAP UNLOCK - "New paths open"
+────────────────────────────────────────────────────────────────
+Trigger: Déverrouillage d'une nouvelle carte
+NPC: Lya
+Texte Complet:
+  "New paths open. The world is vast because vast things live in it. Tread carefully."
+  
+Signification:
+  → L'exploration ouvre des mondes plus dangereux
+  → "vast things" = menaces dont le joueur ne sait rien
+  → Lya l'avertit sans l'arrêter (elle respecte son choix)
+  → Message: Tu es libre d'explorer, mais tu dois être préparé
+  → Ton: respect du choix du joueur, avertissement bienveillant
+
+================================================================================
+INTÉGRATION NARRATIVE
+================================================================================
+
+Ces 7 tutoriels ne sont PAS des interruptions de gameplay.
+Ils sont des DIALOGUES avec Lya.
+
+Timing:
+  • Les tutoriels se déclenchent naturellement (condition du gameplay)
+  • Chaque message arrive quand il est PERTINENT (pas au niveau X)
+  • Ils s'empilent si le joueur les ignore (premier combat, première victoire, etc.)
+  • Aucun ordre forcé: si tu vas direct à l'inventaire, tu vois INVENTORY avant COMBAT
+
+Intégration avec Arc Lya:
+  • Ces 7 tutoriels = Première rencontre avec Lya
+  • Elle t'observe à travers 7 épreuves différentes
+  • Elle voit: ton courage, ta résilience, ta stratégie, tes choix
+  • À la fin (level 10): elle a décidé si tu vaux la peine de mentorer
+
+================================================================================
+MILESTONES NARRATIFS (contexte)
+================================================================================
+
+Les tutoriels (7) ≠ Level Milestones (14+)
+
+Tutoriels: Interactions Lya avec LE GAMEPLAY
+Milestones: La LORE progresse
+
+Exemples de Milestones existants:
+  - Level 5: Eldran parle de la forêt (mystère)
+  - Level 10: Lya parle des grottes (observation)
+  - Level 20: Eldran parle des anciennes cartes (lore)
+  - Level 30: Lya parle du volcan (lore personnel)
+  - Level 50+: Messager parle de Mélethor (danger)
+  - Level 75: Lya confesse son angoisse (avant confrontation)
+  - Level 90: Eldran révèle la dette cosmique (révélation finale)
+
+================================================================================
+DESIGN ÉMOTIONNEL
+================================================================================
+
+ARC LYA À TRAVERS LES TUTORIELS:
+
+Tutoriels 1-2: "Tu me sembles ordinaire"
+  → Lya teste si tu peux au moins SURVIVRE
+  → Tone: Indifférent, observateur
+
+Tutoriels 3-4: "Intéressant. Tu fais des CHOIX"
+  → Lya voit que tu réfléchis (pas juste zerg rush)
+  → Tone: Légèrement intéressé
+
+Tutoriels 5-6: "Tu as du potentiel"
+  → Lya reconnaît que tu comprends la différence (boss ≠ ennemis)
+  → Lya voit que tu FAÇONNES ton chemin
+  → Tone: Respect, encouragement
+
+Tutoriel 7: "Je vais t'aider à explorer"
+  → Lya accepte de t'épauler
+  → Tone: Bienveillant, mentor acceptée
+
+Cette progression SOUTIENT l'arc romance future:
+  • Level 1-10: Lya te teste (Méfiance → Curiosité)
+  • Level 15-35: Lya s'ouvre progressivement (lore perso + romance)
+  • Level 50+: Lya devient ton allié contre Mélethor
+  • Level 70+: Lya révèle ses sentiments (fin phase 2)
+
+================================================================================
+NOTES TECHNIQUES
+================================================================================
+
+Fichier: app/game/templates/narration.ts
+Export: TUTORIAL_MESSAGES (Record<string, NarrativeMessage>)
+
+Clés du Record:
+  • firstCombatTutorial
+  • firstVictoryTutorial
+  • firstLootTutorial
+  • firstInventoryTutorial
+  • firstBossTutorial
+  • firstLevelUpTutorial
+  • mapUnlockTutorial
+
+Implémentation: Game.tsx
+  • Chaque tutoriel a une condition (firstCombat, firstVictory, etc.)
+  • Stockage localStorage: "arena_quest_tutorials_shown"
+  • Display: DialogueModal + NarrationsModal
+  • Hook: useNarration() pour showNarration() / markTutorialShown()
+
+Pas de changement de logique: Seulement NPC (eldran→lya) + texte narratif
+
+================================================================================
+PROCHAINES ÉTAPES
+================================================================================
+
+✅ FAIT: Tutoriels implémentés en code (Lya mentor)
+✅ FAIT: Style narratif cohérent avec jeu
+⏳ TODO: Tester les tutoriels en gameplay
+⏳ TODO: Affiner les milestones lore (level 5, 10, 15, etc.)
+⏳ TODO: Implémenter le contact Mélethor (level 50+)
+⏳ TODO: Arc romance complet (branching dialogue)
+
+================================================================================

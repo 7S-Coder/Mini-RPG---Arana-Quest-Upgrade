@@ -1,0 +1,1289 @@
+================================================================================
+          ARENA QUEST - ROADMAP LORE & PROGRESSION (Niveaux 1-90)
+                  Approfondissement Narratif Progressif
+================================================================================
+
+DATE: Janvier 2026
+STATUT: Vision Complète - Progression Linéaire du Lore
+
+================================================================================
+CONCEPT PRINCIPAL
+================================================================================
+
+Le joueur commence dans l'ignorance totale.
+Les personnages sont TOUS méfiants et fermés au départ.
+
+Avec le temps et la confiance:
+  ✓ Chaque personnage révèle des secrets
+  ✓ Le lore du monde s'assemble progressivement
+  ✓ Méléthor devient de moins en moins un mystère
+  ✓ Les motivations des personnages deviennent claires
+  ✓ La vraie nature du monde est comprise
+
+C'est une ACCUMULATION narrative, pas une révélation brutale.
+Comme un puzzle qu'on complète graduellement.
+
+
+================================================================================
+PHASE 1: MÉFIANCE (Niveaux 1-15) 
+         "Qui es-tu? Pourquoi je te ferais confiance?"
+================================================================================
+
+État Initial:
+  • Tous les personnages sont distants
+  • Dialogues très courts
+  • Peu d'informations données
+  • Questions sans réponses
+  • Le joueur est seul face aux énigmes
+
+Ambiance:
+  → Isolement total
+  → Mystère oppressant
+  → Chacun pour soi
+  → Pas d'espoir de compréhension
+
+
+🌙 ELDRAN (Le Gardien du Savoir)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 1-5:
+  Dialogues Courts:
+    "Je n'ai rien à te dire."
+    "Tu ne comprendrais pas."
+    "Laisse-moi seul avec mes cristaux."
+
+  Info Révélée:
+    → Il existe depuis longtemps (implicite)
+    → Il étude quelque chose d'étrange
+    → Il ne veut pas être dérangé
+
+  Mystères Créés:
+    ? Pourquoi ces cristaux?
+    ? D'où vient-il?
+    ? Qu'observe-t-il?
+    ? Quel est ce "voile" dont il parle par accident?
+
+Niveau 6-10:
+  Dialogues Légèrement Plus Longs:
+    "Je vois que tu progresses. Bien."
+    "Les cristaux... tu ne dois pas les toucher."
+    "Il y a des choses plus anciennes que toi et moi."
+
+  Info Révélée:
+    → Le monde a une histoire antérieure
+    → Il y a des règles qu'on ne doit pas briser
+    → Lui a du respect pour l'ancienneté
+    → Il est prudent (peur?)
+
+  Mystères Créés:
+    ? Quelles sont ces "choses anciennes"?
+    ? Qu'est-ce qui pourrait lui faire peur?
+    ? Pourquoi cette prudence extrême?
+
+Niveau 11-15:
+  Dialogues Ouvrant des Portes:
+    "Tu veux savoir sur les cristaux? Non."
+    "Il y a eu une... époque. Avant."
+    "Ne poses pas trop de questions. C'est dangereux."
+
+  Info Révélée:
+    → Il y a un "avant" que personne ne parle
+    → Cette période est dangereuse à mentionner
+    → Lui était déjà là à cette époque
+    → Le monde a changé, quelque chose s'est passé
+
+  Mystères Créés:
+    ? Quel "avant"? Une catastrophe? Un cataclysme?
+    ? Pourquoi c'est dangereux à mentionner?
+    ? Qu'est-ce qu'Eldran cherche réellement?
+    ? Quel est le rapport avec Méléthor (si mentionné)?
+
+
+🌙 LYA (L'Aventurière Pragmatique)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 1-5:
+  Dialogues Courts:
+    "T'as besoin d'équipement? Paie ou va ailleurs."
+    "Je ne suis pas ton amie. Je vends du matériel."
+    "Et maintenant, dégage."
+
+  Info Révélée:
+    → Elle est commerçante/pragmatique
+    → Elle survit en vendant des armes
+    → Elle n'a pas de liens affectifs visibles
+    → Elle est seule comme toi
+
+  Mystères Créés:
+    ? Comment elle obtient cet équipement?
+    ? D'où vient-elle?
+    ? Pourquoi elle fait ce métier?
+
+Niveau 6-10:
+  Dialogues Légèrement Moins Froids:
+    "Tu te bats bien. Mieux que les autres idiots."
+    "Cet équipement... tu le mérites peut-être."
+    "Il y a une raison pour laquelle je ne quitte pas ce lieu."
+
+  Info Révélée:
+    → Elle a un passé de combattante
+    → Elle respecte la compétence
+    → Elle est attachée à ce lieu (pas de liberté de partir)
+    → Elle observe les gens
+
+  Mystères Créés:
+    ? Quel événement l'a collée ici?
+    ? Qui est venu avant toi? Qu'a-t-il fait?
+    ? Quelle "raison" la retient?
+
+Niveau 11-15:
+  Dialogues Ouvrant des Pistes:
+    "Je n'ai pas toujours été comme ça."
+    "Il y avait quelqu'un... mais c'est fini."
+    "Si tu continues comme ça, tu vas aussi apprendre la douleur."
+
+  Info Révélée:
+    → Elle a un passé traumatique
+    → Elle a perdu quelqu'un
+    → Elle voit en toi quelqu'un qui suivra le même chemin
+    → Son froid est une protection
+
+  Mystères Créés:
+    ? Qui a-t-elle perdu?
+    ? Est-ce lié à Méléthor?
+    ? Pourquoi elle s'attache aux gens qui partent?
+
+
+🌙 BRAK (Le Forgeron du Deuil)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 1-5:
+  Dialogues Courts:
+    "Veux-tu une arme ou tu poses juste des questions?"
+    "Je forge. C'est tout ce que j'ai."
+    "Laisse-moi travailler."
+
+  Info Révélée:
+    → Il ne vit que pour la forge
+    → Il est endeuillé (ambiance)
+    → Il ne veut pas parler
+    → La forge est sa méditation
+
+  Mystères Créés:
+    ? Qui a-t-il perdu?
+    ? Pourquoi la forge est-elle si importante?
+    ? Est-ce une échappatoire ou un hommage?
+
+Niveau 6-10:
+  Dialogues Légèrement Moins Secs:
+    "Tu as une bonne armure maintenant."
+    "La forge... elle me rappelle qui j'étais."
+    "Peut-être que tu comprends aussi la perte."
+
+  Info Révélée:
+    → Il a un avant/après
+    → Il associe la forge à quelqu'un
+    → Il reconnaît la souffrance chez toi
+    → Il n'est pas cruel, juste blessé
+
+  Mystères Créés:
+    ? Qui était-il avant? Un guerrier? Un alchimiste?
+    ? Comment la forge le sauve?
+    ? Est-ce qu'il forge pour honorer quelqu'un?
+
+Niveau 11-15:
+  Dialogues Plus Personnels:
+    "J'avais un fils. Il aimait les aventures."
+    "Il est parti avec un groupe. Jamais revenu."
+    "La forge, c'est pour garder ses mains en mémoire."
+
+  Info Révélée:
+    → Son fils est mort (probablement)
+    → C'était un aventurier
+    → Quelque chose a tué les aventuriers ou les a perdus
+    → Brak cherche à préserver la mémoire par l'artisanat
+    → Il vit en isolement volontaire
+
+  Mystères Créés:
+    ? Qu'est-il arrivé à son fils exactement?
+    ? Pourquoi le groupe ne revient pas?
+    ? Y a-t-il un lien avec Méléthor?
+    ? Pourquoi Brak pense que toi aussi tu disparaîtras?
+
+
+🌙 MESSENGER (L'Ombre Silencieuse)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 1-15:
+  Dialogues Extrêmement Rares:
+    "..."  (Silence total, juste une présence)
+
+  APPARITIONS:
+    • Niveau 1: Apparaît vaguement, puis disparaît
+    • Niveau 5: Tu le vois mais il ne te voit pas
+    • Niveau 10: Il croise ton regard brièvement
+    • Niveau 15: "L'heure arrive."  (Une seule ligne)
+
+  Info Révélée:
+    → Il existe et observe
+    → Il sait quelque chose sur toi
+    → Il est lié au "temps"
+    → Il communique par l'absence
+
+  Mystères Créés:
+    ? Est-il humain?
+    ? Pourquoi il y a une "heure" qui arrive?
+    ? Comment il se déplace?
+    ? Qui l'envoie?
+
+
+================================================================================
+PHASE 2: DOUTE & QUESTIONS (Niveaux 16-35)
+         "Vous me cachez quelque chose, non?"
+================================================================================
+
+État Intermédiaire:
+  • Les personnages parlent un peu plus
+  • Ils testent ta fiabilité
+  • Des pistes apparaissent
+  • Mais les réponses manquent encore
+  • Tu vois les contours du monde
+
+Ambiance:
+  → Clarifications partielles
+  → Tensions narratives
+  → Premiers indices de complot
+  → Sens d'une histoire plus grande
+
+
+🌙 ELDRAN (Révélations Progressives)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 16-20:
+  Dialogues Interrogatifs:
+    "Tu as suffisamment progressé pour écouter."
+    "Il y avait un temps où le monde était différent."
+    "Les cristaux... ce ne sont pas des objets naturels."
+
+  Info Révélée:
+    → Le monde a une histoire artificielle
+    → Les cristaux sont construits (pas naturels)
+    → Eldran était là pour un événement majeur
+    → Il y a une technologie/magie ancienne
+
+  Mystères Créés:
+    ? Qui a construit les cristaux?
+    ? À quel moment? Pour quel but?
+    ? Est-ce lié à Méléthor?
+    ? Pourquoi les cristaux importent-ils?
+
+Niveau 21-25:
+  Dialogues Révélateurs:
+    "Il y avait une Présence Ancienne. Puissante. Intelligente."
+    "Elle demandait des choix aux gens. Pas tous acceptaient."
+    "Ceux qui refusaient... il y a eu une guerre."
+
+  Info Révélée:
+    → Une entité ancienne existait/existe
+    → Elle proposait des pactes (choix?)
+    → Refuser a mené à la guerre
+    → Ce qui s'est passé a changé le monde
+    → Eldran a vu/participé à cette guerre
+
+  Mystères Créés:
+    ? L'entité ancienne, c'est Méléthor?
+    ? Qu'offrait-elle exactement?
+    ? Qui a refusé? Qui a accepté?
+    ? Comment la guerre s'est terminée?
+    ? Y a-t-il des survivants?
+
+Niveau 26-30:
+  Dialogues Cryptiques Mais Plus Clairs:
+    "Le monde que tu vois... ce n'est que des ruines."
+    "Les cristaux maintiennent quelque chose. Une barrière?"
+    "Si elle tombe... je ne sais pas ce qui reviendra."
+
+  Info Révélée:
+    → Le monde post-catastrophe est stabilisé par les cristaux
+    → Il y a une barrière/prison/contrôle
+    → Eldran a peur de ce qui pourrait "revenir"
+    → Lui maintient/surveille ce système
+    → C'est sa responsabilité depuis longtemps
+
+  Mystères Créés:
+    ? Qu'y a-t-il derrière la barrière?
+    ? Méléthor y est-il emprisonné?
+    ? Pourquoi personne ne lui aide?
+    ? Jusqu'à quand doit-il surveiller?
+
+Niveau 31-35:
+  Dialogues Proches de la Vérité (Mais Pas Tout):
+    "Méléthor n'est pas mort. Il dort. Ou il est retenu."
+    "Les cristaux le maintiennent enfermé depuis très longtemps."
+    "Si quelqu'un le libérait... cela changerait tout."
+
+  Info Révélée:
+    → Méléthor est contenu par les cristaux
+    → Ce n'est pas une mort mais une captivité
+    → Eldran le garde enfermé volontairement
+    → C'est une responsabilité ancienne et lourde
+    → Il y a une menace active si Méléthor est libéré
+    → Méléthor pourrait être libéré (foreshadowing du choix)
+
+  Mystères Créés:
+    ? Qui a enfermé Méléthor au départ?
+    ? Pourquoi pas le tuer?
+    ? Pourquoi le garder vivant?
+    ? Qu'est-ce qui se passerait s'il était libre?
+    ? Eldran en aura-t-il la force toute sa vie?
+
+
+🌙 LYA (Passé Progressif)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 16-20:
+  Dialogues Plus Personnels:
+    "Je viens d'ailleurs. Un endroit que j'ai dû quitter."
+    "J'ai fait confiance à quelqu'un. Ça m'a coûté."
+    "Maintenant, j'évalue les gens. Toi... tu as une chance."
+
+  Info Révélée:
+    → Elle a un pays/région d'origine
+    → Elle a été trahie
+    → Elle commence à te voir comme important
+    → Elle est capable de nouvelle confiance (fragile)
+
+  Mystères Créés:
+    ? Qui l'a trahie?
+    ? C'était un amour? Un ami? Un leader?
+    ? D'où vient-elle exactement?
+    ? Pourquoi elle ne peut pas repartir?
+
+Niveau 21-25:
+  Dialogues Ouverts sur le Passé:
+    "J'ai perdu quelqu'un en chemin. Un compagnon."
+    "Il voulait comprendre le monde. Les mystères."
+    "Méléthor l'a trouvé... et l'a corrompu, je crois."
+
+  Info Révélée:
+    → Elle a eu un compagnon/amoureux
+    → Il est allé chercher des réponses
+    → Méléthor l'a influencé/corrompu
+    → C'est pour cela qu'elle le craint
+    → C'est pour cela qu'elle refuse les réponses
+
+  Mystères Créés:
+    ? Comment Méléthor peut-il corrompre si c'est emprisonné?
+    ? Le compagnon est-il mort ou changé?
+    ? Où est-il maintenant?
+    ? Lya cherche-t-elle à te protéger de la même fate?
+    ? Y a-t-il encore une connexion entre elle et le compagnon?
+
+Niveau 26-30:
+  Dialogues Plus Douloureux:
+    "Le compagnon... il voulait pactiser avec Méléthor."
+    "Pour avoir du pouvoir. Pour comprendre."
+    "Je me suis battue contre lui pour l'en empêcher."
+
+  Info Révélée:
+    → Il y a eu un combat entre eux
+    → Elle a essayé de le sauver par la force
+    → Méléthor avait déjà son influence sur lui
+    → Elle a échoué à le sauver
+    → C'est son plus grand regret
+    → Elle a dû le tuer ou l'abandonner
+
+  Mystères Créés:
+    ? Qu'a fait le compagnon après? Est-il mort?
+    ? Lya l'a-t-elle tué elle-même?
+    ? Pourquoi elle n'en parle pas ouvertement?
+    ? Comment cela l'a changée?
+
+Niveau 31-35:
+  Dialogues de Culpabilité:
+    "Nous nous aimions. Je crois. Mais l'amour n'était pas assez."
+    "Méléthor offrait quelque chose que je ne pouvais pas donner."
+    "Je le surveille depuis longtemps. Pour qu'il n'influence personne d'autre."
+
+  Info Révélée:
+    → Le compagnon était son amoureux
+    → Méléthor a offert du pouvoir/réponses
+    → L'amour n'était pas assez face à la curiosité
+    → Elle s'est exilée volontairement pour le surveiller
+    → Elle reste en alerte constante
+    → Elle voit en toi le même danger
+    → Elle a peur de te perdre de la même manière
+
+  Mystères Créés:
+    ? Où est le compagnon maintenant?
+    ? Lya lui parle-t-elle encore?
+    ? A-t-il accepté le pacte malgré son refus?
+    ? Y a-t-il une connexion magique/spirituelle entre eux?
+
+
+🌙 BRAK (Le Deuil Expliqué)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 16-20:
+  Dialogues Sur le Fils:
+    "Mon fils cherchait des aventures. Il ne voulait pas rester ici."
+    "Je lui ai forgé une bonne épée. Pour sa protection."
+    "Ça n'a pas suffi."
+
+  Info Révélée:
+    → Le fils a quitté le village
+    → Brak l'a équipé
+    → Il est mort en aventure
+    → Brak se sent responsable
+    → L'épée que Brak forge rappelle celle du fils
+
+  Mystères Créés:
+    ? Qu'a tué le fils?
+    ? Était-ce une créature? Un accident? Un homme?
+    ? Brak sait-il ce qui s'est passé exactement?
+
+Niveau 21-25:
+  Dialogues Sur le Groupe:
+    "Il y avait un groupe. Aventuriers courageux mais naïfs."
+    "Ils allaient explorer des zones interdites."
+    "Personne n'en revient. Jamais."
+
+  Info Révélée:
+    → Le fils faisait partie d'un groupe d'aventuriers
+    → Ils ont voulu explorer des zones dangereuses
+    → Aucun groupe n'en est jamais revenu
+    → C'est une malédiction ou un piège
+    → Brak sait qu'il y a un danger, mais ne peut pas l'arrêter
+
+  Mystères Créés:
+    ? Quelles sont ces zones interdites?
+    ? Qu'y a-t-il dedans?
+    ? Est-ce que Méléthor y est lié?
+    ? Y a-t-il un monstre? Un piège magique?
+    ? Comment Brak sait que c'est certain?
+
+Niveau 26-30:
+  Dialogues Sur la Nature du Danger:
+    "Il y a une Présence dans les zones sombres. Anciennes."
+    "Elle attire les aventuriers. Elle les consume."
+    "Peut-être qu'elle offre quelque chose avant de les prendre."
+
+  Info Révélée:
+    → Il y a une Présence active (pas juste une créature)
+    → Elle attire les gens consciemment
+    → Elle "consume" ceux qui vont
+    → Elle peut offrir quelque chose en échange
+    → Brak sait cela mais ne peut rien faire
+    → C'est lié à Méléthor et à la dynamique du monde
+
+  Mystères Créés:
+    ? La Présence, c'est Méléthor lui-même?
+    ? Comment elle attire les gens?
+    ? Qu'offre-t-elle exactement?
+    ? Son fils y a-t-il accepté avant de mourir?
+
+Niveau 31-35:
+  Dialogues d'Acceptation Amère:
+    "J'ai compris après des années. Méléthor les appelle."
+    "Il offre du pouvoir, des réponses, une raison."
+    "Les jeunes aventuriers... ils ne peuvent pas refuser."
+    "Mon fils a accepté. Je l'ai su après."
+
+  Info Révélée:
+    → Méléthor appelle activement les adventuriers
+    → Il leur offre du pouvoir
+    → C'est irrésistible pour certains
+    → Le fils de Brak a accepté le pacte
+    → Brak le savait mais trop tard
+    → Cela explique pourquoi personne ne revient
+    → Ils sont changés/corrompus/morts
+
+  Mystères Créés:
+    ? Le fils est-il toujours vivant quelque part?
+    ? A-t-il gagné du pouvoir en acceptant?
+    ? A-t-il changé de côté?
+    ? Brak blâme-t-il Méléthor ou son fils?
+    ? Y a-t-il une façon de le sauver?
+
+
+🌙 MESSENGER (Présence Croissante)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 16-25:
+  APPARITIONS PLUS FRÉQUENTES:
+    • Niveau 16: Il est plus visible dans les zones sombres
+    • Niveau 20: Il se rapproche graduellement
+    • Niveau 25: "Le temps se rapproche."  (Deux lignes)
+
+  Info Révélée:
+    → Il peut parler un peu
+    → Il est lié au "temps" ou au "destin"
+    → Il sait quand quelque chose d'important arrive
+    → Il suit le joueur
+
+  Mystères Créés:
+    ? Qui le contrôle?
+    ? Est-ce Méléthor?
+    ? Pourquoi il suit le joueur?
+
+Niveau 26-35:
+  DIALOGUES RARES:
+    • Niveau 26: "Tu marches sur un chemin dangereux. Attention."
+    • Niveau 30: "Les choix arrivent. Sois prêt."
+    • Niveau 35: "Eldran commence à s'affaiblir. Le temps change."
+
+  Info Révélée:
+    → Messenger sait ce qui va se passer
+    → Eldran faiblît avec le temps
+    → Un changement majeur approche
+    → Le joueur doit faire des choix
+    → Méléthor ou Eldran influence Messenger
+
+  Mystères Créés:
+    ? Comment Messenger sait tout?
+    ? Est-il une incarnation du destin?
+    ? Peut-on lui faire confiance?
+    ? Qui l'a créé/envoyé?
+
+
+================================================================================
+PHASE 3: CLARIFICATION & TENSION (Niveaux 36-60)
+         "Je commence à comprendre. Et c'est terrifiant."
+================================================================================
+
+État Avancé:
+  • Les personnages parlent ouvertement
+  • Le lore du monde émerge clairement
+  • Les tensions entre les factions apparaissent
+  • Tu es impliqué malgré toi
+  • Le danger devient réel
+
+Ambiance:
+  → Révélations majeures
+  → Tensions dramatiques
+  → Sentiment de responsabilité
+  → Prise de conscience du danger
+
+
+🌙 ELDRAN (Les Vraies Enjeux)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 36-40:
+  Dialogues Directs:
+    "Tu dois comprendre. Méléthor n'est pas un ennemi ordinaire."
+    "C'est une entité. Un principe. Une volonté ancienne."
+    "Les cristaux ne le tuent pas. Ils le gardent. C'est une prison."
+
+  Info Révélée:
+    → Méléthor est plus qu'un personnage
+    → C'est une force/entité/dieu
+    → La prison est active
+    → Eldran est le géolier
+    → C'est difficile et cela le vieillit
+    → Il ne sait pas combien de temps il peut tenir
+
+  Mystères Créés:
+    ? Qu'est-ce que c'est exactement?
+    ? D'où vient-il?
+    ? Comment peut-on l'arrêter vraiment?
+
+Niveau 41-45:
+  Dialogues Historiques:
+    "Il y a eu un âge d'or. Méléthor était là. Il offrait du pouvoir."
+    "Les gens acceptaient. Et devenaient puissants mais vides."
+    "Une révolte s'est formée. Les Anciens."
+
+  Info Révélée:
+    → Il y avait une époque de prospérité
+    → Méléthor promettait du pouvoir réel
+    → Les gens se corrompaient progressivement
+    → Une faction (Les Anciens) s'est rebellée
+    → Cela a mené à la guerre
+
+  Mystères Créés:
+    ? Les Anciens existent-ils toujours?
+    ? Ont-ils gagné ou perdus?
+    ? Sont-ils les cristaux?
+
+Niveau 46-50:
+  Dialogues de la Chute:
+    "Les Anciens ont vaincu Méléthor. Presque."
+    "Ils ne pouvaient pas le tuer. Alors ils l'ont enfermé."
+    "Les cristaux sont leurs héritages. Leur dernier don."
+    "Et moi... j'ai hérité de cette tâche."
+
+  Info Révélée:
+    → Les Anciens ont créé les cristaux
+    → Ils ont combattu Méléthor
+    → Ils l'ont emprisonné mais pas tué
+    → Eldran est l'héritier de leur mission
+    → C'est imposé, pas volontaire
+    → Les Anciens sont morts maintenant
+
+  Mystères Créés:
+    ? Quand les Anciens ont-ils disparus?
+    ? Pourquoi Eldran hérite de cette mission?
+    ? Y a-t-il d'autres héritiers?
+    ? Comment on brise une mission imposée?
+
+Niveau 51-55:
+  Dialogues du Fardeau:
+    "Je vieillis. Les cristaux demandent une énergie constante."
+    "Je dois les nourrir. Avec ma propre essence."
+    "Et Méléthor... il crie parfois. À travers la prison."
+
+  Info Révélée:
+    → Eldran perd sa vie à maintenir la prison
+    → Les cristaux sont vivants/consommants
+    → Méléthor peut communiquer à travers la prison
+    → Elle se faiblît
+    → Eldran sait qu'il ne peut pas tenir éternellement
+    → Quelqu'un d'autre devra prendre le relais
+
+  Mystères Créés:
+    ? Qui prendra le relais quand Eldran mourra?
+    ? Le joueur peut-il?
+    ? La prison peut-elle se casser?
+    ? Pourquoi les cristaux demandent-ils de l'essence?
+
+Niveau 56-60:
+  Dialogues de l'Espoir Brisé:
+    "Je pensais que cela suffirait. Le temps qui passe."
+    "Mais Méléthor... il devient plus fort, pas plus faible."
+    "Il propose maintenant. À ceux qui l'écoutent."
+    "Et certains l'écoutent."
+
+  Info Révélée:
+    → La prison s'inverse graduellement
+    → Au lieu de Méléthor de s'affaiblir, Eldran faiblit
+    → Méléthor peut maintenant activer des pactes à distance
+    → Ceux qui acceptent gagnent du pouvoir
+    → C'est une corruption active, pas une prison
+    → Le monde s'approche d'un changement
+    → Eldran sait qu'il a peut-être déjà perdu
+
+  Mystères Créés:
+    ? Quand est-ce que cela va s'efondrer?
+    ? Peut-on arrêter le processus?
+    ? Méléthor gagnera-t-il?
+
+
+🌙 LYA (La Vérité Personnelle)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 36-40:
+  Dialogues Sur le Compagnon (Partie 2):
+    "Son nom était Kael. J'en ai jamais parlé avant."
+    "Je l'aimais. Vraiment."
+    "Méléthor lui a parlé dans ses rêves."
+
+  Info Révélée:
+    → Le compagnon s'appelait Kael
+    → Lya aimait Kael
+    → Méléthor l'a contacté de façon surnaturelle
+    → C'était une corruption passive d'abord
+
+  Mystères Créés:
+    ? Kael a-t-il su qu'il était corrompu?
+    ? Lya l'a-t-elle combattu ou trahi?
+
+Niveau 41-45:
+  Dialogues de la Trahison:
+    "Il voulait pactiser. Avoir du pouvoir. Pour nous."
+    "Il promettait que c'était pour notre avenir."
+    "Mais Méléthor ne donne jamais sans prendre."
+
+  Info Révélée:
+    → Kael voulait du pouvoir "pour elle aussi"
+    → Il voyait le pacte comme une solution
+    → Lya savait que c'était un piège
+    → Ils se sont opposés violemment
+    → Kael était convaincu, Lya refusait
+
+  Mystères Créés:
+    ? Kael a-t-il accepté malgré son refus?
+    ? Qu'a-t-elle fait pour le stopper?
+
+Niveau 46-50:
+  Dialogues de la Fin:
+    "Je l'ai combattu. Il était plus fort que moi."
+    "Méléthor lui donnait déjà du pouvoir."
+    "Je n'avais pas le choix."
+
+  Info Révélée:
+    → Ils se sont battus
+    → Kael avait déjà commencé le pacte
+    → Il était surpuissant
+    → Lya a dû utiliser une mesure extrême
+    → Elle implique qu'elle l'a peut-être tué
+
+  Mystères Créés:
+    ? L'a-t-elle vraiment tué?
+    ? Ou juste arrêté?
+    ? Est-il encore quelque part?
+
+Niveau 51-55:
+  Dialogues de la Culpabilité:
+    "Je pense qu'il revient. Parfois, je sens sa présence."
+    "Pas comme un fantôme. Mais comme... une connexion."
+    "Méléthor l'a transformé. En quelque chose d'autre."
+
+  Info Révélée:
+    → Kael est peut-être devenu plus qu'humain
+    → Il est lié à Méléthor maintenant
+    → Il peut communiquer avec Lya
+    → C'est une torture émotionnelle
+    → Elle ne sait pas s'il est vivant ou damné
+
+  Mystères Créés:
+    ? Où est Kael?
+    ? Est-il un avatar de Méléthor?
+    ? Peut-on le sauver?
+    ? Va-t-on le rencontrer?
+
+Niveau 56-60:
+  Dialogues de l'Avertissement:
+    "Je te raconte cela parce que tu dois le savoir."
+    "Tu vas vers Méléthor. Consciemment ou pas."
+    "Et je ne veux pas que tu fasses la même erreur."
+    "Je ne veux pas te perdre de la même façon."
+
+  Info Révélée:
+    → Lya sait que tu seras confrontée à Méléthor
+    → Elle voit ton destin comme similaire à Kael
+    → Elle t'avertit parce qu'elle commence à t'aimer
+    → Elle a peur de la répétition tragique
+    → C'est une protection par l'aveu
+
+  Mystères Créés:
+    ? Va-tu accepter comme Kael?
+    ? Va-t-elle te combattre si tu acceptes?
+    ? Peut-elle te sauver là où elle a échoué?
+
+
+🌙 BRAK (L'Acceptation de la Fin)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 36-40:
+  Dialogues de l'Erreur:
+    "Je me suis trompé. En pensant que je pourrais l'arrêter."
+    "Mon fils a accepté le pacte malgré mes avertissements."
+    "J'aurais pu le forcer à rester. Je ne l'ai pas fait."
+
+  Info Révélée:
+    → Brak blâme sa faiblesse parentale
+    → Il aurait pu le retenir de force
+    → Il a laissé son fils partir
+    → C'est sa plus grande culpabilité
+    → Il vit avec cela depuis longtemps
+
+  Mystères Créés:
+    ? Pourquoi il l'a laissé partir?
+    ? Regrettera-t-il éternellement?
+
+Niveau 41-45:
+  Dialogues Sur la Nature du Pacte:
+    "Mon fils... il m'a dit des choses avant de partir."
+    "Il a dit que Méléthor offrait l'immortalité."
+    "Pas un pouvoir banal. Mais la vraie éternité."
+
+  Info Révélée:
+    → Méléthor offre l'immortalité réelle
+    → C'est plus que du pouvoir
+    → C'est l'éternité au prix de l'âme
+    → C'est séduisant pour les jeunes
+    → C'est irrésistible pour ceux qui craignent la mort
+
+  Mystères Créés:
+    ? L'immortalité, c'est réel?
+    ? Quel en est le coût exact?
+    ? Les pactes deviennent-ils immortels?
+
+Niveau 46-50:
+  Dialogues de l'Espoir Distant:
+    "Peut-être qu'il n'a pas accepté. Peut-être qu'il a refusé."
+    "Et maintenant il cherche un moyen de revenir."
+    "Ou il teste la terre, vérifier si on peut le chercher."
+
+  Info Révélée:
+    → Brak ne sait pas vraiment ce qui s'est passé
+    → Il préfère croire à un espoir distant
+    → Son fils pourrait refuser et revenir
+    → Ou tester pour voir si on le cherche
+    → C'est un déni sain pour survivre
+
+  Mystères Créés:
+    ? Est-il possible de revenir d'un pacte?
+    ? Y a-t-il une façon de le sauver?
+
+Niveau 51-55:
+  Dialogues de la Compréhension Tardive:
+    "Les aventuriers... ils ne disparaissent pas."
+    "Ils changent. Ils deviennent des serviteurs."
+    "De Méléthor. Ou de quelque chose d'autre."
+
+  Info Révélée:
+    → Les pactes ne tuent pas
+    → Ils transforment
+    → Les acceptants deviennent des agents
+    → Ils servent Méléthor activement
+    → Peut-être que le fils de Brak le fait
+    → Peut-être qu'il l'observait
+
+  Mystères Créés:
+    ? Son fils le surveille-t-il depuis?
+    ? Est-ce pourquoi personne n'arrive à entrer?
+    ? Les serviteurs protègent-ils Méléthor?
+
+Niveau 56-60:
+  Dialogues de la Responsabilité Partagée:
+    "Tu vas rencontrer Méléthor, j'en suis sûr."
+    "Et j'ai l'impression que tu pourrais accepter."
+    "Je ne pouvais pas sauver mon fils. Mais peut-être toi..."
+    "Tu dois refuser. Pour toi. Pour Lya. Pour nous."
+
+  Info Révélée:
+    → Brak voit en toi une chance de rédemption
+    → Il sait que tu feras face au choix
+    → Il te supplie implicitement de refuser
+    → C'est sa façon d'aimer
+    → Il est investi émotionnellement dans ton avenir
+
+  Mystères Créés:
+    ? Tu peux-tu changer le destin?
+    ? Peux-tu refuser là où d'autres acceptent?
+    ? Brak t'aide-t-il parce qu'il ne peut pas aider son fils?
+
+
+🌙 MESSENGER (Les Signes)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 36-45:
+  APPARITIONS OMINEUX:
+    • Niveau 36: "Les masques tombent."
+    • Niveau 40: "Méléthor parle plus fort."
+    • Niveau 45: "Des voix l'écoutent."
+
+  Info Révélée:
+    → Quelque chose change
+    → Méléthor devient plus actif
+    → De plus en plus de gens l'écoutent
+    → Messenger voit le monde changer
+
+  Mystères Créés:
+    ? Le monde s'effondre-t-il?
+    ? Messenger peut-il arrêter cela?
+
+Niveau 46-60:
+  DIALOGUES RARES:
+    • Niveau 50: "Tu approches de la vérité. Es-tu prêt?"
+    • Niveau 55: "Eldran ne tiendra pas. Le temps se réduit."
+    • Niveau 60: "Le choix approche. Il n'y aura pas d'autre moment."
+
+  Info Révélée:
+    → Messenger sait exactement quand les choses vont changer
+    → Eldran se meurt
+    → Une action est nécessaire bientôt
+    → Le joueur doit choisir maintenant ou jamais
+    → C'est une pression croissante
+
+  Mystères Créés:
+    ? Que se passe-t-il au niveau 70?
+    ? C'est vraiment la "fin"?
+    ? Messenger peut-il en dire plus?
+
+
+================================================================================
+PHASE 4: CONVERGENCE & CHOIX (Niveaux 61-90)
+         "C'est sur moi. C'est mon choix maintenant."
+================================================================================
+
+État Final:
+  • Tout converge
+  • Les personnages sont ouverts et vulnérables
+  • Le monde entier dépend du choix du joueur
+  • C'est personnel et cosmique
+
+Ambiance:
+  → Tension maximale
+  → Responsabilité totale
+  → Fin proche
+  → Nouvelles possibilités
+
+
+🌙 ELDRAN (L'Héritage)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 61-65:
+  Dialogues Désespérés:
+    "Je ne tiens plus. Les cristaux m'appellent."
+    "Ils veulent que je les nourrisse encore et encore."
+    "Je peux sentir Méléthor. Il griffe de l'intérieur."
+
+  Info Révélée:
+    → Eldran est en train de mourir
+    → Les cristaux le consomment
+    → La prison s'use de l'intérieur
+    → C'est une course contre la montre
+    → Eldran n'a que quelques mois/semaines peut-être
+
+  Mystères Créés:
+    ? La prison va-t-elle se casser?
+    ? Qui prendra le relais?
+
+Niveau 66-70:
+  Dialogues d'Officialisation:
+    "Il faut quelqu'un. Après moi."
+    "Quelqu'un de fort. De résistant. De juste."
+    "Je pense que c'est toi."
+
+  Info Révélée:
+    → Eldran te prépare à l'héritage
+    → Tu pourrais devenir le nouveau gardien
+    → C'est une position de sacrifice éternel
+    → Ou tu peux refuser et chercher une autre solution
+    → Cela mène au choix au niveau 70
+
+  Mystères Créés:
+    ? Vas-tu accepter l'héritage?
+    ? Existe-t-il une troisième option?
+
+Niveau 71-90:
+  POST-CHOIX:
+  
+  Si tu REFUSES (Route Résistance):
+    "Je comprends. Tu cherches une autre voie."
+    "Peut-être qu'il faut briser le cycle."
+    "Méléthor doit affronter le monde. Pas rester enfermé."
+    "Je vais ouvrir la prison."
+    
+    → Eldran accepte ton choix
+    → Il reste pour t'aider
+    → Vous affrontez Méléthor ensemble
+    → Nouvelle ère commence
+
+  Si tu ACCEPTES (Route Pacte):
+    "Bienvenue. Tu as choisi le pouvoir."
+    "Je vais te montrer comment nourrir les cristaux."
+    "Mais attention... c'est une éternité de sacrifice."
+    
+    → Eldran te devient inférieur
+    → Tu deviens le nouveau gardien
+    → Il t'abandonne après
+    → Tu es seul avec la prison
+
+
+🌙 LYA (L'Amour ou la Culpabilité)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 61-70:
+  Dialogues de l'Aveu:
+    "Méléthor m'appelle aussi. Dans mes rêves."
+    "Il me dit qu'il peut ramener Kael."
+    "Il me dit que le sacrifice en vaut la peine."
+    "Mais je refuse. Tant que tu refuses."
+
+  Info Révélée:
+    → Lya est aussi tentée
+    → Méléthor l'influence
+    → Elle refuse pour toi
+    → Elle cherche une raison de continuer
+    → Tu es sa dernière ligne de défense
+
+  Mystères Créés:
+    ? Lya tiendra-t-elle si tu acceptes?
+    ? Qui la sauvera?
+
+Niveau 71-90:
+  POST-CHOIX:
+  
+  Si tu REFUSES (Route Résistance):
+    "Tu as refusé. Je savais que tu le ferais."
+    "Peut-être que ce monde peut être changé."
+    "Je vais combattre à tes côtés."
+    
+    → Lya se rapproche
+    → Elle lutte avec toi
+    → Romance possible (silencieuse)
+    → Vous avez un but commun
+
+  Si tu ACCEPTES (Route Pacte):
+    "Je comprends. Mais je ne peux pas te suivre."
+    "Je te retire mon soutien."
+    "Tu es seul avec Méléthor maintenant."
+    
+    → Lya se retire
+    → Elle hait le pacte
+    → Elle peut combattre Méléthor
+    → Elle devient ennemie
+
+
+🌙 BRAK (La Rédemption Possible)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 61-70:
+  Dialogues d'Espoir Nouveau:
+    "Je sense que mon fils m'appelle."
+    "Il veut revenir. Ou au moins... communiquer."
+    "Si tu arrives à briser le contrôle de Méléthor..."
+    "Peut-être qu'on peut le sauver."
+
+  Info Révélée:
+    → Brak sent une connexion à son fils
+    → C'est peut-être telepathique
+    → Il y a peut-être une façon de le sauver
+    → C'est lié au choix du joueur
+
+  Mystères Créés:
+    ? Comment sauver quelqu'un qui a accepté le pacte?
+    ? Brak peut-il aider?
+
+Niveau 71-90:
+  POST-CHOIX:
+  
+  Si tu REFUSES (Route Résistance):
+    "Tu as refusé. Merci."
+    "Je vais chercher mon fils."
+    "Avec ce monde ouvert... peut-être qu'il revendra."
+    
+    → Brak reprend de l'espoir
+    → Il cherche son fils
+    → C'est son arc de rédemption
+    → Fin ouverte
+
+  Si tu ACCEPTES (Route Pacte):
+    "Tu as choisi le même chemin."
+    "Je ne peux rien pour toi."
+    "Mon fils et toi... vous êtes perdus maintenant."
+    
+    → Brak perd espoir
+    → Il retourne à sa forge
+    → Elle devient plus sombre
+    → Fin de son arc
+
+
+🌙 MESSENGER (L'Observateur Éternel)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 61-70:
+  DIALOGUES MINIMALISTES:
+    • Niveau 65: "L'heure arrive. Le choix qui change tout."
+    • Niveau 70: "C'est ici. C'est maintenant."
+
+  Info Révélée:
+    → Messenger sait que c'est ici
+    → C'est un point d'inflexion cosmique
+    → Tout change après
+
+  Mystères Créés:
+    ? Messenger peut-il intervenir?
+    ? Qui l'a créé?
+
+Niveau 71-90:
+  POST-CHOIX:
+  
+  Si tu REFUSES (Route Résistance):
+    "Un nouveau chemin commence."
+    "Le destin se réécrit."
+    "J'observerai."
+    
+    → Messenger reste neutre
+    → Il observe le nouveau monde
+    → Il pourrait devenir allié
+    → Il pourrait devenir ennemi
+
+  Si tu ACCEPTES (Route Pacte):
+    "Tu as choisi la chaine."
+    "Je vois ta fin. Solitaire. Éternel."
+    
+    → Messenger se retire
+    → Il abandonne presque le joueur
+    → Mais il le regarde toujours
+
+
+🌙 MÉLÉTHOR (Le Grand Révélé)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 1-50:
+  Existence Théorique:
+    • On en parle mais on ne le voit pas
+    • Whispers à travers les dialogues
+    • Peur, mystère, tentation
+
+Niveau 51-70:
+  Premiers Contacts:
+    • Influence à distance
+    • Appels dans les rêves
+    • Propositions tentantes
+    • Pouvoir offert partiellement
+    • Dialogue direct possible
+
+Niveau 71-90:
+  Confrontation Directe:
+    → Apparition au moment du choix
+    → Dialogue final
+    → Méléthor révèle sa nature
+    → Méléthor pose son ultimatum
+    → Le joueur choisit
+
+  SI TU REFUSES:
+    "Tu oses refuser? Comme les Anciens?"
+    "Très bien. Nous nous battrons."
+    "Mais sache que tu auras une cible sur le dos."
+    
+    → Méléthor devient ennemi
+    → Combat épique
+    → Nouvelle ère commence
+    → Méléthor libéré mais combattu
+
+  SI TU ACCEPTES:
+    "Bienvenue. Tu es le premier depuis longtemps."
+    "Tu vas partager mon pouvoir."
+    "Tu vas transformer ce monde."
+    
+    → Pacte scellé
+    → Corruption commence
+    → Tu gagnes du pouvoir
+    → Tu perds ta liberté
+    → Nouvelle ère sombre
+
+
+================================================================================
+STRUCTURE D'IMPLÉMENTATION
+================================================================================
+
+Pour chaque personnage, créer:
+
+PHASE 1 (Niveaux 1-15):
+  □ 5-8 lignes courtes et distantes
+  □ 2-3 mystères créés
+  □ 1 secret implicite
+
+PHASE 2 (Niveaux 16-35):
+  □ 8-10 lignes plus ouvertes
+  □ 3-4 révélations progressives
+  □ 2 mystères résolus, 2 nouveaux créés
+
+PHASE 3 (Niveaux 36-60):
+  □ 10-15 lignes détaillées
+  □ 4-5 révélations majeures
+  □ Lore complet ou presque
+
+PHASE 4 (Niveaux 61-90):
+  □ 10-12 lignes intensives
+  □ 2-3 dernières révélations
+  □ Choix et branchement
+
+
+TOTAL PAR PERSONNAGE:
+  • Eldran: 50-60 lignes uniques
+  • Lya: 50-60 lignes uniques
+  • Brak: 40-50 lignes uniques
+  • Messenger: 15-20 lignes uniques
+  • Méléthor: 30-40 lignes uniques
+
+TOTAL GLOBAL: 200-250 lignes de dialogue narratif
+
+
+================================================================================
+PROGRESSION VISUELLE DU MONDE
+================================================================================
+
+Niveau 1-15:
+  • Monde hostile et vague
+  • NPCs fermés
+  • Mystère oppressant
+  • Peu de couleur narrative
+
+Niveau 16-35:
+  • Contours du lore apparaissent
+  • NPCs s'ouvrent graduellement
+  • Indices d'une histoire plus grande
+  • Ambiance devient plus riche
+
+Niveau 36-60:
+  • Lore devient clairement visible
+  • Personnages sont ouverts
+  • Danger réel et compris
+  • Monde devient presque réel
+
+Niveau 61-90:
+  • Lore complètement révélé
+  • Personnages sont intimes
+  • Tension maximale
+  • Monde attend le choix du joueur
+
+
+================================================================================
+THÈMES NARRATIFS
+================================================================================
+
+1. MÉFIANCE → CONFIANCE
+   • Graduelle ouverture des personnages
+   • Crédibilité gagnée par le joueur
+   • Vulnérabilité réciproque
+
+2. MYSTÈRE → CLARTÉ
+   • Le monde devient compréhensible
+   • Les enjeux deviennent clairs
+   • Le danger devient réel
+
+3. ISOLATION → COMMUNAUTÉ
+   • Le joueur passe de seul à faisant partie d'un groupe
+   • Les personnages se lient
+   • Lya, Eldran, Brak deviennent alliés/amoureux/amis
+
+4. INNOCENCE → SAGESSE
+   • Le joueur comprend le monde
+   • Les conséquences deviennent apparentes
+   • Les choix deviennent lourds
+
+5. ESCLAVAGE → LIBERTÉ (ou vice versa)
+   • La prison de Méléthor se relâche
+   • Soit le joueur brise le cycle
+   • Soit le joueur le perpétue
+
+
+================================================================================
+POINTS CLÉS POUR LA QUALITÉ
+================================================================================
+
+1. Les dialogues doivent être PROGRESSIFS
+   • Pas de révélation massive soudaine
+   • Accumulation graduelle d'infos
+
+2. Les mystères doivent être COMPÉHENSIBLES
+   • Le joueur doit pouvoir comprendre les enjeux
+   • Mais pas complètement (jusqu'au choix)
+
+3. Les personnages doivent être COHÉRENTS
+   • Leurs changements doivent avoir un sens
+   • Leur confiance doit être gagnée
+
+4. Le lore doit INTERCONNECTER
+   • Chaque personnage ajoute un morceau du puzzle
+   • Ensemble, ils racontent l'histoire complète
+
+5. Le monde doit ÉVOLUER
+   • Le joueur progresse, le monde change
+   • Ce n'est pas statique
+
+================================================================================
+CONCLUSION
+================================================================================
+
+Cette roadmap offre une PROGRESSION NARRATIVE COMPLÈTE où:
+  ✓ Le joueur appprend le monde graduellement
+  ✓ Les personnages s'ouvrent de façon réaliste
+  ✓ Le lore est riche et interconnecté
+  ✓ Le choix final est ÉCLAIRÉ et lourd
+  ✓ Les enjeux cosmiques sont compris
+
+La clé: Laisser le joueur ASSEMBLER le puzzle lui-même.
+Pas tout le donner.
+Pas le laisser dans l'ignorance totale.
+Juste: progressif, équilibré, satisfaisant.
+
+================================================================================
+                           FIN DE LA ROADMAP LORE
+================================================================================

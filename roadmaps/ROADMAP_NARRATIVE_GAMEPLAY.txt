@@ -1,0 +1,798 @@
+================================================================================
+                    ARENA QUEST - ROADMAP NARRATIF & GAMEPLAY
+                         Direction Créative Complète
+================================================================================
+
+DATE: Janvier 2026
+STATUT: Vision Structurée - Prêt pour Implémentation
+
+================================================================================
+OBJECTIFS PRINCIPAUX
+================================================================================
+
+1. ✓ Romance avec Lya
+   - Progression silencieuse et réaliste
+   - 4 phases distinctes basées sur la sympathie
+   - Branchement majeur au pacte avec Méléthor
+
+2. ✓ Compréhension du Lore
+   - Améliorer le narratif de tous les personnages
+   - Révéler l'entourage de Méléthor au moment du pacte
+   - Narratif cohérent avec la mécanique de jeu
+
+3. ✓ Choix Réel
+   - Narration offrant des conséquences tangibles
+   - Pactiser ou refuser Méléthor (irréversible)
+   - Impact sur les relations avec les personnages clés
+
+4. ✓ Builds Concrets
+   - Resolve accessible dès EPIC (midgame)
+   - Identité du personnage construite progressivement
+   - Cohérence thématique avec la narration
+
+5. ✓ Fin Non-Bloquante
+   - Fermeture narrative à niveau 70+
+   - Possibilité de continuer après le choix final
+   - Epilogue silencieux et mélancolique
+
+================================================================================
+PARTIE 1: ROMANCE AVEC LYA - 4 PHASES PROGRESSIVES
+================================================================================
+
+🌙 PHASE 1 - PRÉSENCE (Niveaux 0-25, 0-25%)
+────────────────────────────────────────────────────────────────────────────────
+
+Caractéristiques:
+  • Elle est distante
+  • Purement fonctionnelle
+  • Pas d'émotion visible
+  • Ton: Neutre / Objectif / Informatif
+
+Comportement:
+  • Elle ne regarde pas vraiment le joueur
+  • Dialogues courts et directs
+  • Conseils pratiques sans relation personnelle
+  • Elle observe sans s'engager
+
+Exemple de ligne:
+  "Tu as besoin de meilleures armures. C'est le seul moyen de survivre aux niveaux suivants."
+
+Objectif:
+  → Établir la distance initiale
+  → Montrer sa compétence professionnelle
+  → Créer une base de confiance sans lien émotionnel
+
+
+🌙 PHASE 2 - COMPLICITÉ (Niveaux 25-50, 25-50%)
+────────────────────────────────────────────────────────────────────────────────
+
+Caractéristiques:
+  • Premiers signes d'écoute
+  • Ironie subtile
+  • Commentaires sur les choix du joueur
+  • Ton: Léger, lucide, jamais sentimental
+
+Comportement:
+  • La distance commence à diminuer
+  • Elle reconnaît les décisions du joueur
+  • Humour sec et intelligent
+  • Respect grandissant
+
+Exemple de ligne:
+  "Tu as fait l'impensable. Même moi, je n'aurais pas osé. Je commence à te comprendre."
+
+Objectif:
+  → Le joueur peut penser: "Elle me respecte peut-être"
+  → Établir une confiance mutuelle
+  → Montrer qu'elle a un côté plus humain
+
+
+🌙 PHASE 3 - BLESSURE (Niveaux 50-75, 50-75%)
+────────────────────────────────────────────────────────────────────────────────
+
+Caractéristiques:
+  • Elle parle d'elle
+  • Regrets, passé, peur, Méléthor
+  • Vulnérabilité contrôlée
+  • Brak et Eldran deviennent des miroirs narratifs
+  • Ton: Fragile / Humain / Sans promesse
+
+Comportement:
+  • Elle se confie progressivement
+  • Révèle ses traumas
+  • Montre sa fragilité
+  • On sent la possibilité d'un lien sans jamais le nommer
+
+Exemple de ligne:
+  "Il y a longtemps, j'avais quelqu'un qui comptait. Méléthor me l'a pris. Et j'ai cru qu'il n'y aurait plus jamais de raison de faire confiance."
+
+Objectif:
+  → Créer l'empathie
+  → Justifier son ambivalence initiale
+  → Préparer le branchement du choix final
+
+
+🌙 PHASE 4 - AUBE (Niveaux 75-100, 75-100%) AVANT TRAHISON
+────────────────────────────────────────────────────────────────────────────────
+
+Caractéristiques:
+  • Elle parle de ce qu'elle voit en toi
+  • Pas de "je t'aime"
+  • Pas de possession
+  • Phrases qui portent du sens profond
+  • Ton: Espoir fragile / Reconnaissance / Tendresse retenue
+
+Comportement:
+  • Reconnaît ta valeur
+  • Parle de son avenir avec toi
+  • Montre sa confiance
+  • Lance des regards différents
+
+Exemple de ligne:
+  "Je pensais que le monde ne méritait plus ceux qui tiennent leur parole. Je vois que je me trompais."
+
+OU:
+
+  "Tu me donnes quelque chose que je n'espérais plus. Et j'ai peur de le perdre."
+
+Objectif:
+  → C'est ici que la romance se "concrétise" narrativement
+  → SANS être explicite ou mécanique
+  → Créer l'attachement émotionnel maximal avant la chute
+
+
+================================================================================
+PARTIE 2: LE BRANCHEMENT - PACTE AVEC MÉLÉTHOR
+================================================================================
+
+Ce moment arrive entre Niveau 50 et Niveau 70
+C'est le nœud de l'histoire
+Aucun retour arrière possible
+
+
+🜂 ROUTE 1: REFUSER MÉLÉTHOR (Résistance)
+────────────────────────────────────────────────────────────────────────────────
+
+Conséquences Narratives:
+  ✓ Pas d'éclat dramatique
+  ✓ Pas d'aveu sentimental
+  ✓ Juste un silence différent
+  ✓ Elle reste auprès de toi
+
+Récompense Narrative:
+  → Le silence est la récompense
+  → Mécanique: Pas de changement (elle est toujours là)
+  → Psychologique: Le joueur cherche la trace du lien invisible
+
+Ligne Post-Refus:
+  "Je savais que tu ne tomberais pas. Merci pour ça."
+
+Développement Post-Route:
+  • Elle est plus ouverte mais pas joyeuse
+  • La romance continue en silence
+  • Moments rares de tendresse non-dite
+  • Elle reste vigilante (peur de le perdre)
+  • Les trois autres personnages (Brak, Eldran, Messenger) la soutiennent
+
+
+🜂 ROUTE 2: PACTISER AVEC MÉLÉTHOR (Trahison)
+────────────────────────────────────────────────────────────────────────────────
+
+Conséquences Narratives:
+  ✓ Elle se referme
+  ✓ Haine silencieuse (pas de cris)
+  ✓ Pas de drame superficiel
+  ✓ Ce qui n'est pas dit est plus violent
+
+Récompense Mécanique:
+  → Augmentation de puissance temporaire
+  → Accès à des ressources Essence corrompues
+  → Boosters à court terme
+
+Coût Narratif:
+  → Perte permanente de la romance
+  → Lya se retire
+  → Silence douloureux et impénétrable
+
+Ligne Post-Trahison:
+  "Je comprends. Finalement, tu n'étais pas différent des autres."
+
+OU plus court:
+
+  "..."  (elle s'en va)
+
+Développement Post-Route:
+  • Elle parle rarement
+  • Les dialogues sont courts et tranchants
+  • Elle continue d'exister dans le jeu (pas complètement absente)
+  • Mais elle ne regarde plus vers toi
+  • Brak et Eldran notent son retrait avec regret
+
+
+================================================================================
+PARTIE 3: EFFETS POST-FIN (Après le choix niveau 70)
+================================================================================
+
+Le joueur peut continuer au-delà du niveau 70
+Mais l'histoire narrative est conclue
+Ce qui change selon la route:
+
+
+🔵 APRÈS REFUS (Route Résistance)
+────────────────────────────────────────────────────────────────────────────────
+
+Dynamique:
+  • Lya devient progressivement plus présente
+  • Les lignes restent rares
+  • Mais quand elle parle, c'est important
+  • L'epilogue silencieux continue
+
+Lignes Post-Fin (Exemples):
+  "Nous avons survécu. C'est suffisant, non?"
+
+  "Je sais ce que tu as refusé pour moi. Je n'oublierai pas."
+
+  "Peut-être qu'un jour, les choses seront différentes. Mais pour l'instant, c'est assez."
+
+Mécanique:
+  → Les combats continuent normalement
+  → Pas de nouveau contenu major
+  → Mais elle est "là" silencieusement
+  → Le joueur cherche sa trace
+
+
+🔴 APRÈS PACTE (Route Trahison)
+────────────────────────────────────────────────────────────────────────────────
+
+Dynamique:
+  • Lya ne parle presque plus
+  • Elle existe mais en retrait
+  • Elle ne te hait pas → elle t'ignore
+  • Le vide devient le sujet
+
+Lignes Post-Fin (Exemples):
+  "..."  (silence)
+
+  "Je ne peux pas." (quand on lui parle)
+
+  "Pourquoi reviens-tu?" (rare, accablée)
+
+Mécanique:
+  → Les combats continuent
+  → Pas de nouveau contenu major
+  → Mais quelque chose est "cassé"
+  → Le joueur ressent l'absence malgré sa présence
+
+Raison Psychologique:
+  → C'est comme Disco Elysium, Pathologic, Nier
+  → Le joueur RESTE parce que quelque chose n'est pas résolu
+  → C'est infiniment plus fort que les systèmes d'affection classiques
+
+
+================================================================================
+PARTIE 4: LES TÉMOINS NARRATIFS (Brak & Eldran)
+================================================================================
+
+Ces deux personnages agissent comme MIROIRS MORAUX
+Leur évolution reflète les conséquences du choix du joueur
+
+
+🔵 BRAK (Fils Mort - Deuil Éternel)
+────────────────────────────────────────────────────────────────────────────────
+
+Avant Pacte (Phase 3 du jeu):
+  • Observe la montée de la romance
+  • Parle obliquement de la perte
+  • Travaille à la forge en silence
+
+Ligne:
+  "J'ai perdu quelqu'un que j'aimais. La forge, c'est la seule chose qu'il me reste."
+
+Après REFUS Méléthor:
+  • Respecte la décision
+  • Continue sa forge
+  • Une légère lueur d'espoir dans sa voix
+
+Ligne:
+  "Tu as choisi de garder ce que tu aimes. C'est plus que beaucoup peuvent faire."
+
+Après PACTE Méléthor:
+  • Comprend la tentation du pouvoir
+  • Mais juge silencieusement
+  • La forge devient plus sombre
+
+Ligne:
+  "On perd toujours ceux qu'on ne pense pas perdre."
+  *Il retourne à sa forge.*
+
+Rôle Narratif:
+  → Rappelle que les choix ont des conséquences
+  → Montre la perspective du deuil et de la survie
+  → Ancre la tragédie dans la réalité
+
+
+🔵 ELDRAN (Fataliste - Observateur du Voile)
+────────────────────────────────────────────────────────────────────────────────
+
+Avant Pacte (Phase 3 du jeu):
+  • Voit ce qui vient
+  • Parle de cycles et destinée
+  • Ni jugement, ni empathie - juste observation
+
+Ligne:
+  "Étrange... même les cendres peuvent rallumer une flamme."
+  (En parlant de Lya)
+
+Après REFUS Méléthor:
+  • Approuve sans féliciter
+  • Le monde continue son cours
+  • Un léger sourire (rare)
+
+Ligne:
+  "Tu as choisi de rester libre. Méléthor ne pardonne pas ces choses-là."
+
+Après PACTE Méléthor:
+  • Constat froid
+  • Pas de jugement moral
+  • Juste la réalité cosmique
+
+Ligne:
+  "J'espère que tu avais une bonne raison."
+  *Il retourne à ses cristaux.*
+
+Rôle Narratif:
+  → Représente la sagesse indifférente
+  → Montre le prix cosmique des choix
+  → Rappelle que le monde est plus grand que nos drames
+
+
+🔵 MESSENGER (Le Destin Silent)
+────────────────────────────────────────────────────────────────────────────────
+
+Rôle Spécial:
+  • Ne parle presque jamais
+  • Sauf aux moments critiques
+  • Sa rareté rend chaque mot important
+
+Avant le Choix:
+  "..."  (Silence)
+
+Après REFUS:
+  "Bon choix."  (Une seule ligne)
+
+Après PACTE:
+  "Un chemin sombre commence."  (Avertissement)
+
+Rôle Narratif:
+  → Représente le fatum
+  → Ne juge pas, constate
+  → Crée de la tension par son silence
+
+
+================================================================================
+PARTIE 5: MÉLÉTHOR ET LA TENTATION (Niveaux 50-70)
+================================================================================
+
+Méléthor n'est pas un ennemi ordinaire
+C'est une idéologie
+Il arrive à la bonne fenêtre narrative
+
+
+⚠️ TIMING CRITIQUE (50-70)
+────────────────────────────────────────────────────────────────────────────────
+
+Pourquoi c'est ici?
+
+Au niveau 50:
+  ✓ Le joueur a un build solide
+  ✓ Resolve est accessible (EPIC)
+  ✓ Romance Lya monte vers Phase 3
+  ✓ Lore s'ouvre mais pas conclu
+  ✓ Motivation pour continuer: curiosité + vulnérabilité
+
+C'est le moment PARFAIT:
+  → Assez fort pour être tenté
+  → Assez faible pour douter
+  → Assez investi pour avoir peur
+  → Assez curieux pour écouter
+
+Méléthor arrive quand tu es FATIGUÉ
+Pas quand tu es faible
+Quand tu sais ce que ça coûte de continuer
+
+
+⚠️ SÉQUENCE DE TENTATION (Progression)
+────────────────────────────────────────────────────────────────────────────────
+
+Niveau 50 - L'INFILTRATION COMMENCE
+  • Méléthor chuchote (tooltip, rêves)
+  • Premiers doutes sur tes choix
+  • Aucun choix explicite encore
+  • Lya le note ("tu changes")
+
+Niveau 55 - TENTATION
+  • Méléthor offre un petit avantage (ressource Essence)
+  • Lya réagit ("tu fais confiance à qui?")
+  • Brak observe en silence
+  • Eldran suspecte
+
+Niveau 60 - CRACKS (Fissures)
+  • Resolve devient vraiment importante
+  • Dons mineurs d'essence via Méléthor
+  • Premier conflit émotionnel direct
+  • Romance + Suspicion en tension
+
+Niveau 65 - IDÉOLOGIE
+  • Méléthor explique sa version du monde
+  • Eldran explique la contre-version
+  • Lya prend position personnelle
+  • Messenger reste silencieux (très significatif)
+
+Niveau 70 - L'HEURE DU CHOIX
+  • PACTISER ou RÉSISTER
+  • Pas de retour arrière
+  • Conséquences immédiates
+
+
+⚠️ LES ARGUMENTS DE MÉLÉTHOR
+────────────────────────────────────────────────────────────────────────────────
+
+Important: Méléthor ne ment PAS (ou très peu)
+Les meilleures antagonistes disent la vérité
+
+Ligne de Base:
+  "Tu as saigné pour ce monde. Dis-moi… qu'a-t-il fait pour toi en retour?"
+
+OU:
+
+  "Tu es fort. Ce n'est pas un don, c'est une dette. Tu as le droit d'être payé."
+
+OU:
+
+  "Ceux qui te suivent t'abandonneront. Moi, je te renforcerai."
+
+OU:
+
+  "La tendresse que tu cherches est une illusion. Le pouvoir, c'est la seule réalité."
+
+Danger: Ces arguments sont SÉDUISANTS
+Parce que partiellement vrais
+
+
+================================================================================
+PARTIE 6: THÈME RESOLVE & COHÉRENCE NARRATIVE
+================================================================================
+
+✅ POURQUOI RESOLVE ACCESSIBLE À EPIC (MIDGAME)
+────────────────────────────────────────────────────────────────────────────────
+
+C'est un choix de design EXCELLENT
+
+Avantages Mécaniques:
+  ✓ Ajoute du build plus tôt
+  ✓ Rend les combats plus techniques
+  ✓ Évite l'effet "1 stat miracle au endgame"
+  ✓ Renforce la survie dans les donjons
+  ✓ Crée une identité de personnage plus tôt
+  ✓ Prépare le joueur au choix moral
+
+Cohérence Thématique:
+  → Le jeu parle de SURVIE et RÉSILIENCE
+  → Resolve = la capacité à encaisser les coups du monde
+  → Plus tu avances, plus tu encaisses
+  → Mais tu ne meurs pas → tu PERSEVERES
+
+Resolve fonctionne avec TOUS les personnages:
+  • Lya = résilience émotionnelle (elle survit à ses traumas)
+  • Brak = résilience du deuil (il continue malgré la perte)
+  • Eldran = résilience intellectuelle (face au voile cosmique)
+  • Messenger = résilience sociale (solitude acceptée)
+  • Méléthor = résilience corrompue (perversion du concept)
+  • TOI = résilience du choix moral
+
+C'est un 10/10 thématiquement.
+
+
+================================================================================
+PARTIE 7: STRUCTURE NARRATIVE DE CONCRÉTUDE DES BUILDS
+================================================================================
+
+Les builds ne doivent pas être des chiffres
+Ils doivent raconter une histoire
+
+
+ATTAQUE (Agressivité)
+─────────────────────────────────────────
+  • Représente la rage
+  • Les combats sont directs, rapides
+  • Lya dit: "Tu y vas trop fort"
+  • Méléthor dit: "C'est ça, la vraie force"
+
+DÉFENSE (Résilience)
+─────────────────────────────────────────
+  • Représente la prudence
+  • Lya respecte cette approche
+  • Eldran dit: "Patience. Le temps travaille pour nous"
+
+VITESSE (Réactivité)
+─────────────────────────────────────────
+  • Représente l'adaptation
+  • Messenger se reconnait dans cette approche
+  • Pas de critiques, juste respect
+
+VITALITÉ (Endurance)
+─────────────────────────────────────────
+  • Représente la survie brute
+  • Brak se reconnait (il a survécu au deuil)
+  • Méléthor dit: "Tu es fort. Mais est-ce assez?"
+
+RESOLVE (Détermination)
+─────────────────────────────────────────
+  • Le stat CENTRAL du jeu
+  • Représente ta volonté face aux coups
+  • Augmente avec le niveau
+  • Augmente avec les choix difficiles
+  • Lya la voit comme ta "vraie nature"
+  • Méléthor la perçoit comme une "limite à dépasser"
+
+CRITIQUE (Chance)
+─────────────────────────────────────────
+  • Représente l'espoir
+  • Petits moments de grâce
+  • Messenger murmure: "La fortune sourit aux audacieux"
+
+ESQUIVE (Agilité)
+─────────────────────────────────────────
+  • Représente l'acceptation du changement
+  • Eldran dit: "Tu apprends à te mouvoir avec le monde"
+
+
+================================================================================
+PARTIE 8: STRUCTURE MVP - PALIERS DE CONTENU
+================================================================================
+
+Voici la chronologie EXACTE à implémenter:
+
+
+NIVEAU 50 - L'INFILTRATION COMMENCE
+────────────────────────────────────
+Objectifs:
+  □ Méléthor chuchote (première apparition)
+  □ Premiers dialogues ambigus
+  □ Lya note un changement subtil
+  □ Tooltip narratif sur l'essence cosmique
+  □ Aucun choix explicite
+
+Actions:
+  • Créer les dialogues "chuchotements"
+  • Ajouter les notes de Lya ("Tu changes")
+  • Générer le lore sur Méléthor
+
+
+NIVEAU 55 - TENTATION
+────────────────────────────────────
+Objectifs:
+  □ Méléthor offre une ressource mineure
+  □ Lya le note ("Tu fais confiance à qui?")
+  □ Brak observe sans commentaire
+  □ Eldran suspecte
+  □ Premier conflit émotionnel mild
+
+Actions:
+  • Créer les dialogues d'offre
+  • Implémenter les réactions des personnages
+  • Ressource: +10 Essence du pacte
+
+
+NIVEAU 60 - CRACKS (FISSURES)
+────────────────────────────────────
+Objectifs:
+  □ Resolve devient vraiment utile
+  □ Dons d'essence continuent
+  □ Conflit romance vs tentation visible
+  □ Brak et Eldran parlent plus
+  □ Premier doute du joueur
+
+Actions:
+  • Créer les dialogues de conflit
+  • Boost Resolve en EPIC
+  • Augmenter les ressources d'essence
+  • Montrer le changement chez Lya
+
+
+NIVEAU 65 - IDÉOLOGIE
+────────────────────────────────────
+Objectifs:
+  □ Méléthor révèle sa philosophie
+  □ Eldran contre-argumente
+  □ Lya prend position claire
+  □ Messenger reste silencieux
+  □ Débat moral sans réponse simple
+
+Actions:
+  • Créer les dialogues philosophiques
+  • Montrer les deux perspectives
+  • Lya se positionne ("Je suis avec toi, quoi qu'il advienne")
+  • Messenger: "..."
+
+
+NIVEAU 70 - L'HEURE DU CHOIX
+────────────────────────────────────
+Objectifs:
+  □ GRAND CHOIX: Pactiser ou Refuser
+  □ Pas de retour arrière
+  □ Conséquences immédiates visibles
+  □ Branchement narratif permanent
+
+Actions:
+  • Implémenter le système de flags
+  • Créer les deux monologues de conclusion
+  • Fermer les dialogues de Méléthor
+  • Ouvrir les dialogues "post-choix"
+
+
+POST-NIVEAU 70 (Epilogue)
+────────────────────────────────────
+
+SI REFUS:
+  □ Lya parle plus souvent (rarement)
+  □ Lignes post-fin de tendresse retenue
+  □ Brak respecte la décision
+  □ Eldran accepte le choix
+  □ Messenger reconnait
+
+SI PACTE:
+  □ Lya se retire progressivement
+  □ Dialogues courts et froids
+  □ Brak comprend la tragédie
+  □ Eldran constate sans juger
+  □ Messenger prévient d'une chute
+
+
+================================================================================
+PARTIE 9: POINTS CLÉS POUR LA QUALITÉ NARRATIVE
+================================================================================
+
+1. LYA NE DOIT PAS SUPPLIER
+   • Elle aime intelligemment
+   • Elle reconnaît ta valeur
+   • Mais elle ne s'agenouille pas
+   • C'est ça qui la rend digne
+
+2. MÉLÉTHOR NE MENT PAS (OU TRÈS PEU)
+   • Ce qui le rend dangereux
+   • Il dit des vérités dérangeantes
+   • Le choix devient: vérité + corruption OU illusion + dignité
+   • Le joueur doit vraiment DOUTER
+
+3. LES CONSÉQUENCES DOIVENT ÊTRE JOUÉES
+   • Pas juste racontées
+   • Si tu pactises → tu SENS le changement mécanique
+   • Les stats changent, les dialogues changent, les interactions changent
+   • Le joueur vit les conséquences
+
+4. LE SILENCE EST UNE RÉPONSE
+   • Lya qui ne parle plus est plus puissante
+   • Un regard vaut mille lignes
+   • Ce qu'on ne dit pas fait plus mal
+
+5. LES TROIS AUTRES PERSONNAGES SONT DES MIROIRS
+   • Brak = "Tu dois survivre à ce que tu aimes"
+   • Eldran = "Tout choix a un coût cosmique"
+   • Messenger = "Le destin observe"
+   • Méléthor = "Et si le coût ne valait pas la peine?"
+
+6. L'EPILOGUE N'EST PAS JOYEUX
+   • Route Refus = paix fragile, tendresse retenue
+   • Route Pacte = isolement élégant, puissance creuse
+   • Les deux routes montrent que rien n'est gratuit
+
+
+================================================================================
+PARTIE 10: CHECKLIST D'IMPLÉMENTATION
+================================================================================
+
+SYSTÈMES À METTRE EN PLACE:
+
+Système de Flags (Dialogue Branching):
+  □ playerChoiceAtLevel70 = null | "refused" | "accepted"
+  □ melethorIntroduced = boolean
+  □ lyaAffectionLevel = 0-100
+  □ playerCorruption = 0-100 (augmente si on prend essence)
+
+Système de Dialogue Réactif:
+  □ Réactions de Lya basées sur choix du joueur
+  □ Réactions de Brak basées sur choix du joueur
+  □ Réactions d'Eldran basées sur choix du joueur
+  □ Réactions de Méléthor basées sur choix du joueur
+
+Système de Conséquences:
+  □ Post-refus: Dialogue de Lya change, elle est plus ouverte
+  □ Post-pacte: Dialogue de Lya change, elle est froide
+  □ Animations/expressions faciales changent
+  □ Musique change
+
+Contenu à Créer:
+  □ 40-50 lignes de dialogue pour Méléthor (phases 50-70)
+  □ 30-40 lignes de réaction pour Lya
+  □ 20-30 lignes pour Brak (observation + réaction)
+  □ 20-30 lignes pour Eldran (observation + réaction)
+  □ 5-10 lignes pour Messenger (rares et impactantes)
+  □ 2 monologues de conclusion (Refus/Pacte)
+
+Mécaniques à Implémenter:
+  □ Donner Resolve dès EPIC (niveau 30 minimum)
+  □ Créer les dons d'essence de Méléthor
+  □ Système de "corruption" visuelle (optionnel)
+  □ Epilogue silencieux post-niveau 70
+
+
+================================================================================
+PARTIE 11: NOTES CRÉATIVES & INSPIRATION
+================================================================================
+
+INFLUENCES:
+  • Disco Elysium (choix irrévocables, silence narratif)
+  • Pathologic (sacrifice et compromis)
+  • Nier Automata (fin non-bloquante, continuation malgré la conclusion)
+  • Berserk (romance silencieuse, trahison cosmique)
+  • Dark Souls (dialogue fragmenté, lore par accumulation)
+
+PHILOSOPHIE:
+  → Pas de bonne fin universelle
+  → Les deux routes sont tragiques
+  → Le choix qui compte n'est pas mécanique
+  → Ce qui n'est pas dit est plus important que ce qui l'est
+  → La relation se mesure en absence, pas en mots
+
+TONAL TARGET:
+  → Mature, introspectif, légèrement dépressif
+  → Beauté dans le tragique
+  → Puissance discrète, pas spectaculaire
+  → Silence respectueux
+
+
+================================================================================
+PARTIE 12: TIMELINE DE DÉVELOPPEMENT RECOMMANDÉE
+================================================================================
+
+PHASE 1: FONDATION (1-2 semaines)
+  • Créer tous les dialogues Méléthor
+  • Implémenter le système de flags
+  • Tester les branchements
+
+PHASE 2: RÉACTIONS (1-2 semaines)
+  • Ajouter les réactions de Lya
+  • Ajouter les observations de Brak/Eldran
+  • Tester les interactions
+
+PHASE 3: CONSÉQUENCES (1 semaine)
+  • Créer les deux chemins post-choix
+  • Implémenter les changements de dialogue
+  • Tester les épilogue
+
+PHASE 4: POLISH (1 semaine)
+  • Créer les expressions/animations
+  • Ajouter la musique contextuelle
+  • Générer les visuels
+  • Tests finaux
+
+
+================================================================================
+CONCLUSION
+================================================================================
+
+Ce roadmap offre:
+  ✓ Une narration cohérente et mature
+  ✓ Des choix réels avec conséquences réelles
+  ✓ Une romance non-mécanique et crédible
+  ✓ Une fin sans fin (continuation possible)
+  ✓ Une thématique unifiée (Resolve, Survie, Résilience)
+  ✓ Une ambiance proche des best narrative games
+
+La clé: Oser laisser du silence.
+Ce qui est NON-DIT est plus puissant que ce qui est DIT.
+
+================================================================================
+                           FIN DU ROADMAP
+================================================================================

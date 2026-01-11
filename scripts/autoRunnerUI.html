@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arena Quest Auto Runner</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #0f3460 100%);
+      color: #eee;
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 1200px;
+      width: 100%;
+      background: rgba(20, 20, 40, 0.95);
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      background: linear-gradient(90deg, #ff6b6b, #ffa5a5);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 2.5em;
+    }
+
+    .control-panel {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-start {
+      background: linear-gradient(135deg, #103218, #144a2a);
+      color: #fff;
+      border: 2px solid #4a9d5f;
+    }
+
+    .btn-start:hover:not(:disabled) {
+      background: linear-gradient(135deg, #144a2a, #1a5d34);
+      box-shadow: 0 0 20px rgba(74, 157, 95, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-stop {
+      background: linear-gradient(135deg, #3b0b0b, #521010);
+      color: #fff;
+      border: 2px solid #d91e1e;
+    }
+
+    .btn-stop:hover:not(:disabled) {
+      background: linear-gradient(135deg, #521010, #6a1515);
+      box-shadow: 0 0 20px rgba(217, 30, 30, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn-start:disabled, .btn-stop:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .config-section {
+      background: rgba(30, 30, 60, 0.6);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border: 1px solid rgba(100, 100, 200, 0.2);
+    }
+
+    .config-title {
+      font-size: 1.2em;
+      margin-bottom: 15px;
+      color: #4da6ff;
+    }
+
+    .config-item {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+
+    .config-item label {
+      min-width: 150px;
+      font-weight: 500;
+    }
+
+    .config-item input {
+      padding: 8px 12px;
+      background: rgba(40, 40, 80, 0.8);
+      border: 1px solid rgba(100, 100, 200, 0.3);
+      border-radius: 4px;
+      color: #eee;
+      width: 120px;
+    }
+
+    .config-item input:focus {
+      outline: none;
+      border-color: rgba(100, 200, 255, 0.6);
+      box-shadow: 0 0 10px rgba(100, 200, 255, 0.2);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-top: 30px;
+    }
+
+    .stat-card {
+      background: rgba(40, 40, 80, 0.6);
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #4da6ff;
+    }
+
+    .stat-card.progression {
+      border-left-color: #ff6b6b;
+    }
+
+    .stat-card.combat {
+      border-left-color: #ffa5a5;
+    }
+
+    .stat-card.loot {
+      border-left-color: #4ecdc4;
+    }
+
+    .stat-card.items {
+      border-left-color: #ffe66d;
+    }
+
+    .stat-card.economy {
+      border-left-color: #95e1d3;
+    }
+
+    .stat-card.time {
+      border-left-color: #c7ceea;
+    }
+
+    .stat-title {
+      font-size: 1.1em;
+      margin-bottom: 12px;
+      font-weight: 600;
+      color: #4da6ff;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(100, 100, 200, 0.1);
+      font-size: 0.95em;
+    }
+
+    .stat-row:last-child {
+      border-bottom: none;
+    }
+
+    .stat-label {
+      color: #aaa;
+    }
+
+    .stat-value {
+      color: #4da6ff;
+      font-weight: 600;
+    }
+
+    .log-panel {
+      background: rgba(20, 20, 40, 0.8);
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 30px;
+      border: 1px solid rgba(100, 100, 200, 0.2);
+      max-height: 300px;
+      overflow-y: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9em;
+    }
+
+    .log-title {
+      font-size: 1.1em;
+      margin-bottom: 12px;
+      color: #4da6ff;
+    }
+
+    .log-entry {
+      padding: 4px 0;
+      color: #aaa;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .log-entry.success {
+      color: #4ecdc4;
+    }
+
+    .log-entry.warning {
+      color: #ffa5a5;
+    }
+
+    .log-entry.error {
+      color: #ff6b6b;
+    }
+
+    .status {
+      text-align: center;
+      margin-top: 20px;
+      padding: 15px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1.1em;
+    }
+
+    .status.running {
+      background: rgba(16, 50, 24, 0.6);
+      color: #4ecdc4;
+      border: 1px solid rgba(78, 205, 196, 0.3);
+    }
+
+    .status.idle {
+      background: rgba(60, 20, 20, 0.4);
+      color: #aaa;
+      border: 1px solid rgba(100, 100, 200, 0.2);
+    }
+
+    .pulse {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.6;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>⚔️ Arena Quest Auto Runner</h1>
+
+    <div class="control-panel">
+      <button class="btn-start" id="startBtn" onclick="startRunner()">▶ Start</button>
+      <button class="btn-stop" id="stopBtn" onclick="stopRunner()" disabled>⏹ Stop</button>
+    </div>
+
+    <div class="status idle" id="status">Idle - Ready to start</div>
+
+    <div class="config-section">
+      <div class="config-title">⚙️ Configuration</div>
+      <div class="config-item">
+        <label>Combat Delay (ms):</label>
+        <input type="number" id="combatDelay" value="100" min="0" max="5000">
+      </div>
+      <div class="config-item">
+        <label>Max Level:</label>
+        <input type="number" id="maxLevel" value="90" min="1" max="200">
+      </div>
+    </div>
+
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="log-panel">
+      <div class="log-title">📋 Log</div>
+      <div id="logPanel"></div>
+    </div>
+  </div>
+
+  <script>
+    let autoRunner = null;
+    let logContainer = null;
+
+    function initLogContainer() {
+      logContainer = document.getElementById('logPanel');
+    }
+
+    function addLog(message, type = 'normal') {
+      const entry = document.createElement('div');
+      entry.className = 'log-entry ' + type;
+      entry.textContent = message;
+      logContainer.appendChild(entry);
+      logContainer.scrollTop = logContainer.scrollHeight;
+    }
+
+    function updateStats() {
+      if (!autoRunner) return;
+
+      const stats = autoRunner.getStats();
+      const statsGrid = document.getElementById('statsGrid');
+
+      const statCards = [
+        {
+          title: '📈 Game Progression',
+          class: 'progression',
+          rows: [
+            { label: 'Level', value: `${stats.startLevel} → ${stats.endLevel || stats.startLevel}` },
+            { label: 'Max Level', value: autoRunner.config.MAX_LEVEL },
+            { label: 'Gold', value: `${stats.startGold.toFixed(2)} → ${stats.endGold.toFixed(2)}g` },
+            { label: 'Essence', value: `${stats.startEssence} → ${stats.endEssence}` },
+          ]
+        },
+        {
+          title: '⚔️ Combat',
+          class: 'combat',
+          rows: [
+            { label: 'Total Combats', value: stats.totalCombats },
+            { label: 'Won', value: stats.combatsWon },
+            { label: 'Lost', value: stats.combatsLost },
+            { label: 'Win Rate', value: stats.totalCombats > 0 ? ((stats.combatsWon / stats.totalCombats) * 100).toFixed(1) + '%' : '0%' },
+          ]
+        },
+        {
+          title: '💎 Loot',
+          class: 'loot',
+          rows: [
+            { label: 'Common', value: stats.itemsLooted.common },
+            { label: 'Uncommon', value: stats.itemsLooted.uncommon },
+            { label: 'Rare', value: stats.itemsLooted.rare },
+            { label: 'Epic', value: stats.itemsLooted.epic },
+            { label: 'Legendary', value: stats.itemsLooted.legendary },
+            { label: 'Mythic', value: stats.itemsLooted.mythic },
+          ]
+        },
+        {
+          title: '🛠️ Items',
+          class: 'items',
+          rows: [
+            { label: 'Equipped', value: stats.itemsEquipped },
+            { label: 'Forged', value: stats.itemsForged },
+            { label: 'Upgraded', value: stats.itemsUpgraded },
+            { label: 'Sold', value: stats.itemsSold },
+          ]
+        },
+        {
+          title: '💰 Economy',
+          class: 'economy',
+          rows: [
+            { label: 'Gold Earned', value: `+${stats.goldEarned.toFixed(2)}` },
+            { label: 'Gold Spent', value: `-${stats.goldSpent.toFixed(2)}` },
+            { label: 'Net Gold', value: `+${(stats.goldEarned - stats.goldSpent).toFixed(2)}` },
+            { label: 'Essence Earned', value: `+${stats.essenceEarned}` },
+          ]
+        },
+        {
+          title: '⏱️ Time',
+          class: 'time',
+          rows: (() => {
+            const duration = stats.endTime ? (stats.endTime - stats.startTime) : (Date.now() - stats.startTime);
+            const hours = Math.floor(duration / 3600000);
+            const minutes = Math.floor((duration % 3600000) / 60000);
+            const seconds = Math.floor((duration % 60000) / 1000);
+            const combatsPerHour = stats.totalCombats > 0 ? (stats.totalCombats / ((duration / 3600000) || 1)).toFixed(1) : 0;
+            return [
+              { label: 'Duration', value: `${hours}h ${minutes}m ${seconds}s` },
+              { label: 'Combats/Hour', value: combatsPerHour },
+            ];
+          })()
+        },
+      ];
+
+      statsGrid.innerHTML = statCards.map(card => `
+        <div class="stat-card ${card.class}">
+          <div class="stat-title">${card.title}</div>
+          ${card.rows.map(row => `
+            <div class="stat-row">
+              <span class="stat-label">${row.label}</span>
+              <span class="stat-value">${row.value}</span>
+            </div>
+          `).join('')}
+        </div>
+      `).join('');
+    }
+
+    function startRunner() {
+      initLogContainer();
+      
+      if (!autoRunner) {
+        loadScript();
+        return;
+      }
+
+      const delay = parseInt(document.getElementById('combatDelay').value) || 100;
+      const maxLevel = parseInt(document.getElementById('maxLevel').value) || 90;
+
+      autoRunner.config.COMBAT_DELAY = delay;
+      autoRunner.config.MAX_LEVEL = maxLevel;
+
+      // Set up log callback to receive live logs
+      autoRunner.setLogCallback((msg) => {
+        addLog(msg, 'normal');
+      });
+
+      document.getElementById('startBtn').disabled = true;
+      document.getElementById('stopBtn').disabled = false;
+      const statusEl = document.getElementById('status');
+      statusEl.className = 'status running pulse';
+      statusEl.textContent = '🎮 Running...';
+
+      addLog('✅ Auto Runner Started', 'success');
+      addLog(`⚙️ Max Level: ${maxLevel}`, 'normal');
+      addLog(`⏱️ Combat Delay: ${delay}ms`, 'normal');
+      addLog('━'.repeat(50), 'normal');
+
+      autoRunner.start();
+
+      const updateInterval = setInterval(() => {
+        updateStats();
+        if (!document.getElementById('startBtn').disabled) {
+          clearInterval(updateInterval);
+        }
+      }, 1000);
+    }
+
+    function stopRunner() {
+      if (autoRunner) {
+        autoRunner.stop();
+        document.getElementById('startBtn').disabled = false;
+        document.getElementById('stopBtn').disabled = true;
+        const statusEl = document.getElementById('status');
+        statusEl.className = 'status idle';
+        statusEl.textContent = 'Stopped';
+        addLog('⏹️ Auto Runner Stopped', 'warning');
+      }
+    }
+
+    function loadScript() {
+      addLog('📥 Loading Auto Runner...', 'normal');
+      
+      const script = document.createElement('script');
+      script.src = './gameAutoRunner.js?t=' + Date.now(); // Add timestamp to bust cache
+      
+      script.onload = () => {
+        addLog('✅ Auto Runner Loaded', 'success');
+        
+        // Wait for the script to initialize
+        setTimeout(() => {
+          if (typeof window.ArenaQuestAutoRunner !== 'undefined') {
+            autoRunner = window.ArenaQuestAutoRunner;
+            
+            // Set up log callback for live updates
+            if (typeof autoRunner.setLogCallback === 'function') {
+              autoRunner.setLogCallback((msg) => {
+                addLog(msg, 'normal');
+              });
+            }
+            
+            addLog('🎮 Ready to start', 'success');
+            startRunner();
+          } else {
+            addLog('❌ Failed to initialize Auto Runner - variable not found', 'error');
+            console.error('ArenaQuestAutoRunner not found. Available globals:', Object.keys(window).filter(k => k.includes('Arena')));
+          }
+        }, 500); // Wait 500ms for initialization
+      };
+      
+      script.onerror = (error) => {
+        addLog(`❌ Failed to load script: ${error}`, 'error');
+        console.error('Script load error:', error);
+      };
+      
+      document.body.appendChild(script);
+    }
+
+    // Initialize
+    window.addEventListener('load', () => {
+      initLogContainer();
+      addLog('🎮 Arena Quest Auto Runner UI Loaded', 'success');
+      addLog('Press Start to begin', 'normal');
+    });
+  </script>
+</body>
+</html>
