@@ -1,0 +1,333 @@
+================================================================================
+        SYSTÈME DE RELATIONS NPC - ARCHITECTURE
+================================================================================
+
+DOSSIER: app/game/templates/relationships/
+
+FICHIERS:
+  ├── types.ts          → Interfaces et constantes
+  ├── lya.ts            → Données Lya (scout/mentor/romance)
+  ├── eldran.ts         → Données Eldran (watcher/mystique)
+  ├── brak.ts           → Données Brak (smith/craft)
+  ├── messenger.ts      → Données Messenger (enigmatic/threat)
+  └── index.ts          → Export central + helpers
+
+================================================================================
+CONCEPT PRINCIPAL
+================================================================================
+
+Chaque NPC est un OBJET avec:
+  • trust (0-100)      → Confiance envers toi
+  • affection (0-100)  → Affection/amour
+  • anger (0-100)      → Colère/ressentiment
+  • intimacy (0-100)   → Intimité (romance seulement)
+  • respect (0-100)    → Respect mutuel
+  • conversationsHad[] → Dialogues vus
+  • choicesMade{}      → Choix faits ("choiceId": "option_selected")
+  • memoryEvents[]     → "lya_first_victory", "lya_betrayal", etc.
+
+PERSISTENCE: localStorage
+  → Reload game = relations sauvegardées
+  → Dialogue branching basé sur ces valeurs
+
+================================================================================
+STRUCTURE NPCRelation
+================================================================================
+
+interface NPCRelation {
+  npcId: 'lya' | 'eldran' | 'brak' | 'messenger';
+  
+  // Emotional state (0-100)
+  trust: number;
+  affection: number;
+  anger: number;
+  intimacy: number;
+  respect: number;
+  
+  // History tracking
+  lastInteraction: number;           // timestamp
+  conversationsHad: string[];        // ["lya_tutorial_1", "lya_level_10_milestone"]
+  choicesMade: Record<string, string>; // {"lya_choice_1": "option_respect"}
+  memoryEvents: string[];            // ["lya_first_victory", "lya_romance_choice"]
+}
+
+================================================================================
+EXEMPLES: ÉTATS ÉMOTIONNELS
+================================================================================
+
+LYA - Romance Arc:
+
+Level 1-10: MÉFIANCE
+  trust: 10-20
+  affection: 0
+  intimacy: 0
+  → "You swing. That's the first lesson."
+  → Distante, observe
+
+Level 15-30: CURIOSITÉ
+  trust: 20-40
+  affection: 10-20
+  intimacy: 0
+  → "You're learning. Good."
+  → Commence à parler
+
+Level 35-50: CONNEXION
+  trust: 40-60
+  affection: 30-50
+  intimacy: 0
+  → ROMANCE CHOICE au niveau 50
+  → "I was worried. Don't die."
+
+Level 55-75: ENGAGEMENT
+  trust: 60-80
+  affection: 60-80
+  intimacy: 20-50
+  → Vulnérable
+  → "I need you"
+  → Partage ses peurs
+
+Level 80-90: UNION
+  trust: 80-100
+  affection: 80-100
+  intimacy: 60-100
+  → "Together we can face him"
+  → Final romance scene
+
+---
+
+ELDRAN - Lore Arc:
+
+Level 1-15: MYSTÈRE
+  trust: 5-15, respect: 20
+  → Cryptique, absent
+  → "The forest protects nothing"
+
+Level 20-40: RÉVÉLATIONS
+  trust: 15-35, respect: 30-40
+  → Parle du lore
+  → "There are five weapons"
+
+Level 50-70: GUIDANCE
+  trust: 35-50, respect: 40-60
+  → Aide explicitement
+  → Prépare contre Mélethor
+
+Level 75+: ALLIANCE
+  trust: 50-70, respect: 70+
+  → "You understand now"
+  → Sacrifice possible
+
+---
+
+BRAK - Craft Arc:
+
+Level 1-20: DISTANT
+  trust: 15-25, respect: 30
+  → Vend seulement
+  → "That'll be X gold"
+
+Level 25-50: OBSERVER
+  trust: 25-40, respect: 40-50
+  → Remarque tes choix
+  → Conseils gratuits
+
+Level 55-75: COLLABORATEUR
+  trust: 40-60, respect: 60-70
+  → Forge spéciale
+  → "This ore... I see potential"
+
+Level 80+: ALLY
+  trust: 60-75, respect: 75+
+  → Arme légendaire
+  → "Let's forge your destiny"
+
+---
+
+MESSENGER - Mystery Arc:
+
+Level 1-40: ENIGMATIQUE
+  trust: 0, respect: 0
+  → Qui êtes-vous?
+  → "I know of Mélethor"
+
+Level 50-65: OFFRE
+  trust: 0-20, respect: 0-20
+  → "Accept my help... or refuse"
+  → DIALOGUE CHOICE: accepter vs. rejeter
+
+Level 70-90: ALLIÉ OU ENNEMI
+  → SI tu acceptas: trust 30-70, powerful ally
+  → SI tu rejetas: becomes obstacle
+  → SI tu manipulas: unpredictable
+
+================================================================================
+BRANCHING DIALOGUE - EXEMPLE
+================================================================================
+
+NPC dialogue peut varier selon relationship:
+
+const LYA_FIRST_COMBAT = {
+  id: "lya_first_combat",
+  npcId: "lya",
+  variants: [
+    {
+      text: "You swing. That's the first lesson. Everything else, you'll learn bleeding.",
+      requirements: { minTrust: 0, maxTrust: 20 }  // Distante
+    },
+    {
+      text: "You're getting stronger. I see it in every swing.",
+      requirements: { minTrust: 40, maxTrust: 60 }  // Curieuse
+    },
+    {
+      text: "That was beautiful. You fight like someone who has something to protect.",
+      requirements: { minTrust: 80, minAffection: 60 }  // Intimate
+    }
+  ],
+  choices: [
+    {
+      id: "lya_choice_respectful",
+      text: "*Listen to her quietly*",
+      effects: { trust: +10, affection: +5 }
+    },
+    {
+      id: "lya_choice_defiant",
+      text: "I don't need your advice.",
+      effects: { trust: -5, anger: +10 }
+    }
+  ]
+};
+
+================================================================================
+MEMORY EVENTS - TRACKING
+================================================================================
+
+Chaque moment important crée un memory event:
+
+LYA:
+  • "lya_first_tutorial"    → Quand tutorium #1 déclenché
+  • "lya_watched_victory"   → Quand Lya voit ta première vraie victoire
+  • "lya_confided"          → Quand elle partage quelque chose d'elle
+  • "lya_defended"          → Elle t'a défendu
+  • "lya_betrayed"          → Tu as trahi
+  • "lya_romance_choice"    → Choix romance accepté
+  • "lya_fear_volcan"       → Elle partage sa peur
+  • "lya_melethor_alliance" → Alliance contre Mélethor
+  • "lya_final_confession"  → Fin du jeu romance
+
+Ces events déverrouillent des dialogues spéciaux:
+
+dialogue.requirements = {
+  minTrust: 60,
+  hasMemoryEvent: "lya_confided"  // Seulement si cet event s'est produit
+}
+
+================================================================================
+INTÉGRATION AVEC LE GAMEPLAY
+================================================================================
+
+TRIGGER POINTS:
+
+1. TUTORIAL TUTORIELS (Niveau 1-10)
+   → Lya donne tutoriels
+   → +trust avec chaque choix respectueux
+
+2. LEVEL MILESTONES (Niveau 5, 10, 15, 20...)
+   → NPC narrative narrations
+   → Peuvent ajouter memory events
+
+3. BOSS ENCOUNTERS
+   → Avant combat: dialogue encouragement
+   → Après victoire: dialogue fierté
+   → Changent selon relationship
+
+4. LOOT/EQUIPMENT
+   → Brak commente tes choix d'équipement
+   → +respect si bon craft, -si wasteful
+
+5. DEATH/RELOAD
+   → Dialogue spécial si tu dis "dying"
+   → Lya: "Don't leave me"
+   → Eldran: silence lourd
+
+6. LEVEL 50 - ROMANCE CHOICE
+   → Dialogue branch majeur pour Lya
+   → Accepter romance: affection +30
+   → Refuser: trust baisse
+
+7. LEVEL 70 - MAJOR CHOICE
+   → Messenger offre alliance
+   → Eldran exige décision
+   → Lya demande engagement
+
+8. LEVEL 90 - FINAL CONFRONTATION
+   → Dialogues finaux de chaque NPC
+   → Affectent outcome du combat
+   → Romance conclusion pour Lya
+
+================================================================================
+PERSISTENCE & SAVE
+================================================================================
+
+Où sauvegarder:
+  → localStorage key: "arena_relationships"
+  → Structure: { lya: NPCRelation, eldran: NPCRelation, ... }
+
+Quand sauvegarder:
+  → Après chaque dialogue choice
+  → Après level milestone
+  → Après memory event créé
+
+Quand charger:
+  → Game start (initialize si missing)
+  → Après reload (restore from localStorage)
+
+Exemple de migration (si vieux save):
+  → Vérifier si "arena_relationships" existe
+  → Si non: créer avec initializeRelationships()
+  → Si oui: fusionner avec nouveaux champs
+
+================================================================================
+HELPERS & FUNCTIONS
+================================================================================
+
+initializeRelationships()
+  → Crée all NPCs avec valeurs initiales
+  → À appeler au démarrage du jeu
+
+getNPCPersonality(npcId)
+  → Retourne traits de personnalité
+  → Utile pour système dialogue
+
+getNPCMemoryEvents(npcId)
+  → Retourne catalog des memory events possibles
+  → Pour unlock/check dialogues
+
+getRelationshipLevel(npc, 'trust')
+  → Retourne "HOSTILE" | "WARY" | "CAUTIOUS" | "FRIENDLY" | "INTIMATE"
+  → Basé sur RELATIONSHIP_THRESHOLDS
+
+selectDialogueVariant(dialogue, npc)
+  → Picks bon variant selon relationship
+  → Retourne correct text + contextAction
+
+applyDialogueChoice(choice, npc)
+  → Applique effects (trust, affection, etc.)
+  → Ajoute à conversationsHad
+  → Ajoute à choicesMade
+  → Crée memory event si applicable
+  → Sauvegarde
+
+================================================================================
+PROCHAINES ÉTAPES
+================================================================================
+
+✅ Types et structure créés
+✅ Données NPCs créées
+⏳ Hook useRelationships() - gestion état
+⏳ Composant DialogueNode - UI dialogue avec choix
+⏳ Système branching dialogue - select variant correct
+⏳ Memory events system - trigger & track
+⏳ Romance specific dialogues - fin de jeu
+⏳ Messenger branching paths - allié vs. obstacle
+
+================================================================================

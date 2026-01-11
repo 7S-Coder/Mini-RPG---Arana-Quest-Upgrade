@@ -21,6 +21,7 @@ import DialogueModal from "../components/modales/DialogueModal";
 import AchievementsModal from "../components/modales/AchievementsModal";
 import NarrationsModal from "../components/modales/NarrationsModal";
 import PauseModal from "../components/modales/PauseModal";
+import TavernModal from "../components/modales/TavernModal";
 import { getMaps, pickEnemyFromMap, pickEnemyFromRoom, getRoomsForMap } from "./templates/maps";
 import { ENEMY_TEMPLATES } from "./templates/enemies";
 import { calcDamage } from "./damage";
@@ -991,13 +992,38 @@ export default function Game() {
 
         <main className="center-area">
           <div className="center-top" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <button
-              className={`btn primary ${inCombat ? "disabled" : ""}`}
-              onClick={startEncounter}
-              disabled={inCombat}
-            >
-              {inCombat ? "In combat..." : (selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null ? "Next room" : "Go to Arena")}
-            </button>
+            <div style={{
+              display: 'flex',
+              gap: 12,
+              padding: '8px 12px',
+              borderRadius: 8,
+              backgroundColor: 'rgba(10, 20, 30, 0.4)',
+            }}>
+              <button
+                className={`btn primary ${inCombat ? "disabled" : ""}`}
+                onClick={startEncounter}
+                disabled={inCombat}
+              >
+                {inCombat ? "In combat..." : (selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null ? "Next room" : "Go to Arena")}
+              </button>
+              <button className="btn"
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 10,
+                  border: '2px solid #68562cff',
+                  backgroundColor: '#d4af8b',
+                  color: '#ffffffff',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                }}
+                onClick={() => {
+                  // TODO: Open tavern modal
+                  openModal('tavern');
+                }}
+              >
+               Tavern
+              </button>
+            </div>
             {/* Streak display: animated counter for current map */}
             {(() => {
               // Don't show streak if in dungeon
@@ -1172,6 +1198,9 @@ export default function Game() {
       )}
       {modalName === 'bestiary' && (
         <BestiaryModal onClose={closeModal} enemies={enemies} selectedMapId={selectedMapId} />
+      )}
+      {modalName === 'tavern' && (
+        <TavernModal isOpen={modalName === 'tavern'} onClose={closeModal} playerLevel={player.level} />
       )}
       {modalName === 'maps' && (
         <MapsModal inventory={inventory} playerLevel={player.level} onClose={closeModal} onSelect={(id?: string | null) => {

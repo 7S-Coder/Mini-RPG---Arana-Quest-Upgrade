@@ -1,0 +1,383 @@
+================================================================================
+        DIALOGUE FLOW SMOOTH - NE PAS INTERROMPRE, INTÉGRER
+================================================================================
+
+PROBLÈME AVEC NIVEAU UP:
+  → Dialogue à chaque level = trop invasif
+  → Interrompt le gameplay
+  → Pas organique narrativement
+
+SOLUTIONS (par ordre de smooth):
+
+================================================================================
+1. NOTIFICATION SYSTEM (Très smooth)
+================================================================================
+
+Au lieu d'afficher dialogue directement:
+  → "Lya wants to talk to you" (notification en coin)
+  → Joueur peut cliquer pour ouvrir dialogue
+  → OU dialogue apparaît quand joueur revient à la taverne
+
+Implémentation:
+
+interface NarrativeQueue {
+  id: string;
+  npcId: string;
+  priority: 'urgent' | 'normal' | 'optional';
+  type: 'milestone' | 'tutorial' | 'response' | 'reminder';
+  triggeredAt: number;  // level
+  displayedAt: number | null;  // when actually shown
+}
+
+Dans useRelationships():
+  const [narrativeQueue, setNarrativeQueue] = useState<NarrativeQueue[]>([]);
+
+Quand level up:
+  // Ne pas afficher dialogue tout de suite
+  // Ajouter à la queue
+  if (shouldTriggerDialogue(player.level)) {
+    queueNarration({
+      id: 'lya_level_50_milestone',
+      npcId: 'lya',
+      priority: 'normal',
+      type: 'milestone',
+      triggeredAt: player.level
+    });
+  }
+
+Afficher notification:
+  <NarrativeNotification
+    queue={narrativeQueue}
+    onAccept={(dialogue) => {
+      // Afficher dialogue modal
+      openModal('dialogue', dialogue);
+      // Marquer comme seen
+      markAsDisplayed(dialogue.id);
+    }}
+    onDismiss={(dialogue) => {
+      // Ignoré - réapparaît plus tard
+    }}
+  />
+
+================================================================================
+2. CONTEXTUAL TRIGGERS (Très naturel)
+================================================================================
+
+Ne pas baser sur LEVEL, mais sur ÉVÉNEMENTS:
+
+Events que joueur voit réellement:
+
+✓ PREMIÈRE OCCURRENCE:
+  - First combat → Lya dialogue
+  - First victory → Lya dialogue
+  - First boss → Lya dialogue
+  - First death → Lya dialogue (si applicable)
+
+✓ MILESTONES IMPORTANTS:
+  - Every 10 levels (5, 15, 25, 35, 45, 55, 65, 75, 85)
+  - Mais seulement si temps écoulé depuis dernier dialogue
+  - Pas all 7 tutoriels: que 2-3 clés
+
+✓ NARRATIVE CHECKPOINTS:
+  - Level 50: Mélethor first whisper (AUTOMATIQUE, interruption OK)
+  - Level 65: Lya confrontation + Eldran alignment
+  - Level 70: THE CHOICE (AUTOMATIQUE)
+
+✓ PLAYER-INITIATED:
+  - "Talk to Lya" button à la taverne
+  - NPCs dans la hub world
+  - Dialogue gratuit, pas forcé
+
+Exemple de structure:
+
+const DIALOGUE_TRIGGERS = {
+  TUTORIAL: [
+    { event: 'firstCombat', npc: 'lya', dialogueId: 'tutorial_first_combat' },
+    { event: 'firstVictory', npc: 'lya', dialogueId: 'tutorial_first_victory' },
+    { event: 'firstBoss', npc: 'lya', dialogueId: 'tutorial_first_boss' },
+  ],
+  
+  MILESTONES: [
+    { level: 50, npc: 'lya', dialogueId: 'milestone_50', priority: 'urgent' },
+    { level: 65, npc: 'lya', dialogueId: 'milestone_65', priority: 'urgent' },
+    { level: 70, npc: 'messenger', dialogueId: 'melethor_choice', priority: 'urgent' },
+  ],
+  
+  OPTIONAL: [
+    { level: 10, npc: 'lya', dialogueId: 'optional_10' },
+    { level: 20, npc: 'eldran', dialogueId: 'optional_20' },
+    { level: 30, npc: 'brak', dialogueId: 'optional_30' },
+  ]
+};
+
+================================================================================
+3. TIMING SMART (Minimise interruption)
+================================================================================
+
+Afficher dialogues ENTRE activités, pas PENDANT:
+
+Timing bon:
+  ✓ Après combat (entre combats)
+  ✓ À la taverne (hub world)
+  ✓ Après boss (cool down natural)
+  ✓ Après level up (pas immédiat, peut-être 2-3 combats après)
+
+Timing mauvais:
+  ✗ Pendant combat
+  ✗ Immédiatement à level up
+  ✗ Quand on ouvre inventory
+
+Implémentation:
+
+// Dans Game.tsx
+const [shouldShowNarrative, setShouldShowNarrative] = useState(false);
+
+useEffect(() => {
+  // Après combat, check queue
+  if (justFinishedCombat && narrativeQueue.length > 0) {
+    // Attendre 500ms pour transition smooth
+    const timer = setTimeout(() => {
+      setShouldShowNarrative(true);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }
+}, [justFinishedCombat]);
+
+================================================================================
+4. DIALOGUE QUEUE SYSTEM (Pour gérer l'ordre)
+================================================================================
+
+Problème: Plusieurs dialogues veulent s'afficher
+
+Solution: Queue avec priorités
+
+enum DialoguePriority {
+  CRITICAL = 3,   // Mélethor choice, major story
+  URGENT = 2,     // Level 50, 65, 70
+  NORMAL = 1,     // Milestones tous les 10 niveaux
+  OPTIONAL = 0    // Répétables, taverne
+}
+
+Règles:
+  • Une seule dialogue à la fois
+  • CRITICAL interrompt toujours
+  • URGENT apparaît en notif
+  • NORMAL s'ajoute à la queue
+  • OPTIONAL peut attendre indéfiniment
+
+Gestion:
+
+const processNarrativeQueue = () => {
+  const queue = narrativeQueue.sort((a, b) => b.priority - a.priority);
+  const next = queue[0];
+  
+  if (next.priority >= 2) {
+    // CRITICAL or URGENT
+    openModal('dialogue', getDialogueNode(next.dialogueId));
+  } else {
+    // NORMAL or OPTIONAL
+    showNotification({
+      text: `${getNPCName(next.npcId)} wants to talk`,
+      action: () => openDialogue(next.dialogueId),
+      canDismiss: true
+    });
+  }
+};
+
+================================================================================
+5. WORLD INTEGRATION (Très natural)
+================================================================================
+
+Ne pas afficher dialogue par système invisible.
+Afficher NPCs dans monde:
+
+"Lya approaches you after the battle"
+"Eldran appears in the shadows"
+"Brak calls you over to the forge"
+
+Implémentation UI:
+
+// Dans Game.tsx, avant modal dialogue:
+const [npcApproaching, setNpcApproaching] = useState<string | null>(null);
+
+if (npcApproaching) {
+  return <NarrativeScene npc={npcApproaching} onComplete={showDialogue} />;
+}
+
+// NarrativeScene.tsx - animation:
+// → Écran fade un peu
+// → NPC animation entre depuis côté
+// → "Lya: [dialogue text]"
+// → Choix apparaissent
+// → Après choix, NPC part, retour gameplay
+
+Exemple:
+
+<NarrativeScene
+  npc="lya"
+  text="You fought well out there."
+  contextAction="Lya nods at you"
+  choices={[
+    { text: "Thanks to your training", effects: {...} },
+    { text: "I did it myself", effects: {...} }
+  ]}
+  onChoose={(choice) => {
+    applyChoice('lya', choice);
+    setNpcApproaching(null);  // NPC leaves
+    resumeGameplay();
+  }}
+/>
+
+================================================================================
+6. OPTIONAL DIALOGUE SYSTEM (Joueur contrôle)
+================================================================================
+
+Donner pouvoir au joueur de CHOISIR parler:
+
+À la taverne:
+  "Lya is here"
+    [Talk]  [Ignore]
+  
+  "Eldran is watching"
+    [Ask about lore]  [Leave him alone]
+
+Implémentation:
+
+export const HUB_WORLD_NPCS = {
+  lya: {
+    location: 'tavern',
+    alwaysPresent: true,
+    dialogue: 'lya_tavern_repeat',  // Repeatable
+    greeting: (level: number, trust: number) => {
+      if (trust < 30) return "Lya nods at you coldly.";
+      if (trust < 60) return "Lya smiles slightly.";
+      return "Lya's face lights up when she sees you.";
+    }
+  },
+  eldran: {
+    location: 'watchtower',
+    alwaysPresent: false,
+    appearsAt: [5, 20, 40, 50, 65, 75],
+    dialogue: 'eldran_meeting',
+    greeting: (level: number) => 
+      "Eldran steps from the shadows."
+  }
+};
+
+Dans UI taverne:
+<NPCCorner>
+  {currentLevel >= 5 && <NPC npc="lya" />}
+  {currentLevel >= 20 && eldranRevealed && <NPC npc="eldran" />}
+  {currentLevel >= 50 && <NPC npc="brak" />}
+</NPCCorner>
+
+================================================================================
+7. DIALOGUE BATCHING (Peu d'interruptions)
+================================================================================
+
+Ne pas afficher dialogue à CHAQUE event importants.
+Afficher narratif PASSAGES:
+
+Par exemple:
+
+Level 50-55: Mélethor arc complètement
+  Level 50: First whisper (interruption ok)
+  Level 51-54: Aucun dialogue forcé (player explore en silence)
+  Level 55: Lya notice (notif, pas interruption)
+  Level 56-59: Silence
+  Level 60: Escalation dialogue (notif)
+
+Level 65-75: Climax
+  Level 65: Major branching
+  Level 70: THE CHOICE (interruption ok, c'est climax)
+  Level 75: Aftermath dialogue
+
+Pattern: QUIET PERIODS entre dialogues importants
+
+const DIALOGUE_SCHEDULE = {
+  // Quiet
+  1: [],
+  5: ['lya_level_5'],  // First milestone
+  6-9: [],  // Quiet period
+  
+  // Escalation begins
+  10: ['lya_level_10'],
+  11-19: [],  // Quiet
+  
+  // Mid-game
+  20: ['eldran_level_20'],
+  21-49: [],  // Long quiet for exploration
+  
+  // ENDGAME BEGINS
+  50: ['melethor_first_whisper'],  // CRITICAL
+  51-59: [],  // But Lya can notice (notif)
+  
+  60: ['eldran_level_60', 'lya_level_60'],  // Branching point
+  61-69: [],  // Quiet before storm
+  
+  70: ['melethor_choice'],  // CRITICAL - THE CHOICE
+  71-89: [],  // Determined by choice made
+  
+  90: ['final_scene']  // Boss + ending
+};
+
+================================================================================
+RECOMMANDATION: HYBRID APPROACH
+================================================================================
+
+Combine 3 stratégies:
+
+1. CRITICAL INTERRUPTIONS (5 fois max):
+   ✓ Level 50: Mélethor first whisper
+   ✓ Level 65: Major branching decision
+   ✓ Level 70: THE CHOICE (no return)
+   ✓ Level 90: Final dialogue + boss
+   ✓ Death recovery: Lya reaction (si applicable)
+
+2. NOTIFICATIONS (soft, joueur contrôle):
+   ✓ Level 10, 20, 30, 40, 55, 60, 75, 80
+   ✓ Notification corner: "Lya wants to talk"
+   ✓ Joueur peut click ou ignorer
+   ✓ Réapparaît si ignoré plusieurs fois
+
+3. HUB DIALOGUE (joueur init, aucune interruption):
+   ✓ "Talk to Lya" button à taverne
+   ✓ "Ask Eldran about X" options
+   ✓ Répétable, pas forcé
+   ✓ Joueur contrôle complètement
+
+RÉSULTAT:
+  → Gameplay fluide (peu d'interruption)
+  → Narrative impact (dialogues clés très importants)
+  → Joueur agentif (peut explorer ou engager)
+  → Organic progression (dialogues en contexte)
+
+================================================================================
+IMPLEMENTATION CHECK:
+================================================================================
+
+Besoin dans Game.tsx:
+
+✓ narrativeQueue state
+✓ DIALOGUE_TRIGGERS config
+✓ processNarrativeQueue() function
+✓ Notification component
+✓ NarrativeScene component
+✓ Hub world NPC integration
+✓ 500ms delay après combat avant dialogue
+
+Besoin dans useRelationships():
+
+✓ queueNarration() function
+✓ getNextInQueue() function
+✓ markAsDisplayed() function
+✓ narrativeQueue state
+
+Besoin dans components:
+
+✓ NarrativeNotification.tsx
+✓ NarrativeScene.tsx (animation entry/exit)
+✓ HubWorldNPCs.tsx (taverne view)
+
+================================================================================

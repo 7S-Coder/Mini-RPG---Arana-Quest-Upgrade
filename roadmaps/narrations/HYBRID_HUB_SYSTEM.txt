@@ -1,0 +1,335 @@
+================================================================================
+        HYBRID APPROACH: CONTEXTUAL + HUB DIALOGUE + COOLDOWN
+================================================================================
+
+STRATÉGIE COMBINÉE:
+
+1. CONTEXTUAL TRIGGERS (option 2)
+   → Dialogues naturels basés sur événements gameplay
+   → Peu d'interruptions mais bien placées
+   → Exemple: Boss vaincu → Lya dialogue notif
+
+2. HUB DIALOGUE (option 3)
+   → Joueur peut accéder taverne quand il veut
+   → Parler à NPCs librement
+   → Mais avec COOLDOWN pour pas abuser
+
+3. COOLDOWN/LIMITE SYSTEM
+   → Chaque NPC a cooldown avant de reparler
+   → Ou limite de conversations par day/level
+   → Empêche spam des dialogues
+
+================================================================================
+COOLDOWN SYSTEM
+================================================================================
+
+Deux approches:
+
+APPROCHE A - COOLDOWN TEMPOREL:
+────────────────────────────────
+
+Chaque NPC peut être contacté qu'une fois par X combats/minutes.
+
+interface NPCCooldown {
+  lastTalkTime: number;  // Timestamp
+  cooldownMinutes: number;  // 30 min, 60 min, etc.
+  canTalkAgain: () => boolean;
+}
+
+const LYA_COOLDOWN = 30;  // Peut parler à Lya qu'une fois par 30 min de jeu
+
+checkCooldown('lya'):
+  if (now - lya.lastTalkTime < LYA_COOLDOWN * 60 * 1000) {
+    return "Lya is busy. Come back later."
+  }
+
+UI:
+  <NPCOption>
+    "Talk to Lya"
+    {canTalkAgain ? (
+      <button>Talk</button>
+    ) : (
+      <button disabled>
+        Lya is busy. {Math.ceil(minutesRemaining)} min...
+      </button>
+    )}
+  </NPCOption>
+
+APPROCHE B - LIMITE PAR PROGRESSION:
+────────────────────────────────────
+
+Nombre de conversations libres par "niveau d'amitié"
+
+const CONVERSATION_LIMITS = {
+  HOSTILE: 0,      // Refuse de parler
+  WARY: 1,         // Une conversation gratuite par level
+  CAUTIOUS: 2,
+  FRIENDLY: 3,
+  INTIMATE: 5      // Peut parler beaucoup
+};
+
+// Dans hub dialogue:
+const allowedConversations = CONVERSATION_LIMITS[getRelationshipLevel('lya')];
+const usedConversations = lya.conversationsHad.length;
+const remaining = allowedConversations - usedConversations;
+
+if (remaining <= 0) {
+  return "Lya has nothing more to say right now.";
+}
+
+// Afficher: "Conversations remaining: 2/3"
+
+RECOMMANDATION: Mix les deux!
+
+Base: Cooldown 30-60 minutes (joueur ne spamme pas)
+Escalade: Plus trust → moins de cooldown
+
+const getDynamicCooldown = (trustLevel: number) => {
+  if (trustLevel < 20) return 120;  // 2 heures
+  if (trustLevel < 40) return 90;
+  if (trustLevel < 60) return 60;
+  if (trustLevel < 80) return 30;
+  return 15;  // Intimate: presque toujours disponible
+};
+
+================================================================================
+TAVERNE: MAP vs MODAL
+================================================================================
+
+OPTION A - TAVERNE COMME MAP (Immersif)
+────────────────────────────────────────
+
+Créer une vraie location que joueur peut visiter.
+
+Avantages:
+  ✓ Immersif (vraie location)
+  ✓ NPCs = présents physiquement
+  ✓ Détails, ambiance
+  ✓ Joueur explore à pied
+
+Désavantages:
+  ✗ Plus de travail (assets, layout)
+  ✗ Navigation extra
+  ✗ Pas idéal pour "quick chat"
+
+Implémentation:
+
+// maps.ts
+export const TAVERN_MAP = {
+  id: 'tavern',
+  name: 'The Wayfarer\'s Rest',
+  description: 'A warm place away from the arena.',
+  width: 1000,
+  height: 800,
+  npcs: [
+    { id: 'lya', x: 300, y: 400, role: 'keeper' },
+    { id: 'brak', x: 600, y: 300, role: 'craftsman' },
+    { id: 'eldran', x: 800, y: 500, role: 'observer' },
+    { id: 'messenger', x: 400, y: 600, role: 'enigma' }
+  ],
+  ambiance: 'warm-light',
+  exits: [
+    { name: 'Back to Arena', destination: 'arena', x: 100, y: 100 }
+  ]
+};
+
+// Joueur peut marcher à Lya, click pour parler
+<NPC
+  npc="lya"
+  position={{ x: 300, y: 400 }}
+  onInteract={() => openDialogue('lya_tavern')}
+/>
+
+OPTION B - TAVERNE COMME MODAL (Rapide)
+────────────────────────────────────────
+
+Menu modal "Go to Tavern".
+
+Avantages:
+  ✓ Rapide (une ligne de UI)
+  ✓ Moins de code
+  ✓ Pas de navigation
+  ✓ Focus sur dialogue
+
+Désavantages:
+  ✗ Moins immersif
+  ✗ Pas d'ambiance visuelle
+  ✗ Juste "list of NPCs"
+
+Implémentation:
+
+<TavernModal>
+  <NPC npc="lya">
+    "Lya is wiping glasses behind the bar"
+    <Button>Talk to Lya</Button>
+  </NPC>
+  
+  <NPC npc="brak">
+    "Brak is sharpening blades at a corner table"
+    <Button>Talk to Brak</Button>
+  </NPC>
+</TavernModal>
+
+OPTION C - HYBRID (Meilleur compromis)
+──────────────────────────────────────
+
+Taverne = Modal au début
+Après level 30 ou 40 = devient vraie map
+
+Raisons:
+  → Au début: joueur veut jouer, pas explorer
+  → Plus tard: joueur apprécie immersion
+  → Progression naturelle
+
+Implémentation:
+
+if (player.level < 30) {
+  // Quick modal
+  return <TavernModal />;
+} else {
+  // Full map
+  return <TavernMap />;
+}
+
+================================================================================
+RECOMMANDATION: OPTION C HYBRIDE
+================================================================================
+
+Phase 1 (Level 1-30): MODAL
+  → Menu simple
+  → Quick access
+  → Focus sur gameplay
+  
+  UI:
+    HUD Button: "⚔ Tavern"
+    Opens modal with NPC list
+    Quick dialogues
+
+Phase 2 (Level 30+): MAP
+  → Déverrouille vraie taverne
+  → "Eldran has unlocked the Tavern"
+  → Joueur peut y aller librement
+  → Immersion augmente
+
+Benefits:
+  ✓ Accessible immédiatement
+  ✓ Pas trop complexe au début
+  ✓ Progression naturelle (reward unlock)
+  ✓ Immersion escalade avec level
+
+================================================================================
+COOLDOWN + HUB IMPLEMENTATION
+================================================================================
+
+Dans useRelationships():
+
+interface NPCHub {
+  lastInteraction: number;      // Timestamp of last talk
+  cooldownMinutes: number;      // Dynamic based on trust
+  canTalkAgain: () => boolean;
+  timeUntilAvailable: () => number;
+}
+
+const checkNPCAvailable = (npcId: string): boolean => {
+  const npc = relationships[npcId];
+  const now = Date.now();
+  const cooldown = getDynamicCooldown(npc.trust);
+  const minutesElapsed = (now - npc.lastInteraction) / (60 * 1000);
+  
+  return minutesElapsed >= cooldown;
+};
+
+const getTimeRemaining = (npcId: string): number => {
+  const npc = relationships[npcId];
+  const cooldown = getDynamicCooldown(npc.trust);
+  const minutesElapsed = (Date.now() - npc.lastInteraction) / (60 * 1000);
+  const minutesRemaining = cooldown - minutesElapsed;
+  
+  return Math.max(0, Math.ceil(minutesRemaining));
+};
+
+// Dans component taverne:
+<TavernNPC npc="lya">
+  {checkNPCAvailable('lya') ? (
+    <Button onClick={() => talkToLya()}>
+      Talk to Lya
+    </Button>
+  ) : (
+    <DisabledButton>
+      Lya is busy
+      ({getTimeRemaining('lya')} min)
+    </DisabledButton>
+  )}
+</TavernNPC>
+
+================================================================================
+INTÉGRATION COMPLÈTE
+================================================================================
+
+Flux d'utilisation:
+
+LEVEL 1-30: MODAL TAVERN
+  
+  1. Joueur clique "Tavern" bouton HUD
+  2. Modal s'ouvre, affiche NPCs
+  3. Lya: [Talk] (ou [Busy: 15 min] si cooldown)
+  4. Dialogue s'affiche
+  5. Choices → effects appliqués
+  6. Modal ferme, retour gameplay
+
+LEVEL 30+: MAP TAVERN
+  
+  1. Joueur voit new location: "Tavern"
+  2. Click pour entrer
+  3. Parcourt la taverne
+  4. Click sur NPC (Lya standing at bar)
+  5. Dialogue contextualisé ("Lya says...")
+  6. Après dialogue, NPC returns à routine
+  7. Joueur peut quitter
+
+CONTEXTUAL TRIGGERS (tous les levels)
+  
+  1. Boss vaincu → Notif: "Lya wants to talk"
+  2. Click notif → Dialogue s'affiche
+  3. Pas bloquant, peut ignorer
+  4. NPC "approaches you"
+  5. Quick dialogue
+  6. Scene ends, retour gameplay
+
+RÉSULTAT:
+
+✓ Dialogues intégrés organiquement (contextual)
+✓ Accès libre mais limité (cooldown)
+✓ Immersion escalade (modal → map)
+✓ Pas d'abuse (cooldown system)
+✓ Joueur contrôle (quand parler)
+
+================================================================================
+TIMELINE D'IMPLÉMENTATION
+================================================================================
+
+Phase 1 (MVP): Modal Tavern + Cooldown
+  □ Créer TavernModal component
+  □ Ajouter cooldown system à useRelationships
+  □ Intégrer dans Game.tsx HUD
+  Temps: 2-3 heures
+
+Phase 2: Contextual Triggers
+  □ Implémenter narrative queue
+  □ Ajouter notification system
+  □ Configurer DIALOGUE_TRIGGERS
+  Temps: 3-4 heures
+
+Phase 3: Map Tavern (Level 30+)
+  □ Créer tavern map (asset + layout)
+  □ Placer NPCs sur la map
+  □ Ajouter dialogue contextuel (physical)
+  Temps: 4-5 heures
+
+Phase 4: Polish (animation, sound, etc.)
+  □ NPC animations
+  □ Tavern ambiance
+  □ Scene transitions
+  Temps: 2-3 heures
+
+================================================================================

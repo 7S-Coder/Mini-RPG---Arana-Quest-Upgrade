@@ -1,0 +1,336 @@
+================================================================================
+        COMMENT INTÉGRER DIALOGUE BRANCHING ADAPTATIF
+================================================================================
+
+ARCHITECTURE GÉNÉRALE:
+
+1. Hook useRelationships()
+   → Gère localStorage persistence
+   → Offre helpers (getNPC, applyChoice, meetsRequirements, etc.)
+
+2. Dialogue Branching System (dialogueBranching.ts)
+   → selectDialogueVariant() → choix bon text selon relationship
+   → DialogueTemplate pattern → structure standardisée
+   → buildDialogueFromTemplate() → convertir template en DialogueNode
+
+3. Adaptive Narration (adaptiveNarration.ts)
+   → Tutoriels et milestones avec variants
+   → Chaque dialogue a 3-5 variants selon trust/affection
+   → Choix intégrés avec effects
+
+4. UI Integration (future)
+   → Modifier DialogueModal pour afficher choix
+   → Afficher relationship stats lors dialogue
+
+================================================================================
+EXEMPLE COMPLET: Intégrer un dialogue
+================================================================================
+
+AVANT (narration.ts actuelle):
+────────────────────────────────
+
+export const TUTORIAL_MESSAGES = {
+  firstVictoryTutorial: {
+    npc: 'lya',
+    text: 'So you won once. The dead don\'t care...'
+  }
+};
+
+
+APRÈS (adaptiveNarration.ts):
+────────────────────────────────
+
+export const TUTORIAL_FIRST_VICTORY: DialogueNode = {
+  id: 'tutorial_first_victory',
+  npcId: 'lya',
+  variants: [
+    {
+      text: 'So you won once. The dead don\'t care about your first victory.',
+      requirements: { minTrust: 0, maxTrust: 25 }  // Cold Lya
+    },
+    {
+      text: 'That was good. You\'re learning.',
+      requirements: { minTrust: 40, maxTrust: 70 }  // Mentoring Lya
+    },
+    {
+      text: 'I was worried. But you came back. Don\'t ever scare me like that.',
+      contextAction: '*tenderness*',
+      requirements: { minTrust: 80, minAffection: 60 }  // Intimate Lya
+    }
+  ],
+  choices: [
+    {
+      id: 'victory_humble',
+      text: 'I got lucky.',
+      effects: { trust: 10, affection: 5 }
+    },
+    {
+      id: 'victory_proud',
+      text: 'I was better.',
+      effects: { trust: -5, anger: 5 }
+    }
+  ]
+};
+
+
+DANS GAME.TSX:
+────────────────────────────────
+
+// Récupérer le hook
+const { getNPC, applyChoice } = useRelationships();
+
+// Lors du trigger du tutoriel:
+const lyaRelation = getNPC('lya');
+const dialogueNode = TUTORIAL_FIRST_VICTORY;
+const variantToShow = selectDialogueVariant(dialogueNode, lyaRelation);
+
+// Afficher le dialogue + choix:
+<DialogueModal
+  text={variantToShow.text}
+  contextAction={variantToShow.contextAction}
+  npc="lya"
+  choices={dialogueNode.choices}
+  onChoose={(choice) => {
+    applyChoice('lya', choice);
+    markConversationSeen('lya', dialogueNode.id);
+  }}
+/>
+
+================================================================================
+PATTERN POUR ADAPTER CHAQUE DIALOGUE
+================================================================================
+
+Template simple:
+
+interface DialogueTemplate {
+  id: string;
+  npcId: 'lya' | 'eldran' | ...;
+  baseText: string;  // Fallback toujours valide
+  variants: {
+    hostile?: string;     // 0-20 trust
+    wary?: string;        // 20-40 trust
+    cautious?: string;    // 40-60 trust
+    friendly?: string;    // 60-80 trust
+    intimate?: string;    // 80-100 trust
+    highAffection?: string;
+    withMemory?: Record<string, string>;
+  };
+  choices: [...]
+}
+
+Exemple:
+
+const LYA_LEVEL_10 = {
+  id: 'lya_level_10',
+  npcId: 'lya',
+  baseText: 'Caves are never empty. They breathe slowly...',
+  variants: {
+    hostile: 'Don\'t get yourself killed in there.',
+    wary: 'The caves test more than strength.',
+    cautious: 'You\'re ready to go deeper. Be careful.',
+    friendly: 'I\'ll be thinking of you down there.',
+    intimate: 'Come back to me.',
+  },
+  choices: [
+    { id: 'cave_fear', text: 'I\'m afraid.', effects: { affection: 10 } },
+    { id: 'cave_ready', text: 'I\'m ready.', effects: { trust: 5 } }
+  ]
+};
+
+================================================================================
+FLOW COMPLET: QUAND AFFICHER DIALOGUE
+================================================================================
+
+TRIGGER (dans Game.tsx):
+
+  if (firstVictory && !tutorials.firstVictory) {
+    // Get current Lya relationship
+    const lyaRelation = getNPC('lya');
+    
+    // Select variant
+    const variant = selectDialogueVariant(TUTORIAL_FIRST_VICTORY, lyaRelation);
+    
+    // Show dialogue with choices
+    openModal('dialogue', {
+      text: variant.text,
+      contextAction: variant.contextAction,
+      npc: 'lya',
+      choices: TUTORIAL_FIRST_VICTORY.choices,
+      onChoose: (choice) => {
+        applyChoice('lya', choice);
+        markConversationSeen('lya', TUTORIAL_FIRST_VICTORY.id);
+        showNarration('tutorial_first_victory');
+      }
+    });
+  }
+
+================================================================================
+LES 3 NIVEAUX DE DIALOGUE
+================================================================================
+
+NIVEAU 1 - ONE-TIME NARRATIONS (avec choix)
+────────────────────────────────────────────
+Exemples: Tutoriels, milestones niveau
+
+Pattern:
+  • Dialogue appear une fois
+  • User chooses option
+  • Relationship changes
+  • Dialogue disparaît
+
+Implementation:
+  ✓ flagSystem (tutorials_shown)
+  ✓ applyChoice()
+  ✓ markConversationSeen()
+
+
+NIVEAU 2 - REPEATABLE CONVERSATIONS (libre)
+────────────────────────────────────────────
+Exemples: Parler à Lya dans la taverne
+
+Pattern:
+  • Dialogue can repeat
+  • Same variant based on relationship
+  • Choices affect relationship
+  • Dialogue adjusts over time
+
+Implementation:
+  ✓ Open "Talk to Lya" modal
+  ✓ selectDialogueVariant() automatically
+  ✓ Show variant + choices
+  ✓ Apply effects on choice
+
+
+NIVEAU 3 - BRANCHING CHAINS (séquences)
+────────────────────────────────────────
+Exemples: Romance arc, Mélethor temptation arc
+
+Pattern:
+  • Multi-step dialogue tree
+  • Each choice leads to next dialogue
+  • Relationship determines available paths
+  • Some paths locked by previous choices
+
+Implementation:
+  ✓ Array of DialogueNode linked by id
+  ✓ onChoose() triggers next dialogue
+  ✓ meetsRequirements() blocks unavailable paths
+  ✓ Memory events unlock special paths
+
+Example: Mélethor arc
+  Level 50: First contact (one way)
+  Level 55: Temptation (one choice: accept/refuse)
+  Level 60: Escalation (depends on previous choice)
+  Level 65: NPC reactions (branching per NPC)
+  Level 70: CHOICE (only 2 options: pact or resist)
+
+================================================================================
+CHECKLIST: ADAPTER LA NARRATION EXISTANTE
+================================================================================
+
+tutoriels (7):
+  ☐ firstCombatTutorial → TUTORIAL_FIRST_COMBAT
+  ☐ firstVictoryTutorial → TUTORIAL_FIRST_VICTORY
+  ☐ firstLootTutorial → TUTORIAL_FIRST_LOOT
+  ☐ firstInventoryTutorial → TUTORIAL_FIRST_INVENTORY
+  ☐ firstBossTutorial → TUTORIAL_FIRST_BOSS
+  ☐ firstLevelUpTutorial → TUTORIAL_FIRST_LEVEL_UP
+  ☐ mapUnlockTutorial → TUTORIAL_MAP_UNLOCK
+
+milestones (niveau 5, 10, 15, ...):
+  ☐ Garder textes existants comme "baseText"
+  ☐ Ajouter variants hostile/wary/cautious/friendly/intimate
+  ☐ Ajouter choix où approprié
+
+arcs spéciaux (nouveaux):
+  ☐ Lya romance (niveau 15-90)
+  ☐ Eldran lore (niveau 5-90)
+  ☐ Brak craft (niveau 20-90)
+  ☐ Messenger mystery (niveau 50-90)
+  ☐ Mélethor temptation (niveau 50-90)
+
+================================================================================
+INTÉGRATION UI FUTURE
+================================================================================
+
+DialogueModal amélioré:
+
+  • Afficher NPC name + title
+  • Afficher current relationship stats (opcional)
+  • Afficher choices avec descriptions
+  • Animation pour relationship changes
+  • Confirmation avant choix irréversibles (level 70)
+
+Example:
+
+  <DialogueModal
+    npc="lya"
+    text={variant.text}
+    contextAction={variant.contextAction}
+    choices={TUTORIAL_FIRST_VICTORY.choices.map(choice => ({
+      ...choice,
+      preview: getChoicePreview(choice)  // "+10 trust, +5 affection"
+    }))}
+    showStats={true}  // Affiche trust/affection
+    currentRelationship={lyaRelation}
+  />
+
+================================================================================
+EXEMPLE CONCRET: Implémenter Level 70 Choice
+================================================================================
+
+Mélethor Level 70: THE CHOICE
+
+const MELETHOR_LEVEL_70_CHOICE: DialogueNode = {
+  id: 'melethor_level_70_choice',
+  npcId: 'messenger',  // Actually Mélethor
+  isCritical: true,    // Flag: can't undo
+  variants: [
+    {
+      text: 'We have talked enough. You can come willingly. Or you can come broken. Choose.',
+      contextAction: '*The voice fills your mind completely*',
+      requirements: { minTrust: 0, maxTrust: 100 }  // Applies to all
+    }
+  ],
+  choices: [
+    {
+      id: 'melethor_pact',
+      text: 'I accept. Make me whole.',
+      effects: {
+        // Special flag
+        memoryEvent: 'melethor_pact_made'
+      }
+    },
+    {
+      id: 'melethor_resist',
+      text: 'NO. I choose my own path.',
+      effects: {
+        memoryEvent: 'melethor_pact_rejected'
+      }
+    }
+  ]
+};
+
+In Game.tsx (level 70):
+
+if (player.level === 70 && !relationships.messenger.memoryEvents.includes('melethor_pact_made') &&
+    !relationships.messenger.memoryEvents.includes('melethor_pact_rejected')) {
+  
+  const choice = await showModalWithChoice(MELETHOR_LEVEL_70_CHOICE);
+  
+  if (choice.id === 'melethor_pact') {
+    // Corrupted path
+    applyChoice('messenger', choice);
+    // All allies become suspicious/distant
+    relationships.lya.affection -= 50;
+    relationships.eldran.trust = 0;
+  } else {
+    // Resistance path
+    applyChoice('messenger', choice);
+    // All allies commit
+    relationships.lya.affection += 50;
+    relationships.eldran.trust = 80;
+  }
+}
+
+================================================================================
