@@ -50,6 +50,8 @@ export function useGameState() {
     equippedWeapon: {
       type: 'barehand',
     },
+    // tracking unlocked dialogues
+    unlockedDialogues: {},
   });
   // refs to hold latest state for synchronous access during save
   const playerRef = useRef<Player>(player);
@@ -1713,6 +1715,26 @@ export function useGameState() {
 
   const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);
 
-  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, buyPotion, consumeItem, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, saveCoreGame, loadGame, isInCombat, progression, allocate: allocate, deallocate: deallocate, consecWins, incConsecWins, resetConsecWins, achievements } as const;
+  // Track unlocked dialogue
+  const unlockDialogue = (npcId: string, dialogueId: string) => {
+    setPlayer((prev) => {
+      const unlockedDialogues = prev.unlockedDialogues || {};
+      const npcDialogues = unlockedDialogues[npcId] || [];
+      
+      // Only add if not already unlocked
+      if (!npcDialogues.includes(dialogueId)) {
+        return {
+          ...prev,
+          unlockedDialogues: {
+            ...unlockedDialogues,
+            [npcId]: [...npcDialogues, dialogueId],
+          },
+        };
+      }
+      return prev;
+    });
+  };
+
+  return { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, xpToNextLevel, equipment, setEquipment, inventory, setInventory, pickups, maybeDropFromEnemy, equipItem, unequipItem, createCustomItem, createItemFromTemplate, sellItem, getEquippedRarity, collectPickup, collectAllPickups, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, buyPotion, consumeItem, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, saveCoreGame, loadGame, isInCombat, progression, allocate: allocate, deallocate: deallocate, consecWins, incConsecWins, resetConsecWins, achievements, unlockDialogue } as const;
 }
 

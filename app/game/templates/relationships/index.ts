@@ -6,12 +6,12 @@
 export type { NPCRelation, PlayerRelationships, DialogueChoice, DialogueVariant, DialogueNode } from './types';
 export { RELATIONSHIP_THRESHOLDS } from './types';
 
-export { LYA_INITIAL, LYA_PERSONALITY, LYA_MEMORY_EVENTS } from './lya';
-export { ELDRAN_INITIAL, ELDRAN_PERSONALITY, ELDRAN_MEMORY_EVENTS } from './eldran';
-export { BRAK_INITIAL, BRAK_PERSONALITY, BRAK_MEMORY_EVENTS } from './brak';
-export { MESSENGER_INITIAL, MESSENGER_PERSONALITY, MESSENGER_MEMORY_EVENTS } from './messenger';
+export { LYA_INITIAL, LYA_PERSONALITY } from './lya';
+export { ELDRAN_INITIAL, ELDRAN_PERSONALITY } from './eldran';
+export { BRAK_INITIAL, BRAK_PERSONALITY } from './brak';
+export { MESSENGER_INITIAL, MESSENGER_PERSONALITY } from './messenger';
 export type { MelethorThreat } from './melethor';
-export { MELETHOR_INITIAL, MELETHOR_PERSONALITY, MELETHOR_MEMORY_EVENTS, MELETHOR_WHISPERS, MELETHOR_OFFERS } from './melethor';
+export { MELETHOR_INITIAL, MELETHOR_PERSONALITY, MELETHOR_WHISPERS, MELETHOR_OFFERS } from './melethor';
 
 /**
  * Initialize all relationships at game start

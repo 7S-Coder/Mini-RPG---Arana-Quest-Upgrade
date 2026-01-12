@@ -22,6 +22,7 @@ import AchievementsModal from "../components/modales/AchievementsModal";
 import NarrationsModal from "../components/modales/NarrationsModal";
 import PauseModal from "../components/modales/PauseModal";
 import TavernModal from "../components/modales/TavernModal";
+import { useRelationships } from "./uses/useRelationships";
 import { getMaps, pickEnemyFromMap, pickEnemyFromRoom, getRoomsForMap } from "./templates/maps";
 import { ENEMY_TEMPLATES } from "./templates/enemies";
 import { calcDamage } from "./damage";
@@ -31,9 +32,11 @@ import { useDungeon } from "../hooks/useDungeon";
 import { useNarration } from "../hooks/useNarration";
 import { useLevelMilestones } from "../hooks/useLevelMilestones";
 import { TUTORIAL_MESSAGES } from "./templates/narration";
+import { loadAllDialoguesByNPC } from "./templates/dialogues/allDialoguesLoader";
 
 export default function Game() {
-  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, createItemFromTemplate, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins, achievements } = useGameState();
+  const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, createItemFromTemplate, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins, achievements, unlockDialogue } = useGameState();
+  const { getNPC } = useRelationships();
 
   // streak per map (instead of global streak)
   const [mapStreaks, setMapStreaks] = useState<Record<string, number>>({});
@@ -1194,14 +1197,28 @@ export default function Game() {
         <AchievementsModal onClose={closeModal} achievements={achievements.achievements} />
       )}
       {modalName === 'narrations' && (
-        <NarrationsModal onClose={closeModal} unlockedLevels={unlockedLevels} />
+        <NarrationsModal 
+          onClose={closeModal} 
+          unlockedLevels={unlockedLevels}
+          unlockedDialogues={player.unlockedDialogues || {}}
+          allDialogues={loadAllDialoguesByNPC()}
+        />
       )}
       {modalName === 'bestiary' && (
         <BestiaryModal onClose={closeModal} enemies={enemies} selectedMapId={selectedMapId} />
       )}
-      {modalName === 'tavern' && (
-        <TavernModal isOpen={modalName === 'tavern'} onClose={closeModal} playerLevel={player.level} />
-      )}
+      {modalName === 'tavern' && (() => {
+        const lya = getNPC('lya');
+        return (
+          <TavernModal
+            isOpen={modalName === 'tavern'}
+            onClose={closeModal}
+            playerLevel={player.level}
+            lyaStats={lya ? { trust: lya.trust, affection: lya.affection } : undefined}
+            unlockDialogue={unlockDialogue}
+          />
+        );
+      })()}
       {modalName === 'maps' && (
         <MapsModal inventory={inventory} playerLevel={player.level} onClose={closeModal} onSelect={(id?: string | null) => {
               try {

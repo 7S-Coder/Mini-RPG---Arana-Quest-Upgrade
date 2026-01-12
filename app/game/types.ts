@@ -69,6 +69,8 @@ export type Player = {
   };
   // equipped weapon (defaults to barehand if not set)
   equippedWeapon?: EquippedWeapon;
+  // tracking unlocked dialogues: { npcId: [dialogueIds] }
+  unlockedDialogues?: Record<string, string[]>;
 };
 
 export type ItemTemplate = Omit<Item, "id" | "rarity"> & { weight?: number; rarity?: Rarity; allowedMaps?: string[]; weaponType?: WeaponType };

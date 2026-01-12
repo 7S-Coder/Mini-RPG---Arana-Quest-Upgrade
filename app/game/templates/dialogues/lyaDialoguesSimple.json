@@ -1,0 +1,91 @@
+{
+  "lya": {
+    "playerAsks": [
+      {
+        "id": "ask_training",
+        "question": "How did you learn to fight like that?",
+        "response": "Blood first. Technique later. The wild teaches you to survive, the arena teaches you to win. Every scar is a receipt for a mistake I refused to repeat."
+      },
+      {
+        "id": "ask_past",
+        "question": "Where do you really come from?",
+        "response": "From the northern mountains. Places where winter is not a season but a judgement. Stones older than empires. Silence older than war. Up there, time doesn't pass—it waits, and everything else learns patience or dies learning."
+      },
+      {
+        "id": "ask_goals",
+        "question": "What do you really want beyond combat?",
+        "response": "Answers. Not comfort—just sense. I want to know what my choices bought, and why some ghosts refused to stay dead. Peace isn't for people like me. But clarity? That's still negotiable."
+      },
+      {
+        "id": "ask_interests",
+        "question": "What really interests you? Beyond combat?",
+        "response": "The mechanics of survival. Why some minds fracture while others bend. Why people choose to endure when the world is offering easier exits. Combat is just the autopsy of that question—every strike, every hesitation, every refusal to fall."
+      }
+    ],
+    "npcAsks": [
+      {
+        "id": "lya_ask_drive",
+        "question": "You move like someone who refuses to stop. Most burn out by now. So tell me—what's really pushing you forward?",
+        "choices": [
+          {
+            "id": "choice_survival",
+            "text": "I have no choice. It's fight or die.",
+            "response": "Most choose the dying part. It's the path of least resistance. Survival requires intent, not instinct."
+          },
+          {
+            "id": "choice_purpose",
+            "text": "I'm looking for something. Answers.",
+            "response": "Then we're kin in the worst way. Those who hunt answers bleed the longest. They don't know how to stop."
+          },
+          {
+            "id": "choice_other",
+            "text": "I don't think about it. I just move forward.",
+            "response": "Momentum as philosophy. Efficient. Dangerous. It keeps you alive until the day it doesn't."
+          }
+        ]
+      },
+      {
+        "id": "lya_ask_fear",
+        "question": "There's always something that could unmake you. Fear isn't weakness—it's architecture. What's yours built from?",
+        "choices": [
+          {
+            "id": "choice_nothing",
+            "text": "Nothing. Not anymore.",
+            "response": "Denial is a kind of armor. Heavy, but serviceable. I won't pry."
+          },
+          {
+            "id": "choice_failure",
+            "text": "Failing. Dying without purpose.",
+            "response": "Purpose is a currency the world keeps inflating. But the fear itself? That I recognize. It makes you precise."
+          },
+          {
+            "id": "choice_truth",
+            "text": "Becoming someone I can't recognize.",
+            "response": "Identity rot. The most common disease of this age. Mélethor doesn’t need to conquer minds—most people dismantle themselves first."
+          }
+        ]
+      },
+      {
+        "id": "lya_ask_world",
+        "question": "This world is sick. Mélethor is just its symptom made visible. So tell me—are you fighting for the cure, or merely prolonging the patient?",
+        "choices": [
+          {
+            "id": "choice_yes",
+            "text": "It can be saved. Someone has to try.",
+            "response": "Hope as discipline. Interesting. It's rare to see it practiced without delusion."
+          },
+          {
+            "id": "choice_no",
+            "text": "No. But I'll fight anyway.",
+            "response": "Then you're playing for dignity, not victory. The world can't take that from you. Only you can."
+          },
+          {
+            "id": "choice_uncertain",
+            "text": "I don't know anymore.",
+            "response": "Uncertainty is the first honest position. Certainty breeds zealots. Doubt builds survivors."
+          }
+        ]
+      }
+    ]
+  }
+}

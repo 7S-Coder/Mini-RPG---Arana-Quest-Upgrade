@@ -1,0 +1,258 @@
+================================================================================
+DIALOGUES LYA - EXTRACTION DE CONTENU
+================================================================================
+
+QUESTIONS INITIÉES PAR LE JOUEUR (Joueur pose des questions à Lya)
+================================================================================
+
+1. TAVERN_ASK_TRAINING - "Comment as-tu appris à combattre comme ça ?"
+   Catégorie: combat
+   Gains de base: confiance +2, respect +1
+   
+   [0-30 Confiance] "C'est une longue histoire. Je devais apprendre ou mourir."
+   Gains: confiance +2, respect +1
+   
+   [31-70 Confiance] "Les années ont été mon meilleur professeur. Chaque cicatrice raconte une leçon."
+   Gains: confiance +2, respect +1
+   
+   [71-100 Confiance + 50+ Affection] "Ce n'était pas facile... mais maintenant, je suis heureuse de partager ce savoir avec toi."
+   Gains: confiance +2, respect +1, affection +2, intimité +1
+
+---
+
+2. TAVERN_ASK_PAST - "D'où viens-tu vraiment ?"
+   Catégorie: personnel
+   Gains de base: confiance +2, affection +1
+   
+   [0-25 Confiance] "D'un endroit que je préfère oublier."
+   Gains: confiance +2, affection +1
+   
+   [26-60 Confiance] "J'ai grandi dans les montagnes du nord. C'est là que j'ai appris à survivre."
+   Gains: confiance +2, affection +1
+   
+   [61-90 Confiance] "J'ai connu des jours meilleurs... et des ombres très sombres. Mais je suis là maintenant, avec toi."
+   Gains: confiance +2, affection +1, affection +3, intimité +2
+
+---
+
+3. TAVERN_ASK_GOALS - "Qu'est-ce qui t'intéresse vraiment ? Au-delà du combat ?"
+   Catégorie: philosophie
+   Gains de base: confiance +3, affection +2
+   
+   [0-20 Confiance] "Le combat suffit. Rien d'autre n'a d'importance."
+   Gains: confiance +3, affection +2
+   
+   [21-70 Confiance] "Trouver quelque chose pour lequel se battre. Quelque chose... ou quelqu'un."
+   Gains: confiance +3, affection +2
+   
+   [71-100 Confiance + 60+ Affection] "Tu le sais déjà. C'est toi qui m'intéresse maintenant."
+   Gains: confiance +3, affection +2, affection +4, intimité +3
+
+---
+
+4. TAVERN_ASK_STRENGTH - "Qu'est-ce qui te rend si forte ?"
+   Catégorie: combat
+   Gains de base: confiance +1, respect +2
+   
+   [0-30 Confiance] "L'instinct de survie. La nécessité. Et la discipline."
+   Gains: confiance +1, respect +2
+   
+   [31-70 Confiance] "C'est un mélange de technique, d'expérience et de volonté. Rien de surnaturel."
+   Gains: confiance +1, respect +2
+   
+   [71-100 Confiance + 50+ Affection] "Dernièrement ? Savoir que quelqu'un m'attend. Quelqu'un qui compte vraiment sur moi."
+   Gains: confiance +1, respect +2, affection +3, intimité +2
+
+---
+
+5. TAVERN_ASK_FEARS - "As-tu peur de quelque chose ?"
+   Catégorie: personnel
+   Gains de base: confiance +4, affection +2
+   Condition: confiance minimale 40
+   
+   [40-70 Confiance] "La peur est un luxe que je ne peux pas me permettre."
+   Gains: confiance +4, affection +2
+   
+   [71-90 Confiance] "Oui... Le volcan. Et ce qu'il représente. Des secrets anciens. Melethor."
+   Gains: confiance +4, affection +2, confiance +2, affection +2
+   
+   [91-100 Confiance + 60+ Affection] "J'ai peur de te perdre. C'est la seule chose qui m'effraie vraiment."
+   Gains: confiance +4, affection +2, affection +5, intimité +4
+
+---
+
+6. TAVERN_ASK_FUTURE - "Que veux-tu pour le futur ?"
+   Catégorie: philosophie
+   Gains de base: confiance +2, affection +2
+   
+   [0-40 Confiance] "Survivre. Être utile. Le reste viendra après."
+   Gains: confiance +2, affection +2
+   
+   [41-75 Confiance] "Un monde sans mensonges. Où des gens comme toi peuvent briller sans peur."
+   Gains: confiance +2, affection +2
+   
+   [76-100 Confiance + 60+ Affection] "Un futur avec toi. Peu importe où il nous mène."
+   Gains: confiance +2, affection +2, affection +4, intimité +3
+
+---
+
+7. TAVERN_ASK_OPINION - "Qu'est-ce que tu penses de moi... honnêtement ?"
+   Catégorie: personnel
+   Gains de base: confiance +1, affection +3
+   
+   [0-30 Confiance] "Tu as du potentiel. Continue comme ça."
+   Gains: confiance +1, affection +3
+   
+   [31-70 Confiance + 30+ Affection] "Tu m'impressionnes. Tu es plus fort que la plupart... et tu as un bon cœur."
+   Gains: confiance +1, affection +3
+   
+   [71-100 Confiance + 70+ Affection] "Je pense que tu es extraordinaire. Courageux. Digne. Je suis fière de toi."
+   Gains: confiance +1, affection +3, affection +5, intimité +2
+
+---
+
+================================================================================
+QUESTIONS INITIÉES PAR LYA (Lya pose des questions au joueur)
+================================================================================
+
+1. TAVERN_LYA_ASKS_GOAL - "Pourquoi continues-tu ? Qu'est-ce qui vraiment te pousse ?"
+   Catégorie: personnel
+   
+   Choix A: "Devenir plus fort. Et peut-être... pour toi."
+   Gains: confiance +4, affection +3, intimité +2
+   
+   Choix B: "C'est juste ce que je dois faire."
+   Gains: confiance +1, affection -1
+   
+   Choix C: "Je suis perdu sans direction... jusqu'à ce que tu apparaisses."
+   Condition: confiance minimale 50
+   Gains: confiance +5, affection +5, intimité +4
+
+---
+
+2. TAVERN_LYA_ASKS_FEAR - "N'as-tu jamais pensé à abandonner ? À fuir tout ça ?"
+   Catégorie: personnel
+   
+   Choix A: "Non. Je dois affronter mes défis."
+   Gains: confiance +3, respect +3
+   
+   Choix B: "Oui... mais pas maintenant. Pas avec toi ici."
+   Gains: confiance +4, affection +4, intimité +2
+   
+   Choix C: "Pourquoi fuirais-je quand j'ai une raison de rester ?"
+   Condition: affection minimale 50
+   Gains: affection +5, intimité +4
+
+---
+
+3. TAVERN_LYA_ASKS_BOND - "Crois-tu qu'il y a quelque chose entre nous ? Vraiment ?"
+   Catégorie: relation
+   
+   Choix A: "Je ne sais pas encore... c'est compliqué."
+   Gains: confiance +2, affection +1
+   
+   Choix B: "Oui. Tu comptes beaucoup pour moi."
+   Gains: confiance +5, affection +5, intimité +3
+   
+   Choix C: "Je pense que je suis en train de tomber pour toi."
+   Condition: affection minimale 70, confiance minimale 70
+   Gains: affection +8, intimité +6
+
+---
+
+4. TAVERN_LYA_ASKS_CHOICE - "Si tu devais choisir... le pouvoir ou le bonheur ?"
+   Catégorie: philosophie
+   
+   Choix A: "Le pouvoir. J'ai besoin d'être forte."
+   Gains: respect +3
+   
+   Choix B: "Le bonheur. Qu'est-ce que la force sans lui ?"
+   Gains: affection +3, intimité +2
+   
+   Choix C: "Pourquoi pas les deux ? Avec toi."
+   Condition: affection minimale 60
+   Gains: affection +5, confiance +4, intimité +3
+
+---
+
+5. TAVERN_LYA_ASKS_SACRIFICE - "Sacrifierais-tu quelque chose d'important pour moi ?"
+   Catégorie: philosophie
+   
+   Choix A: "Sans hésiter."
+   Condition: affection minimale 60, confiance minimale 60
+   Gains: confiance +6, affection +6, intimité +5
+   
+   Choix B: "Ça dépend de ce dont tu parles."
+   Gains: confiance +2, affection +1
+   
+   Choix C: "Non. Je dois d'abord penser à moi."
+   Gains: confiance -2, affection -2, colère +2
+
+---
+
+================================================================================
+NOTES POUR CRÉER DE NOUVELLES DIALOGUES
+================================================================================
+
+STRUCTURE QUESTIONS JOUEUR (PLAYER-ASKS):
+- id: tavern_ask_[nom]
+- category: combat, personal, ou philosophy
+- question: La question posée par le joueur
+- baseGains: Gains appliqués à toutes les variantes
+- variants:
+  - Chaque variante a une plage de Confiance [min-max]
+  - Optionnel: plage d'affection
+  - text: Ce que Lya répond
+  - extraGains: Gains supplémentaires pour cette variante
+
+STRUCTURE QUESTIONS LYA (NPC-ASKS):
+- id: tavern_lya_asks_[nom]
+- category: personal, relationship, ou philosophy
+- question: La question posée par Lya
+- playerChoices: 2-3 choix possibles
+  - id: choice_[nom]
+  - text: Ce que le joueur dit
+  - Optionnel: requirements (minTrust, minAffection)
+  - gains: Les gains de confiance/affection/intimité
+
+STATS DISPONIBLES:
+- trust (confiance)
+- affection (affection)
+- respect (respect)
+- intimacy (intimité)
+- anger (colère) - typiquement négatif
+
+CATÉGORIES:
+- combat: questions sur l'entraînement, la force, les batailles
+- personal: questions sur le passé, les peurs, les opinions
+- philosophy: questions sur les valeurs, le futur, les choix
+- relationship: questions sur la relation entre les deux personnages
+
+EXEMPLE DE NOUVELLE QUESTION PLAYER-ASK:
+8. TAVERN_ASK_WEAPON - "Quelle est l'histoire de ton épée ?"
+   Catégorie: combat
+   Gains de base: confiance +2, respect +1
+   
+   [0-40 Confiance] "Un outil. Rien de plus."
+   Gains: confiance +2, respect +1
+   
+   [41-80 Confiance] "Elle a connu de nombreuses batailles. Chaque marque raconte une histoire de survie."
+   Gains: confiance +2, respect +1
+   
+   [81-100 Confiance + 60+ Affection] "Un jour, je te la passerai. Tu mérites une arme digne de ta force."
+   Gains: confiance +2, respect +1, affection +3, intimité +2
+
+EXEMPLE DE NOUVELLE QUESTION NPC-ASK:
+6. TAVERN_LYA_ASKS_LOYALTY - "Serais-tu à mes côtés, quoi qu'il advienne ?"
+   Catégorie: relation
+   
+   Choix A: "Toujours. Tu peux compter sur moi."
+   Gains: confiance +5, affection +4, intimité +3
+   
+   Choix B: "Tant que tu fais ce qui est juste."
+   Gains: confiance +3, affection +1
+   
+   Choix C: "Je ne te connais pas encore assez pour ça."
+   Gains: confiance +1, affection -1
+
+================================================================================
