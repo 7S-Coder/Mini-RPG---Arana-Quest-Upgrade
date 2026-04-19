@@ -19,7 +19,7 @@ interface DialogueViewProps {
   npcId: string;
   onClose: () => void;
   dialogues: SimpleDialogue[];
-  unlockDialogue?: (npcId: string, dialogueId: string) => void;
+  unlockDialogue?: (npcId: string, dialogueId: string, choiceId?: string) => void;
 }
 
 export default function DialogueView({ npcName, npcId, onClose, dialogues, unlockDialogue }: DialogueViewProps) {
@@ -128,11 +128,15 @@ export default function DialogueView({ npcName, npcId, onClose, dialogues, unloc
                 onClick={() => {
                   setChosenResponse(choice.response);
                   setChosenResponseText(choice.text);
+                  // Unlock this choice when selected
+                  if (unlockDialogue && currentDialogue) {
+                    unlockDialogue(npcId, currentDialogue.id, choice.id);
+                  }
                   setStage('choice-selected');
                 }}
                 style={{
                   padding: '12px 16px',
-                  backgroundColor: 'rgba(100, 150, 200, 0.2)',
+                  backgroundColor: 'rgba(100, 150, 200, 0.3)',
                   border: '1px solid rgba(100, 150, 200, 0.4)',
                   borderRadius: '6px',
                   color: '#e0e0e0',

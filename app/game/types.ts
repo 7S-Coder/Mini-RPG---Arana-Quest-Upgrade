@@ -1,13 +1,13 @@
 export type Rarity = "common" | "uncommon" | "rare" | "epic" | "legendary" | "mythic";
 
-export type EquipmentSlot = "familiar" | "boots" | "belt" | "hat" | "chestplate" | "ring" | "weapon" | "key";
+export type EquipmentSlot = "familiar" | "boots" | "belt" | "hat" | "chestplate" | "ring" | "weapon" | "weapon2" | "shield" | "key";
 
 export type Item = {
   id: string;
   slot: EquipmentSlot | "consumable";
   name: string;
   rarity: Rarity;
-  category?: "weapon" | "armor" | "accessory" | "pet" | "consumable";
+  category?: "weapon" | "armor" | "accessory" | "shield" | "pet" | "consumable";
   cost?: number;
   stats?: Record<string, number>;
   weight?: number;
@@ -53,6 +53,7 @@ export type Player = {
   def: number;
   speed: number; // px per second
   regen?: number; // hp regeneration per second (out of combat)
+  resolve?: number; // mental fortitude — reduces rage, prevents fatal damage at 20+
   lastLevelUpAt?: number | null;
   gold?: number;
   essence?: number; // new currency for future essences
@@ -69,8 +70,9 @@ export type Player = {
   };
   // equipped weapon (defaults to barehand if not set)
   equippedWeapon?: EquippedWeapon;
-  // tracking unlocked dialogues: { npcId: [dialogueIds] }
-  unlockedDialogues?: Record<string, string[]>;
+  // tracking unlocked dialogues: { npcId: { dialogueId: [unlockedChoiceIds] } }
+  // For dialogues without choices, choiceIds will be empty array (dialogue itself is unlocked)
+  unlockedDialogues?: Record<string, Record<string, string[]>>;
 };
 
 export type ItemTemplate = Omit<Item, "id" | "rarity"> & { weight?: number; rarity?: Rarity; allowedMaps?: string[]; weaponType?: WeaponType };

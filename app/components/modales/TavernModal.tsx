@@ -22,7 +22,8 @@ interface TavernModalProps {
     trust: number;
     affection: number;
   };
-  unlockDialogue?: (npcId: string, dialogueId: string) => void;
+  unlockDialogue?: (npcId: string, dialogueId: string, choiceId?: string) => void;
+  unlockedDialogues?: Record<string, Record<string, string[]>>;
 }
 
 const TAVERN_NPCS: NPC[] = [
@@ -56,7 +57,7 @@ const TAVERN_NPCS: NPC[] = [
   },
 ];
 
-export default function TavernModal({ isOpen, onClose, playerLevel, lyaStats, unlockDialogue }: TavernModalProps) {
+export default function TavernModal({ isOpen, onClose, playerLevel, lyaStats, unlockDialogue, unlockedDialogues = {} }: TavernModalProps) {
   const [selectedNPC, setSelectedNPC] = useState<string | null>(null);
   const [inDialogue, setInDialogue] = useState(false);
 

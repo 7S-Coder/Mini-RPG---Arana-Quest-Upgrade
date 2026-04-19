@@ -59,12 +59,14 @@ export default function NarrationsModal({ unlockedLevels, unlockedDialogues = {}
   }, [unlockedLevels]);
 
   // Organize unlocked dialogues by NPC
+  // unlockedDialogues is now: { npcId: { dialogueId: [unlockedChoiceIds] } }
   const organizedDialogues = useMemo(() => {
     const result: Record<string, SimpleDialogue[]> = {};
     
-    for (const [npcId, dialogueIds] of Object.entries(unlockedDialogues || {})) {
+    for (const [npcId, dialoguesData] of Object.entries(unlockedDialogues || {})) {
       const npcAllDialogues = allDialogues?.[npcId] || [];
-      result[npcId] = npcAllDialogues.filter((d) => dialogueIds.includes(d.id));
+      // Filter to only dialogues that are unlocked (exist in dialoguesData)
+      result[npcId] = npcAllDialogues.filter((d) => dialoguesData && d.id in dialoguesData);
     }
     
     return result;
@@ -81,7 +83,8 @@ export default function NarrationsModal({ unlockedLevels, unlockedDialogues = {}
   const unlockedNarrationCount = unlockedNarrations.length;
   const totalNarrationCount = Object.keys(LEVEL_MILESTONES).length;
 
-  const totalUnlockedDialogues = Object.values(unlockedDialogues || {}).reduce((sum, ids) => sum + ids.length, 0);
+  // Count total unlocked dialogues (sum of all dialogue IDs that are unlocked for each NPC)
+  const totalUnlockedDialogues = Object.values(unlockedDialogues || {}).reduce((sum, npcData) => sum + Object.keys(npcData || {}).length, 0);
   const totalPossibleDialogues = Object.values(allDialogues || {}).reduce((sum, dialogues) => sum + dialogues.length, 0);
 
   return (
@@ -226,40 +229,47 @@ export default function NarrationsModal({ unlockedLevels, unlockedDialogues = {}
                         {NPC_NAMES[npcId] || npcId}
                       </h3>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                        {dialogues.map((dialogue) => (
-                          <div
-                            key={dialogue.id}
-                            style={{
-                              padding: '12px',
-                              backgroundColor: 'rgba(30, 40, 50, 0.6)',
-                              border: '1px solid rgba(100, 150, 200, 0.2)',
-                              borderRadius: '6px',
-                            }}
-                          >
-                            <div style={{ fontSize: '11px', color: '#999', marginBottom: '6px', fontStyle: 'italic' }}>
-                              {dialogue.type === 'player' ? 'You asked' : 'They asked'}
-                            </div>
-                            <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '8px', lineHeight: '1.6' }}>
-                              <strong>Q:</strong> "{dialogue.question}"
-                            </div>
-                            <div style={{ fontSize: '13px', color: '#d0d0d0', lineHeight: '1.6' }}>
-                              <strong>A:</strong> "{dialogue.response || (dialogue.choices ? '[Multiple responses]' : '')}"
-                            </div>
-                            {dialogue.choices && dialogue.choices.length > 0 && (
-                              <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(100, 150, 200, 0.15)' }}>
-                                <div style={{ fontSize: '11px', color: '#999', marginBottom: '6px' }}>Your choices & her responses:</div>
-                                {dialogue.choices.map((choice) => (
-                                  <div key={choice.id} style={{ fontSize: '12px', color: '#c0c0c0', marginBottom: '8px' }}>
-                                    <div style={{ color: '#b0b0b0', marginBottom: '2px' }}>• {choice.text}</div>
-                                    <div style={{ fontSize: '11px', color: '#a0a0a0', marginLeft: '16px', fontStyle: 'italic' }}>
-                                      → "{choice.response}"
-                                    </div>
-                                  </div>
-                                ))}
+                        {dialogues.map((dialogue) => {
+                          const unlockedChoices = (unlockedDialogues?.[npcId]?.[dialogue.id] || []);
+                          const displayChoices = dialogue.choices?.filter(c => unlockedChoices.includes(c.id)) || [];
+                          
+                          return (
+                            <div
+                              key={dialogue.id}
+                              style={{
+                                padding: '12px',
+                                backgroundColor: 'rgba(30, 40, 50, 0.6)',
+                                border: '1px solid rgba(100, 150, 200, 0.2)',
+                                borderRadius: '6px',
+                              }}
+                            >
+                              <div style={{ fontSize: '11px', color: '#999', marginBottom: '6px', fontStyle: 'italic' }}>
+                                {dialogue.type === 'player' ? 'You asked' : 'They asked'}
                               </div>
-                            )}
-                          </div>
-                        ))}
+                              <div style={{ fontSize: '13px', color: '#e0e0e0', marginBottom: '8px', lineHeight: '1.6' }}>
+                                <strong>Q:</strong> "{dialogue.question}"
+                              </div>
+                              <div style={{ fontSize: '13px', color: '#d0d0d0', lineHeight: '1.6' }}>
+                                <strong>A:</strong> "{dialogue.response || (displayChoices.length > 0 ? '[Responses]' : '')}"
+                              </div>
+                              {displayChoices.length > 0 && (
+                                <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid rgba(100, 150, 200, 0.15)' }}>
+                                  <div style={{ fontSize: '11px', color: '#999', marginBottom: '6px' }}>
+                                    Your choices & her responses: ({displayChoices.length}/{dialogue.choices?.length || 0})
+                                  </div>
+                                  {displayChoices.map((choice) => (
+                                    <div key={choice.id} style={{ fontSize: '12px', color: '#c0c0c0', marginBottom: '8px' }}>
+                                      <div style={{ color: '#b0b0b0', marginBottom: '2px' }}>• {choice.text}</div>
+                                      <div style={{ fontSize: '11px', color: '#a0a0a0', marginLeft: '16px', fontStyle: 'italic' }}>
+                                        → "{choice.response}"
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   )

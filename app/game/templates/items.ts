@@ -1,6 +1,6 @@
 import { ItemTemplate, Rarity } from '../types';
 
-export const SLOTS = ["familiar", "boots", "belt", "hat", "chestplate", "ring", "weapon"] as const;
+export const SLOTS = ["familiar", "boots", "belt", "hat", "chestplate", "ring", "weapon", "weapon2", "shield"] as const;
 
 export const ITEM_POOL: ItemTemplate[] = [
     //Chapeaux
@@ -73,6 +73,15 @@ export const ITEM_POOL: ItemTemplate[] = [
     { slot: "weapon", name: "Breaking", category: "weapon", weaponType: "axe", stats: { dmg: 7, def: 4 }, weight: 5, rarity: "rare", allowedMaps: ["forest", "caves", "ruins", "volcano"], description: "Boss Damage: +25% vs Bosses | Penetration: 25% def ignore" },
     { slot: "weapon", name: "Memoir of Ferre", category: "weapon", weaponType: "axe", stats: { dmg: 14, def: 6 }, weight: 5, rarity: "legendary", allowedMaps: ["ruins", "volcano"], description: "Boss Damage: +50% vs Bosses | Penetration: 25% def ignore" },
     { slot: "weapon", name: "Garzen", category: "weapon", weaponType: "axe", stats: { dmg: 16, def: 5 }, weight: 5, rarity: "legendary", allowedMaps: [ "ruins", "volcano"], description: "Boss Damage: +50% vs Bosses | Penetration: 25% def ignore" },
+    
+    // Shields
+    { slot: "shield", name: "Wooden Buckler", category: "shield", stats: { def: 2, dodge: 1 }, weight: 4, rarity: "common", allowedMaps: ["spawn", "forest", "caves", "ruins", "volcano"], description: "Light and basic protection." },
+    { slot: "shield", name: "Iron Shield", category: "shield", stats: { def: 4, hp: 2 }, weight: 6, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins", "volcano"], description: "Reliable defense for the cautious." },
+    { slot: "shield", name: "Guardian's Aegis", category: "shield", stats: { def: 6, hp: 4, regen: 1 }, weight: 6, rarity: "rare", allowedMaps: ["forest", "caves", "ruins", "volcano"], description: "Those behind it may rest." },
+    { slot: "shield", name: "Sentinel's Bastion", category: "shield", stats: { def: 9, hp: 6, dodge: 3 }, weight: 6, rarity: "epic", allowedMaps: ["forest", "caves", "ruins", "volcano"], description: "A wall made manifest." },
+    { slot: "shield", name: "Fortress Shell", category: "shield", stats: { def: 14, hp: 10, resolve: 4 }, weight: 7, rarity: "legendary", allowedMaps: ["ruins", "volcano"], description: "The last things standing often stand alone." },
+    { slot: "shield", name: "Aegis of Eternity", category: "shield", stats: { def: 20, hp: 15, resolve: 8, dodge: 5 }, weight: 7, rarity: "mythic", allowedMaps: ["volcano", "burning_throne"], description: "What is protected endures beyond the protector." },
+    
     // Familiers
   { slot: "familiar", name: "Ash Crow", category: "pet", stats: { dodge: 6, speed: 2, regen: 1 }, weight: 2, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins", "volcano"], description: "Winter never takes its time." },
   { slot: "familiar", name: "Lame Cat", category: "pet", stats: { hp: 3, resolve: 1, regen: 2 }, weight: 2, rarity: "uncommon", allowedMaps: ["forest", "caves", "ruins", "volcano"], description: "We're barely surviving, but we're surviving." },

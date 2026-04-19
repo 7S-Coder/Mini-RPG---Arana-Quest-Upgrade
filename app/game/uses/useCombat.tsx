@@ -68,21 +68,10 @@ export default function useCombat({
     return equippedWeapon?.weaponType || 'barehand';
   }, [equipment]);
 
-  // Helper: Get total resolve from player base stats + equipment
+  // Helper: Get total resolve (already computed from equipment + base in useGameState)
   const getTotalResolve = useCallback(() => {
-    let total = player?.resolve ?? 0;
-    // Add resolve from all equipped items
-    if (equipment) {
-      const slots = ['hat', 'boots', 'belt', 'chestplate', 'ring', 'familiar'] as const;
-      for (const slot of slots) {
-        const item = equipment[slot];
-        if (item?.stats?.resolve) {
-          total += item.stats.resolve;
-        }
-      }
-    }
-    return total;
-  }, [player, equipment]);
+    return player?.resolve ?? 0;
+  }, [player]);
 
   // Helper: Calculate bonus hits chance based on speed
   // Formula: clamp(speed / 200, 0, 0.5) = max 50% chance for bonus hit
@@ -678,19 +667,23 @@ export default function useCombat({
       // Quick attack has no cooldown
     }
 
-    // Apply passive rage gain to all alive enemies (20% = +20 rage per turn)
-    // ANTI-RAGE SKILL: Prevent the +20% passive rage boost
+    // Apply passive rage gain to all alive enemies (20 rage per turn base)
+    // ANTI-RAGE SKILL: Prevent the passive rage boost
     // RESOLVE STAT: Reduce rage gain by resolve percentage (0-100%)
+    // MULTI-ENEMY CAP: Total passive rage capped at 30 per turn, divided among alive enemies
     let passiveRageGain = hasWeaponSkillByType(getEquippedWeaponType(), 'anti_rage') ? 0 : 20;
     const resolveValue = getTotalResolve();
     const rageReduction = Math.min(100, resolveValue); // Clamp resolve to 100% max
     passiveRageGain = Math.round(passiveRageGain * (1 - rageReduction / 100));
-    
-    setEnemies((currentEnemies: Enemy[]) =>
-      currentEnemies.map((e) =>
-        e.hp > 0 ? { ...e, rage: Math.min(100, (e.rage ?? 0) + passiveRageGain) } : e
-      )
-    );
+
+    setEnemies((currentEnemies: Enemy[]) => {
+      const aliveCount = currentEnemies.filter((e) => e.hp > 0).length;
+      // Cap total passive rage at 30 per turn when multiple enemies are alive
+      const perEnemyRage = aliveCount > 1 ? Math.floor(Math.min(30, passiveRageGain * aliveCount) / aliveCount) : passiveRageGain;
+      return currentEnemies.map((e) =>
+        e.hp > 0 ? { ...e, rage: Math.min(100, (e.rage ?? 0) + perEnemyRage) } : e
+      );
+    });
 
     // finalize: small delay to allow UI updates then release lock
     setTimeout(() => {
@@ -767,17 +760,23 @@ export default function useCombat({
       }
     }
 
-    // Apply passive rage gain to all alive enemies even on failed run
-    setEnemies((currentEnemies: Enemy[]) =>
-      currentEnemies.map((e) =>
-        e.hp > 0 ? { ...e, rage: Math.min(100, (e.rage ?? 0) + 20) } : e
-      )
-    );
+    // Apply passive rage gain to all alive enemies even on failed run (capped at 30 total)
+    setEnemies((currentEnemies: Enemy[]) => {
+      const aliveCount = currentEnemies.filter((e) => e.hp > 0).length;
+      const baseRage = hasWeaponSkillByType(getEquippedWeaponType(), 'anti_rage') ? 0 : 20;
+      const resolveVal = getTotalResolve();
+      const rageRed = Math.min(100, resolveVal);
+      let rageGain = Math.round(baseRage * (1 - rageRed / 100));
+      const perEnemyRage = aliveCount > 1 ? Math.floor(Math.min(30, rageGain * aliveCount) / aliveCount) : rageGain;
+      return currentEnemies.map((e) =>
+        e.hp > 0 ? { ...e, rage: Math.min(100, (e.rage ?? 0) + perEnemyRage) } : e
+      );
+    });
 
     setTimeout(() => {
       lockedRef.current = false;
     }, 120);
-  }, [enemies, setPlayer, pushLog, endEncounter, rollChance, calcDamage]);
+  }, [enemies, setPlayer, pushLog, endEncounter, rollChance, calcDamage, hasWeaponSkillByType, getEquippedWeaponType, getTotalResolve]);
 
   return { onAttack, onRun } as const;
 }

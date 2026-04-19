@@ -464,8 +464,9 @@ export default function Game() {
       clearTimeout(logClearRef.current);
       logClearRef.current = null;
     }
-    // determine count based on dungeon state: normal area random 1-3, dungeon rooms fixed 4, boss room single
-    let count = 1 + Math.floor(Math.random() * 3);
+    // determine count based on dungeon state: weighted random (40% 1 enemy, 35% 2, 25% 3), dungeon rooms fixed 4, boss room single
+    const spawnRoll = Math.random();
+    let count = spawnRoll < 0.40 ? 1 : spawnRoll < 0.75 ? 2 : 3;
     
     // Apply event modifiers to spawn count
     const eventEffects = getActiveEventEffects();
@@ -546,7 +547,7 @@ export default function Game() {
           const mapId = selectedMapId ?? 'unknown';
           const dungeonId = (selectedMap?.dungeons && typeof idx === 'number') ? selectedMap.dungeons[idx].id : undefined;
           const roomId = dungeonId ? `${mapId}_${dungeonId}_floor_${dungeonCurrentFloor}` : undefined;
-          spawnEnemy(tid, undefined, { isBoss, roomId, mapId: selectedMapId ?? undefined });
+          spawnEnemy(tid, undefined, { isBoss, roomId, mapId: selectedMapId ?? undefined, totalCount: count });
           spawned++;
         }
       }
@@ -563,7 +564,7 @@ export default function Game() {
               const mapId = selectedMapId ?? 'unknown';
               const dungeonId = (selectedMap?.dungeons && typeof idx === 'number') ? selectedMap.dungeons[idx].id : undefined;
               const roomId = dungeonId ? `${mapId}_${dungeonId}_floor_${dungeonCurrentFloor}` : undefined;
-              spawnEnemy(bossId, undefined, { isBoss: true, roomId, mapId: selectedMapId ?? undefined });
+              spawnEnemy(bossId, undefined, { isBoss: true, roomId, mapId: selectedMapId ?? undefined, totalCount: count });
               spawned++;
             }
           }
@@ -588,7 +589,7 @@ export default function Game() {
                 const tpl = ENEMY_TEMPLATES.find((t) => t.templateId === tid);
                 const tplBelongs = roomObj ? true : (selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid)) : !!tpl);
                 if (tplBelongs) {
-                  spawnEnemy(tid, undefined, { isBoss: !!roomObj?.isBossRoom, roomId, mapId: selectedMapId ?? undefined });
+                  spawnEnemy(tid, undefined, { isBoss: !!roomObj?.isBossRoom, roomId, mapId: selectedMapId ?? undefined, totalCount: count });
                   spawned++;
                 } else {
                   }
@@ -600,7 +601,7 @@ export default function Game() {
                   const areaName = selectedMap?.name ?? 'Spawn';
                   const tplBelongs = selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid2)) : !!tpl;
                   if (tplBelongs) {
-                    spawnEnemy(tid2, undefined, { mapId: selectedMapId ?? undefined });
+                    spawnEnemy(tid2, undefined, { mapId: selectedMapId ?? undefined, totalCount: count });
                     spawned++;
                   } else {
                     }
@@ -616,7 +617,7 @@ export default function Game() {
               const areaName = selectedMap?.name ?? 'Spawn';
               const tplBelongs = selectedMap ? (tpl && selectedMap?.enemyPool && selectedMap.enemyPool.includes(tid)) : !!tpl;
               if (tplBelongs) {
-                spawnEnemy(tid, undefined, { mapId: selectedMapId ?? undefined });
+                spawnEnemy(tid, undefined, { mapId: selectedMapId ?? undefined, totalCount: count });
                 spawned++;
               } else {
                }
@@ -664,11 +665,10 @@ export default function Game() {
     // spawn a single gold pickup for the encounter (sum of per-enemy dust)
     // Do NOT award gold when the encounter ends due to fleeing.
     if (opts?.type !== 'flee') {
-      // Reduced drop rates: much smaller gold per enemy (drastic reduction)
+      // Gold drop per enemy: 1.50 - 6.00 g
       const count = encounterCountRef.current || 0;
       let total = 0;
-      // per enemy: 0.05 - 0.20 g
-      for (let i = 0; i < count; i++) total += (Math.random() * (0.20 - 0.05) + 0.05);
+      for (let i = 0; i < count; i++) total += (Math.random() * (6.00 - 1.50) + 1.50);
       total = Number(total.toFixed(2));
       try {
         spawnGoldPickup(total, player.x, player.y);
@@ -714,7 +714,7 @@ export default function Game() {
             try {
               addToast('VICTORY! You have conquered the world!', 'ok', 5000);
               pushLog('▓▓▓▓▓ VICTORY ▓▓▓▓▓');
-              pushLog('You have defeated the Fire Overlord and saved the world!');
+              pushLog('You have defeated the Fire Overlord and maybe saved the world?');
               pushLog('Congratulations on completing Arena Quest!');
               addEffect({ type: 'explosion', text: 'VICTORY!', target: 'player' });
             } catch (e) {}
@@ -982,7 +982,7 @@ export default function Game() {
       {/* debug overlay removed in production */}
       <header className="app-header">
         <h1>Arena Quest</h1>
-        <p className="subtitle">Adventure mmorpg - v0.30</p>
+        <p className="subtitle">Adventure mmorpg - v0.50</p>
         <div style={{ position: 'absolute', right: 28, top: 50, transform: 'translateY(-50%)', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
           Press <span style={{ background: '#a8563837', border: '1px solid #a85638ff', borderRadius: '4px', padding: '0.2rem 0.4rem', fontFamily: 'monospace' }}>ESC</span> to pause
         </div>
@@ -1200,7 +1200,14 @@ export default function Game() {
         <NarrationsModal 
           onClose={closeModal} 
           unlockedLevels={unlockedLevels}
-          unlockedDialogues={player.unlockedDialogues || {}}
+          unlockedDialogues={
+            player.unlockedDialogues 
+              ? Object.entries(player.unlockedDialogues).reduce((acc, [npc, dialogues]) => {
+                  acc[npc] = Object.values(dialogues).flat();
+                  return acc;
+                }, {} as Record<string, string[]>)
+              : {}
+          }
           allDialogues={loadAllDialoguesByNPC()}
         />
       )}
@@ -1216,6 +1223,7 @@ export default function Game() {
             playerLevel={player.level}
             lyaStats={lya ? { trust: lya.trust, affection: lya.affection } : undefined}
             unlockDialogue={unlockDialogue}
+            unlockedDialogues={player.unlockedDialogues || {}}
           />
         );
       })()}

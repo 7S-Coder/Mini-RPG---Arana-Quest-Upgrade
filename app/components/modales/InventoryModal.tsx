@@ -58,9 +58,11 @@ const SLOT_LABELS: Record<string, string> = {
   chestplate: 'Chest',
   ring: 'Ring',
   weapon: 'Weapon',
+  weapon2: 'Weapon 2',
+  shield: 'Shield',
 };
 
-const SLOT_ORDER = ['hat', 'chestplate', 'belt', 'weapon', 'ring', 'familiar','boots' ];
+const SLOT_ORDER = ['hat', 'chestplate', 'belt', 'weapon', 'weapon2', 'shield', 'ring', 'familiar','boots' ];
 
 export default function InventoryModal({ inventory, equipment, player, onEquip, onUnequip, onSell, onUse, onForge, onUpgradeStat, onLockStat, onInfuse, onMythicEvolution, onClose, progression, allocate, deallocate }: Props) {
   React.useEffect(() => { try { console.log('[InventoryModal] progression changed ->', progression); } catch (e) {} }, [progression]);
@@ -106,6 +108,41 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
       .map(([k, v]) => `${k} +${v}`)
       .join(', ');
     return statsList || 'No special effects.';
+  };
+
+  // Check if an item can be equipped in weapon2 slot
+  const canEquipWeapon2 = (item: any): boolean => {
+    if (item.slot !== 'weapon2') return true;
+    const primaryWeapon = (equipment as any)?.weapon;
+    const isSpear = primaryWeapon?.weaponType === 'spear';
+    const isDagger = item.weaponType === 'dagger';
+    const primaryIsDagger = primaryWeapon?.weaponType === 'dagger';
+    return isSpear || (isDagger && primaryIsDagger);
+  };
+
+  const getWeapon2Warning = (item: any): string | null => {
+    if (item.slot !== 'weapon2') return null;
+    const primaryWeapon = (equipment as any)?.weapon;
+    if (!primaryWeapon) return 'Equip a spear or dagger first';
+    const isSpear = primaryWeapon.weaponType === 'spear';
+    const isDagger = item.weaponType === 'dagger';
+    const primaryIsDagger = primaryWeapon.weaponType === 'dagger';
+    if (!isSpear && !(isDagger && primaryIsDagger)) {
+      return `Only available with spear or dual daggers`;
+    }
+    return null;
+  };
+
+  // Check if a slot should be displayed
+  const shouldDisplaySlot = (slot: string): boolean => {
+    if (slot === 'weapon2') {
+      const primaryWeapon = (equipment as any)?.weapon;
+      if (!primaryWeapon) return false;
+      const isSpear = primaryWeapon.weaponType === 'spear';
+      const primaryIsDagger = primaryWeapon.weaponType === 'dagger';
+      return isSpear || primaryIsDagger;
+    }
+    return true;
   };
 
   const forgeGroups = React.useMemo(() => {
@@ -300,6 +337,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                     <div style={{ width: '100%' }}>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.8vw', gridAutoRows: '6vw', alignItems: 'stretch', position: 'relative', overflow: 'visible' }}>
                         {SLOT_ORDER.map((slot) => {
+                          if (!shouldDisplaySlot(slot)) return null;
                           const it = (equipment as any)[slot];
                           const spanStyle: React.CSSProperties = slot === 'hat' ? { gridColumn: '1 / -1' } : {};
                           const tooltipId = `weapon-${slot}`;
@@ -409,7 +447,13 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                                 {it.category === 'consumable' ? (
                                   <button type="button" onClick={(e) => { e.stopPropagation(); if (!onUse) return; setTimeout(() => { try { const res = onUse(it.id); Promise.resolve(res).then(() => {}); } catch {} }, 0); }}>Use</button>
                                 ) : it.slot === 'key' ? null : (
-                                  <button type="button" onClick={(e) => { e.stopPropagation(); if (!onEquip) return; setTimeout(() => { try { onEquip(it); } catch {} }, 0); }}>Equip ({SLOT_LABELS[it.slot] ?? it.slot})</button>
+                                  <>
+                                    {it.slot === 'weapon2' && !canEquipWeapon2(it) ? (
+                                      <button type="button" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }} title={getWeapon2Warning(it) || ''}>Equip ({SLOT_LABELS[it.slot] ?? it.slot})</button>
+                                    ) : (
+                                      <button type="button" onClick={(e) => { e.stopPropagation(); if (!onEquip) return; setTimeout(() => { try { onEquip(it); } catch {} }, 0); }}>Equip ({SLOT_LABELS[it.slot] ?? it.slot})</button>
+                                    )}
+                                  </>
                                 )}
                                 <button type="button" onClick={(e) => { e.stopPropagation(); if (!onSell) return; setTimeout(() => { try { onSell(it.id); } catch {} }, 0); }}>Sell ({priceFor(it)} g)</button>
                               </div>

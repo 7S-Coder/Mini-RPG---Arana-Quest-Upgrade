@@ -70,6 +70,8 @@ export function useGameState() {
     chestplate: null,
     ring: null,
     weapon: null,
+    weapon2: null,
+    shield: null,
     key: null,
   });
   const equipmentRef = useRef<typeof equipment>(equipment);
@@ -141,7 +143,7 @@ export function useGameState() {
 
         if (gained > 0) {
           // recalc stats from base and new level (small per-level increases)
-          const newMaxHp = BASE_HP + Math.floor((lvl - 1) * 4); // +4 HP per level
+          const newMaxHp = BASE_HP + Math.floor((lvl - 1) * 6); // +6 HP per level
           const newDmg = BASE_DMG + Math.floor((lvl - 1) * 0.2); // +1 DMG every ~5 levels
           const newDef = BASE_DEF + Math.floor((lvl - 1) * 0.05); // +1 DEF every 20 levels
           const newDodge = BASE_DODGE + Math.floor((lvl - 1) * 0.03);
@@ -1271,6 +1273,37 @@ export function useGameState() {
       try { console.warn('Cannot equip consumable items'); } catch (e) {}
       return false;
     }
+
+    // LOGIC FOR WEAPON2 SLOT
+    // weapon2 is only allowed when:
+    // 1. Primary weapon is a spear (lance), OR
+    // 2. Both weapons are daggers
+    if (item.slot === 'weapon2') {
+      const primaryWeapon = (equipmentRef.current || {})['weapon'];
+      const isSpear = primaryWeapon?.weaponType === 'spear';
+      const isDagger = item.weaponType === 'dagger';
+      const primaryIsDagger = primaryWeapon?.weaponType === 'dagger';
+
+      if (!isSpear && !(isDagger && primaryIsDagger)) {
+        try { console.warn('Cannot equip secondary weapon: only allowed with spear or dual daggers'); } catch (e) {}
+        return false;
+      }
+    }
+
+    // If trying to equip a primary weapon, check if it allows weapon2
+    if (item.slot === 'weapon') {
+      const currentWeapon2 = (equipmentRef.current || {})['weapon2'];
+      const isSpear = item.weaponType === 'spear';
+      const isDagger = item.weaponType === 'dagger';
+
+      // If weapon2 is equipped and new weapon doesn't allow it, unequip weapon2
+      if (currentWeapon2 && !isSpear && !(isDagger && currentWeapon2.weaponType === 'dagger')) {
+        // Unequip weapon2 first
+        setEquipment((prev) => ({ ...prev, weapon2: null }));
+        if (currentWeapon2) addToInventory(currentWeapon2);
+      }
+    }
+
     const currentEquipped = (equipmentRef.current || {})[item.slot as EquipmentSlot];
 
     // update equipment (pure)
@@ -1344,14 +1377,14 @@ export function useGameState() {
   // Recompute derived player stats from base values + equipment whenever equipment or level changes
   useEffect(() => {
     const lvl = player.level;
-    const baseMaxHp = BASE_HP + Math.floor((lvl - 1) * 4);
+    const baseMaxHp = BASE_HP + Math.floor((lvl - 1) * 6);
     const baseDmg = BASE_DMG + Math.floor((lvl - 1) * 0.2);
     const baseDef = BASE_DEF + Math.floor((lvl - 1) * 0.05);
     const baseDodge = BASE_DODGE + Math.floor((lvl - 1) * 0.03);
     const baseCrit = BASE_CRIT + Math.floor((lvl - 1) * 0.02);
     const baseRegen = BASE_REGEN + Math.floor((lvl - 1) * 0.05);
 
-    const acc: Record<string, number> = { hp: 0, dmg: 0, def: 0, dodge: 0, crit: 0, regen: 0 };
+    const acc: Record<string, number> = { hp: 0, dmg: 0, def: 0, dodge: 0, crit: 0, regen: 0, resolve: 0 };
     for (const v of Object.values(equipment)) {
       if (!v || !v.stats) continue;
       for (const [k, val] of Object.entries(v.stats)) {
@@ -1388,6 +1421,7 @@ export function useGameState() {
         dodge: Math.max(0, Number((baseDodge + (acc.dodge || 0)).toFixed(2))),
         crit: Math.max(0, Number((baseCrit + (acc.crit || 0)).toFixed(2))),
         regen: Math.max(0, Number((baseRegen + (acc.regen || 0)).toFixed(2))),
+        resolve: Math.max(0, Math.round(acc.resolve || 0)),
       } as Player;
     });
   }, [equipment, player.level, progression]);
@@ -1399,7 +1433,7 @@ export function useGameState() {
     enemiesRef.current = enemies;
   }, [enemies]);
 
-  const spawnEnemy = (templateOverride?: string, levelOverride?: number, meta?: { isBoss?: boolean; roomId?: string; mapId?: string }) => {
+  const spawnEnemy = (templateOverride?: string, levelOverride?: number, meta?: { isBoss?: boolean; roomId?: string; mapId?: string; totalCount?: number }) => {
     // pick a template (optionally by templateId)
     let template = undefined as any;
     if (templateOverride) {
@@ -1443,8 +1477,13 @@ export function useGameState() {
     const rarityDmgMult: Record<string, number> = { common: 1, uncommon: 1.03, rare: 1.06, epic: 1.15, legendary: 1.3, mythic: 1.7 };
     const rarityDefMult: Record<string, number> = { common: 1, uncommon: 1.01, rare: 1.02, epic: 1.08, legendary: 1.18, mythic: 1.35 };
 
-    const hp = Math.max(6, Math.round(8 + Math.pow(level, 1.2) * (3 + Math.random() * 3) * rarityHpMult[rarity] * r2));
-    const dmg = Math.max(1, Math.round(level * (0.6 + Math.random() * 1.0) * rarityDmgMult[rarity] * r1));
+    // Multi-enemy malus: reduce stats when multiple enemies spawn together
+    const tc = meta?.totalCount ?? 1;
+    const hpMalus = tc >= 3 ? 0.80 : tc >= 2 ? 0.90 : 1.0;
+    const dmgMalus = tc >= 3 ? 0.75 : tc >= 2 ? 0.90 : 1.0;
+
+    const hp = Math.max(6, Math.round((8 + Math.pow(level, 1.2) * (3 + Math.random() * 3) * rarityHpMult[rarity] * r2) * hpMalus));
+    const dmg = Math.max(1, Math.round(level * (0.6 + Math.random() * 1.0) * rarityDmgMult[rarity] * r1 * dmgMalus));
     const def = Math.max(0, Math.round(level * (0.2 + Math.random() * 0.4) * rarityDefMult[rarity] * r3));
 
     const inst: Enemy = {
@@ -1715,21 +1754,42 @@ export function useGameState() {
 
   const isInCombat = () => (enemiesRef.current && enemiesRef.current.length > 0);
 
-  // Track unlocked dialogue
-  const unlockDialogue = (npcId: string, dialogueId: string) => {
+  // Track unlocked dialogue (with optional choice ID for NPC asks)
+  const unlockDialogue = (npcId: string, dialogueId: string, choiceId?: string) => {
     setPlayer((prev) => {
       const unlockedDialogues = prev.unlockedDialogues || {};
-      const npcDialogues = unlockedDialogues[npcId] || [];
+      const npcDialogues = unlockedDialogues[npcId] || {};
+      const dialogueChoices = npcDialogues[dialogueId] || [];
       
-      // Only add if not already unlocked
-      if (!npcDialogues.includes(dialogueId)) {
-        return {
-          ...prev,
-          unlockedDialogues: {
-            ...unlockedDialogues,
-            [npcId]: [...npcDialogues, dialogueId],
-          },
-        };
+      // If choiceId provided (NPC ask), add to choices list
+      // If no choiceId (player ask or no choices), mark dialogue as fully unlocked
+      if (choiceId) {
+        if (!dialogueChoices.includes(choiceId)) {
+          return {
+            ...prev,
+            unlockedDialogues: {
+              ...unlockedDialogues,
+              [npcId]: {
+                ...npcDialogues,
+                [dialogueId]: [...dialogueChoices, choiceId],
+              },
+            },
+          };
+        }
+      } else {
+        // No choiceId = dialogue unlocked entirely (player ask or single response)
+        if (!npcDialogues[dialogueId]) {
+          return {
+            ...prev,
+            unlockedDialogues: {
+              ...unlockedDialogues,
+              [npcId]: {
+                ...npcDialogues,
+                [dialogueId]: [],
+              },
+            },
+          };
+        }
       }
       return prev;
     });
