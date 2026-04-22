@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useCallback } from "react";
 import GoldSVG from "@/app/assets/gold.svg";
 import EnemiesRow from "../enemys/EnemiesRow";
 import LogMessages from "../LogMessages";
@@ -43,6 +43,27 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
   };
 
   const arenaStyle = logColor ? { backgroundColor: hexToRgba(logColor, 0.08) } : undefined;
+
+  // Spacebar shortcut: collect all pickups when ≥2 are present
+  const doCollectAll = useCallback(() => {
+    if (collectAllPickups && pickups.length >= 2) {
+      try { collectAllPickups((m) => { try { pushLog && pushLog(m); } catch (e) {} }); } catch (e) { console.error(e); }
+    }
+  }, [collectAllPickups, pickups, pushLog]);
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key !== ' ') return;
+      const active = document.activeElement as HTMLElement | null;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as any).isContentEditable)) return;
+      if (pickups.length >= 2 && collectAllPickups) {
+        e.preventDefault();
+        doCollectAll();
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [doCollectAll, pickups, collectAllPickups]);
 
   return (
     <section className="arena-panel" style={arenaStyle}>

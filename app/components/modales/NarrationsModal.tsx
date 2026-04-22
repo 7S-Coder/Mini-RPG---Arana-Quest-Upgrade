@@ -20,7 +20,7 @@ interface SimpleDialogue {
 
 interface NarrationsModalProps {
   unlockedLevels: number[];
-  unlockedDialogues?: Record<string, string[]>;
+  unlockedDialogues?: Record<string, Record<string, string[]>>;
   allDialogues?: Record<string, SimpleDialogue[]>;
   onClose: () => void;
 }

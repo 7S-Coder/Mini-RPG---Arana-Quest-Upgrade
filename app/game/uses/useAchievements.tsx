@@ -148,6 +148,14 @@ export function useAchievements() {
   // --- Methods: Achievement unlock logic ---
 
   /**
+   * Count total seen dialogue entries across all NPCs
+   */
+  const countDialogues = (unlockedDialogues?: Record<string, Record<string, string[]>>): number => {
+    if (!unlockedDialogues) return 0;
+    return Object.values(unlockedDialogues).reduce((acc, npc) => acc + Object.keys(npc).length, 0);
+  };
+
+  /**
    * Main function: Check all achievements and unlock those that qualify
    * Called after key events (battle victory, boss defeat, map unlock, etc.)
    *
@@ -224,6 +232,20 @@ export function useAchievements() {
           // === NARRATIVE/HIDDEN ACHIEVEMENTS ===
           else if (id === "final_boss" && stats.bossesDefeated["fire_overlord"] >= 1) {
             shouldUnlock = true;
+          }
+          // === TAVERN / DIALOGUE ACHIEVEMENTS ===
+          else if (id === "first_dialogue") {
+            const total = countDialogues(player?.unlockedDialogues);
+            if (total >= 1) shouldUnlock = true;
+          } else if (id === "tavern_regular") {
+            const total = countDialogues(player?.unlockedDialogues);
+            if (total >= 5) shouldUnlock = true;
+          } else if (id === "lore_seeker") {
+            const total = countDialogues(player?.unlockedDialogues);
+            if (total >= 15) shouldUnlock = true;
+          } else if (id === "messenger_found") {
+            const messengerDialogues = player?.unlockedDialogues?.["messenger"];
+            if (messengerDialogues && Object.keys(messengerDialogues).length >= 1) shouldUnlock = true;
           }
 
           if (shouldUnlock) {

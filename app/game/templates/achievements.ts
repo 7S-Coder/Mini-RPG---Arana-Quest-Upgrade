@@ -270,6 +270,59 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     category: "narrative",
   },
 
+  // === TAVERN / DIALOGUE ACHIEVEMENTS ===
+  first_dialogue: {
+    id: "first_dialogue",
+    title: "First Words",
+    description: "Listen to a tavern NPC for the first time",
+    lore: "You asked. I answered. Most people don't dare ask — they're afraid of what they might hear.",
+    narrator: "lya" as NPCName,
+    icon: "💬",
+    reward: { gold: 10 },
+    unlocked: false,
+    category: "narrative",
+  },
+
+  tavern_regular: {
+    id: "tavern_regular",
+    title: "Tavern Regular",
+    description: "Read 5 tavern dialogues",
+    context: "Brak glances up from his work.",
+    lore: "You keep coming back. Most don't. The ones who survive always do.",
+    narrator: "brak" as NPCName,
+    icon: "🍺",
+    reward: { gold: 25 },
+    unlocked: false,
+    category: "narrative",
+  },
+
+  lore_seeker: {
+    id: "lore_seeker",
+    title: "Lore Seeker",
+    description: "Read 15 tavern dialogues",
+    context: "Eldran looks up from an old tome.",
+    lore: "You hunger for knowledge. That is rare. Dangerous, even — but necessary. The world has a tendency to destroy those who understand it too well.",
+    narrator: "eldran" as NPCName,
+    icon: "📚",
+    reward: { gold: 50, essence: 2 },
+    unlocked: false,
+    category: "narrative",
+  },
+
+  messenger_found: {
+    id: "messenger_found",
+    title: "The Right Moment",
+    description: "Speak to the Messenger in the tavern",
+    context: "The stranger meets your gaze across the room.",
+    lore: "You caught me at the right time. Or perhaps... I let you. Either way — what I told you was true. Make of it what you will.",
+    narrator: "messenger" as NPCName,
+    icon: "🎭",
+    reward: { gold: 30, essence: 1 },
+    unlocked: false,
+    hidden: true,
+    category: "narrative",
+  },
+
   // === FUTURE EXPANSION SLOTS ===
   // You can add seasonal achievements, challenge achievements, etc. here
 };

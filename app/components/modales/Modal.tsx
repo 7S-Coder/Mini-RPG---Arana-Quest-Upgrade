@@ -7,6 +7,14 @@ export default function Modal({ title, onClose, children }: { title?: string; on
     try { document.body.classList.add('modal-open'); } catch (e) {}
     return () => { try { document.body.classList.remove('modal-open'); } catch (e) {} };
   }, []);
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') { e.preventDefault(); onClose(); }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [onClose]);
   return (
     <div
       className="app-modal-backdrop"

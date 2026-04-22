@@ -1,9 +1,10 @@
 /**
  * Comprehensive Dialogue Loader
- * Loads all NPC dialogues for the Dialogues modal
+ * Loads all NPC dialogues from tavernTopics (single source of truth).
+ * Converts TavernTopicDialogue → SimpleDialogue for the Narrations modal.
  */
 
-import { loadLyaTavernDialogues } from './tavernDialogueLoaderSimple';
+import { TAVERN_TOPICS } from './tavernTopics';
 
 interface SimpleDialogue {
   id: string;
@@ -18,10 +19,22 @@ interface SimpleDialogue {
 }
 
 export function loadAllDialoguesByNPC(): Record<string, SimpleDialogue[]> {
-  return {
-    lya: loadLyaTavernDialogues(),
-    eldran: [],
-    brak: [],
-    messenger: [],
-  };
+  const result: Record<string, SimpleDialogue[]> = {};
+
+  for (const [npcId, topics] of Object.entries(TAVERN_TOPICS)) {
+    const dialogues: SimpleDialogue[] = [];
+    for (const topic of topics) {
+      for (const d of topic.dialogues) {
+        dialogues.push({
+          id: d.id,
+          question: d.playerPrompt,
+          response: d.npcText,
+          type: 'player',
+        });
+      }
+    }
+    result[npcId] = dialogues;
+  }
+
+  return result;
 }

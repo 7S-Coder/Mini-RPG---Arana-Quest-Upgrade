@@ -86,10 +86,11 @@ export default function Game() {
         const active = document.activeElement as HTMLElement | null;
         if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || (active as any).isContentEditable)) return;
         
-        // Handle Escape key for pause
+        // Handle Escape: close any open modal first, otherwise toggle pause
         if (e.key === 'Escape') {
           e.preventDefault();
-          setIsPaused(!isPaused);
+          if (modalName) { closeModal(); }
+          else { setIsPaused(!isPaused); }
           return;
         }
         
@@ -665,10 +666,10 @@ export default function Game() {
     // spawn a single gold pickup for the encounter (sum of per-enemy dust)
     // Do NOT award gold when the encounter ends due to fleeing.
     if (opts?.type !== 'flee') {
-      // Gold drop per enemy: 1.50 - 6.00 g
+      // Gold drop per enemy: 0.50 - 4.00 g
       const count = encounterCountRef.current || 0;
       let total = 0;
-      for (let i = 0; i < count; i++) total += (Math.random() * (6.00 - 1.50) + 1.50);
+      for (let i = 0; i < count; i++) total += (Math.random() * (4.00 - 0.50) + 0.50);
       total = Number(total.toFixed(2));
       try {
         spawnGoldPickup(total, player.x, player.y);
@@ -1200,14 +1201,7 @@ export default function Game() {
         <NarrationsModal 
           onClose={closeModal} 
           unlockedLevels={unlockedLevels}
-          unlockedDialogues={
-            player.unlockedDialogues 
-              ? Object.entries(player.unlockedDialogues).reduce((acc, [npc, dialogues]) => {
-                  acc[npc] = Object.values(dialogues).flat();
-                  return acc;
-                }, {} as Record<string, string[]>)
-              : {}
-          }
+          unlockedDialogues={player.unlockedDialogues ?? {}}
           allDialogues={loadAllDialoguesByNPC()}
         />
       )}
@@ -1222,8 +1216,27 @@ export default function Game() {
             onClose={closeModal}
             playerLevel={player.level}
             lyaStats={lya ? { trust: lya.trust, affection: lya.affection } : undefined}
-            unlockDialogue={unlockDialogue}
+            unlockDialogue={(npcId, dialogueId, choiceId) => {
+              unlockDialogue(npcId, dialogueId, choiceId);
+              // Build updated unlockedDialogues optimistically so checkAchievements sees the new entry
+              const prevNpc = player.unlockedDialogues?.[npcId] ?? {};
+              const updatedDialogues = {
+                ...(player.unlockedDialogues ?? {}),
+                [npcId]: {
+                  ...prevNpc,
+                  [dialogueId]: choiceId
+                    ? [...(prevNpc[dialogueId] ?? []), choiceId]
+                    : (prevNpc[dialogueId] ?? []),
+                },
+              };
+              achievements.checkAchievements({ player: { ...player, unlockedDialogues: updatedDialogues } });
+            }}
             unlockedDialogues={player.unlockedDialogues || {}}
+            progressionStats={{
+              bossesDefeated: achievements.stats.bossesDefeated,
+              totalBattlesWon: achievements.stats.totalBattlesWon,
+            }}
+            achievements={achievements.achievements}
           />
         );
       })()}
