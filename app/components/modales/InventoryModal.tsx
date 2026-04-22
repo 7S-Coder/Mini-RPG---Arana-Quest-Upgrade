@@ -110,37 +110,41 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
     return statsList || 'No special effects.';
   };
 
-  // Check if an item can be equipped in weapon2 slot
+  // Check if an item can be equipped in weapon2 slot (dual-wield: axe+axe or dagger+dagger)
   const canEquipWeapon2 = (item: any): boolean => {
     if (item.slot !== 'weapon2') return true;
     const primaryWeapon = (equipment as any)?.weapon;
-    const isSpear = primaryWeapon?.weaponType === 'spear';
+    const isAxe = item.weaponType === 'axe';
     const isDagger = item.weaponType === 'dagger';
+    const primaryIsAxe = primaryWeapon?.weaponType === 'axe';
     const primaryIsDagger = primaryWeapon?.weaponType === 'dagger';
-    return isSpear || (isDagger && primaryIsDagger);
+    return (isAxe && primaryIsAxe) || (isDagger && primaryIsDagger);
   };
 
   const getWeapon2Warning = (item: any): string | null => {
     if (item.slot !== 'weapon2') return null;
     const primaryWeapon = (equipment as any)?.weapon;
-    if (!primaryWeapon) return 'Equip a spear or dagger first';
-    const isSpear = primaryWeapon.weaponType === 'spear';
+    if (!primaryWeapon) return 'Equip an axe or dagger first';
+    const isAxe = item.weaponType === 'axe';
     const isDagger = item.weaponType === 'dagger';
+    const primaryIsAxe = primaryWeapon.weaponType === 'axe';
     const primaryIsDagger = primaryWeapon.weaponType === 'dagger';
-    if (!isSpear && !(isDagger && primaryIsDagger)) {
-      return `Only available with spear or dual daggers`;
+    if (!((isAxe && primaryIsAxe) || (isDagger && primaryIsDagger))) {
+      return 'Dual-wield only with matching axes or daggers';
     }
     return null;
   };
 
-  // Check if a slot should be displayed
+  // Check if a slot should be displayed based on current weapon rules
   const shouldDisplaySlot = (slot: string): boolean => {
+    const primaryWeapon = (equipment as any)?.weapon;
     if (slot === 'weapon2') {
-      const primaryWeapon = (equipment as any)?.weapon;
       if (!primaryWeapon) return false;
-      const isSpear = primaryWeapon.weaponType === 'spear';
-      const primaryIsDagger = primaryWeapon.weaponType === 'dagger';
-      return isSpear || primaryIsDagger;
+      return primaryWeapon.weaponType === 'axe' || primaryWeapon.weaponType === 'dagger';
+    }
+    if (slot === 'shield') {
+      if (!primaryWeapon) return true;
+      return primaryWeapon.weaponType === 'sword';
     }
     return true;
   };

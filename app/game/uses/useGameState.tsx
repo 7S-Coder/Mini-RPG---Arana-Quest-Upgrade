@@ -307,6 +307,8 @@ export function useGameState() {
 
     const slotToCategory: Record<Item["slot"], Item["category"]> = {
       weapon: "weapon",
+      weapon2: "weapon",
+      shield: "shield",
       chestplate: "armor",
       hat: "armor",
       boots: "armor",
@@ -1275,32 +1277,58 @@ export function useGameState() {
     }
 
     // LOGIC FOR WEAPON2 SLOT
-    // weapon2 is only allowed when:
-    // 1. Primary weapon is a spear (lance), OR
-    // 2. Both weapons are daggers
+    // weapon2 is only allowed for dual-wield: axe+axe or dagger+dagger
     if (item.slot === 'weapon2') {
       const primaryWeapon = (equipmentRef.current || {})['weapon'];
-      const isSpear = primaryWeapon?.weaponType === 'spear';
+      const isAxe = item.weaponType === 'axe';
       const isDagger = item.weaponType === 'dagger';
+      const primaryIsAxe = primaryWeapon?.weaponType === 'axe';
       const primaryIsDagger = primaryWeapon?.weaponType === 'dagger';
 
-      if (!isSpear && !(isDagger && primaryIsDagger)) {
-        try { console.warn('Cannot equip secondary weapon: only allowed with spear or dual daggers'); } catch (e) {}
+      if (!((isAxe && primaryIsAxe) || (isDagger && primaryIsDagger))) {
+        try { console.warn('Cannot equip secondary weapon: only allowed with dual axes or dual daggers'); } catch (e) {}
         return false;
       }
     }
 
-    // If trying to equip a primary weapon, check if it allows weapon2
+    // LOGIC FOR SHIELD SLOT
+    // Shield only allowed with sword or no weapon equipped
+    if (item.slot === 'shield') {
+      const primaryWeapon = (equipmentRef.current || {})['weapon'];
+      const primaryType = primaryWeapon?.weaponType;
+      if (primaryType && primaryType !== 'sword') {
+        try { console.warn('Cannot equip shield: only allowed with sword or no weapon'); } catch (e) {}
+        return false;
+      }
+    }
+
+    // If trying to equip a primary weapon, auto-unequip conflicting slots
     if (item.slot === 'weapon') {
       const currentWeapon2 = (equipmentRef.current || {})['weapon2'];
+      const currentShield = (equipmentRef.current || {})['shield'];
       const isSpear = item.weaponType === 'spear';
+      const isAxe = item.weaponType === 'axe';
       const isDagger = item.weaponType === 'dagger';
+      const isSword = item.weaponType === 'sword';
 
-      // If weapon2 is equipped and new weapon doesn't allow it, unequip weapon2
-      if (currentWeapon2 && !isSpear && !(isDagger && currentWeapon2.weaponType === 'dagger')) {
-        // Unequip weapon2 first
-        setEquipment((prev) => ({ ...prev, weapon2: null }));
-        if (currentWeapon2) addToInventory(currentWeapon2);
+      if (isSpear) {
+        // Two-handed: unequip weapon2 and shield
+        if (currentWeapon2) { setEquipment((prev) => ({ ...prev, weapon2: null })); addToInventory(currentWeapon2); }
+        if (currentShield) { setEquipment((prev) => ({ ...prev, shield: null })); addToInventory(currentShield); }
+      } else if (isAxe || isDagger) {
+        // Dual-wield: unequip shield; unequip weapon2 if it doesn't match the new type
+        if (currentShield) { setEquipment((prev) => ({ ...prev, shield: null })); addToInventory(currentShield); }
+        if (currentWeapon2 && currentWeapon2.weaponType !== item.weaponType) {
+          setEquipment((prev) => ({ ...prev, weapon2: null }));
+          addToInventory(currentWeapon2);
+        }
+      } else if (isSword) {
+        // Sword + shield: unequip weapon2
+        if (currentWeapon2) { setEquipment((prev) => ({ ...prev, weapon2: null })); addToInventory(currentWeapon2); }
+      } else {
+        // Unknown/no type: unequip both
+        if (currentWeapon2) { setEquipment((prev) => ({ ...prev, weapon2: null })); addToInventory(currentWeapon2); }
+        if (currentShield) { setEquipment((prev) => ({ ...prev, shield: null })); addToInventory(currentShield); }
       }
     }
 
