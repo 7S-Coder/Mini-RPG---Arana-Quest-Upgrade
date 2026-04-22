@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.62 — Weapon Type Badges in Inventory (22 avril 2026)
+
+### Feedback visuel du type d'arme dans l'inventaire
+
+Ajout d'un badge coloré affichant le type d'arme directement dans la liste de l'inventaire, à côté du nom de l'item.
+
+- Chaque arme affiche désormais un badge `sword`, `axe`, `dagger`, `spear` ou `barehand`
+- Couleur du badge unique par type (synchronisée avec `WEAPON_TYPE_COLOR` existant) :
+  - `sword` → cyan `#4ecdc4`
+  - `axe` → orange `#ffa500`
+  - `dagger` → rouge `#ff6b6b`
+  - `spear` → vert clair `#95e1d3`
+  - `barehand` → gris `#999`
+- Fond sombre avec bordure colorée pour une lisibilité maximale
+- Non-armes (armure, bouclier, familier, etc.) : aucun badge affiché
+- Aucun changement aux données stockées — `weaponType` était déjà présent sur les items
+
+---
+
 ## v0.61 — Weapon Slot Rules (22 avril 2026)
 
 ### Système d'équipement des armes revu

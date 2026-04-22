@@ -417,8 +417,9 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                             return (
                             <div key={it.id} onMouseEnter={() => setHoveredItemId(it.id)} onMouseLeave={() => setHoveredItemId(null)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1vw', background: it.isForged ? 'rgba(255, 193, 7, 0.08)' : '#0d0d0d', borderRadius: '0.8vw', position: 'relative', border: it.isForged ? '1px solid rgba(255, 193, 7, 0.5)' : '1px solid transparent' }}>
                               <div style={{ position: 'relative', flex: 1 }}>
-                                <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.6vw' }}>
+                                <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.6vw', flexWrap: 'wrap' }}>
                                   <span>{it.name}</span>
+                                  {(it as any).weaponType && (() => { const wc = WEAPON_TYPE_COLOR[(it as any).weaponType] || '#aaa'; return <span style={{ fontSize: '0.7vw', color: wc, fontWeight: 600, background: '#1a1a1a', border: `1px solid ${wc}`, borderRadius: '0.3vw', padding: '0.1vw 0.4vw' }}>{(it as any).weaponType}</span>; })()}
                                   {it.isForged && <span style={{ color: '#ffc107', fontSize: '0.75vw', fontWeight: 600 }}>⚒️ FORGED</span>}
                                   {it.quantity && it.quantity > 1 && <span style={{ marginLeft: '0.6vw', color: '#999', fontSize: '0.85vw' }}>×{it.quantity}</span>}
                                 </div>
