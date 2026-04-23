@@ -32,6 +32,7 @@ type Props = {
 	speed?: number;
 	regen?: number;
 	lastLevelUpAt?: number | null;
+	lastCritAt?: number;
 	onOpenModal?: (name: string) => void;
 	gold?: number;
 	essence?: number;
@@ -44,9 +45,11 @@ type Props = {
 	};
 };
 
-export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, resolve, dodge, crit, speed, regen, lastLevelUpAt, onOpenModal, gold, essence, inCombat, materials }: Props) {
+export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, resolve, dodge, crit, speed, regen, lastLevelUpAt, lastCritAt = 0, onOpenModal, gold, essence, inCombat, materials }: Props) {
 	const [showLevelUp, setShowLevelUp] = useState(false);
 	const [damageFlash, setDamageFlash] = useState<{ amount: number; key: string } | null>(null);
+	const [critPulse, setCritPulse] = useState(false);
+	const critPulseRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const [hoveredStat, setHoveredStat] = useState<string | null>(null);
 	const [hoveredResource, setHoveredResource] = useState<string | null>(null);
 	const prevHpRef = useRef<number>(hp);
@@ -54,6 +57,15 @@ export default function Player({ x, y, hp, maxHp, level, xp, dmg, def, resolve, 
 	const prevHpPerc = Math.max(0, Math.min(1, prevHpRef.current / Math.max(1, maxHp)));
 	const xpToNext = (lvl = level ?? 1) => Math.max(20, 100 * lvl);
 	const xpPerc = Math.max(0, Math.min(1, (xp ?? 0) / xpToNext(level ?? 1)));
+
+	// crit pulse on HP bar
+	useEffect(() => {
+		if (!lastCritAt) return;
+		if (critPulseRef.current) clearTimeout(critPulseRef.current);
+		setCritPulse(true);
+		critPulseRef.current = setTimeout(() => { setCritPulse(false); critPulseRef.current = null; }, 600);
+		return () => { if (critPulseRef.current) clearTimeout(critPulseRef.current); };
+	}, [lastCritAt]);
 
 	// Debug: log hp, maxHp, and hpPerc
 	useEffect(() => {

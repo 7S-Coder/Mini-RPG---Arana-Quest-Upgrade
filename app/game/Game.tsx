@@ -47,6 +47,7 @@ export default function Game() {
   // Attack cooldowns (2 turns for Safe/Risky, independent)
   const [safeCooldown, setSafeCooldown] = useState<number>(0);
   const [riskyCooldown, setRiskyCooldown] = useState<number>(0);
+  const [specialCooldown, setSpecialCooldown] = useState<number>(0);
 
   // helper: convert hex color to rgba with provided alpha
   const hexToRgba = (hex: string, alpha = 1) => {
@@ -163,7 +164,8 @@ export default function Game() {
       const inCombatRef = useRef<boolean>(false);
       const [selectedMapId, setSelectedMapId] = useState<string | null>(null);
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
-  const [effects, setEffects] = useState<Array<{ id: string; type: string; text?: string; kind?: string; target?: string; x?: number; y?: number }>>([]);
+  const [effects, setEffects] = useState<Array<{ id: string; type: string; text?: string; kind?: string; target?: string; x?: number; y?: number }>>([])
+  const [lastCritAt, setLastCritAt] = useState<number>(0);;
   const logClearRef = useRef<number | null>(null);
   const encounterCountRef = useRef<number>(0);
   const encounterSessionRef = useRef<number>(0);
@@ -382,6 +384,7 @@ export default function Game() {
   const effectTimeoutsRef = useRef<Map<string, number>>(new Map());
 
   const addEffect = useCallback((eff: { type: string; text?: string; kind?: string; target?: string; id?: string }) => {
+    if (eff.kind === 'crit' && eff.target === 'player') setLastCritAt(Date.now());
     const id = eff.id ? `${eff.id}_${uid()}` : uid();
     // randomize position a bit
     const x = eff.target === "player" ? 80 : 300 + Math.random() * 260;
@@ -455,6 +458,7 @@ export default function Game() {
     // Reset cooldowns and modifiers at the start of a new encounter
     setSafeCooldown(0);
     setRiskyCooldown(0);
+    setSpecialCooldown(0);
     setNextTurnModifier(null);
     // bump encounter session id so endEncounter can know which encounter finished
     encounterSessionRef.current = (encounterSessionRef.current || 0) + 1;
@@ -685,6 +689,7 @@ export default function Game() {
     setNextTurnModifier(null); // Reset modifier when combat ends
     setSafeCooldown(0); // Reset safe cooldown
     setRiskyCooldown(0); // Reset risky cooldown
+    setSpecialCooldown(0); // Reset special cooldown
     // if this endEncounter reports a death, restore player HP to max (respawn)
     if (opts?.type === 'death') {
       try { setPlayer((p) => ({ ...p, hp: (p.maxHp ?? p.hp) })); } catch (e) {}
@@ -845,7 +850,7 @@ export default function Game() {
 
   // damage calculation extracted to game/damage.ts (calcDamage)
 
-  const { onAttack, onRun } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, saveCoreGame, onModifierChange: setNextTurnModifier, turnModifier: nextTurnModifier, onSafeCooldownChange: setSafeCooldown, onRiskyCooldownChange: setRiskyCooldown, safeCooldown, riskyCooldown, selectedTargetId, equipment, onDrop: (enemy: any) => {
+  const { onAttack, onRun, onSpecial } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, saveCoreGame, onModifierChange: setNextTurnModifier, turnModifier: nextTurnModifier, onSafeCooldownChange: setSafeCooldown, onRiskyCooldownChange: setRiskyCooldown, safeCooldown, riskyCooldown, selectedTargetId, equipment, onSpecialCooldownChange: setSpecialCooldown, specialCooldown, onDrop: (enemy: any) => {
     const isDungeonRoom = !!enemy.roomId;
     const droppedItem = maybeDropFromEnemy(enemy, selectedMapId, !!enemy.isBoss, isDungeonRoom);
     
@@ -983,7 +988,7 @@ export default function Game() {
       {/* debug overlay removed in production */}
       <header className="app-header">
         <h1>Arena Quest</h1>
-        <p className="subtitle">Adventure mmorpg - v0.62</p>
+        <p className="subtitle">Adventure mmorpg - v0.63</p>
         <div style={{ position: 'absolute', right: 28, top: 50, transform: 'translateY(-50%)', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
           Press <span style={{ background: '#a8563837', border: '1px solid #a85638ff', borderRadius: '4px', padding: '0.2rem 0.4rem', fontFamily: 'monospace' }}>ESC</span> to pause
         </div>
@@ -991,7 +996,7 @@ export default function Game() {
 
       <div className="main-grid">
         <aside className="sidebar-left" >
-          <Player {...player} inCombat={inCombat} onOpenModal={openModal} />
+          <Player {...player} inCombat={inCombat} onOpenModal={openModal} lastCritAt={lastCritAt} />
         </aside>
 
         <main className="center-area">
@@ -1076,7 +1081,7 @@ export default function Game() {
             {
               (() => {
                 const inDungeonActive = selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null;
-                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} activeEvent={activeEvent} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} nextTurnModifier={nextTurnModifier} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} selectedTargetId={selectedTargetId} onSelectTarget={setSelectedTargetId} />;
+                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} onSpecial={onSpecial} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} activeEvent={activeEvent} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} nextTurnModifier={nextTurnModifier} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} specialCooldown={specialCooldown} weaponType={equipment?.weapon?.weaponType || 'barehand'} selectedTargetId={selectedTargetId} onSelectTarget={setSelectedTargetId} lastCritAt={lastCritAt} />;
               })()
             }
      

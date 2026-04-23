@@ -80,7 +80,8 @@ body{
 	display:flex;
 	flex-direction:column;
 	gap:12px;
-  height: 330px;
+	height: 330px;
+	position:relative;
 }
 .enemies-row{
 	display:flex;
@@ -207,6 +208,14 @@ body{
 	50%{filter:brightness(0.4)}
 	100%{filter:brightness(1)}
 }
+@keyframes pulse-critical{
+	0%,100%{opacity:1}
+	50%{opacity:0.2}
+}
+@keyframes pulse-low{
+	0%,100%{opacity:1}
+	50%{opacity:0.6}
+}
 .player-stats{font-size:13px;color:var(--muted);line-height:1.4}
 .player-actions{display:flex}
 
@@ -275,6 +284,12 @@ body{
 	10%{opacity:1}
 	60%{transform:translate(-50%, -36px) scale(1)}
 	100%{opacity:0; transform:translate(-50%, -56px) scale(0.9)}
+}
+
+/* critical hit received flash */
+@keyframes critFlash{
+	0%  {opacity:1}
+	100%{opacity:0}
 }
 
 /* small shake for arena panel when crit */

@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState, useRef } from "react";
 import GoldSVG from "@/app/assets/gold.svg";
 import EnemiesRow from "../enemys/EnemiesRow";
 import LogMessages from "../LogMessages";
@@ -11,6 +11,7 @@ type Props = {
   logs: React.ReactNode[];
   onAttack: (type: 'quick' | 'safe' | 'risky') => void;
   onRun: () => void;
+  onSpecial?: () => void;
   disableRun?: boolean;
   pickups?: any[];
   collectPickup?: (id: string, logger?: (msg: React.ReactNode) => void) => boolean | void;
@@ -21,11 +22,28 @@ type Props = {
   nextTurnModifier?: { skipped?: boolean; defenseDebuff?: boolean } | null;
   safeCooldown?: number;
   riskyCooldown?: number;
+  specialCooldown?: number;
+  weaponType?: string;
   selectedTargetId?: string | null;
   onSelectTarget?: (targetId: string) => void;
+  lastCritAt?: number;
 };
 
-export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [], collectPickup, collectAllPickups, pushLog, logColor, activeEvent, disableRun = false, inDungeonActive, nextTurnModifier, safeCooldown = 0, riskyCooldown = 0, selectedTargetId, onSelectTarget }: Props & { inDungeonActive?: boolean }) {
+export default function ArenaPanel({ enemies, logs, onAttack, onRun, onSpecial, pickups = [], collectPickup, collectAllPickups, pushLog, logColor, activeEvent, disableRun = false, inDungeonActive, nextTurnModifier, safeCooldown = 0, riskyCooldown = 0, specialCooldown = 0, weaponType = 'barehand', selectedTargetId, onSelectTarget, lastCritAt = 0 }: Props & { inDungeonActive?: boolean }) {
+  const [critFlash, setCritFlash] = useState(false);
+  const critTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!lastCritAt) return;
+    if (critTimeoutRef.current) clearTimeout(critTimeoutRef.current);
+    setCritFlash(true);
+    critTimeoutRef.current = setTimeout(() => {
+      setCritFlash(false);
+      critTimeoutRef.current = null;
+    }, 550);
+    return () => { if (critTimeoutRef.current) clearTimeout(critTimeoutRef.current); };
+  }, [lastCritAt]);
+
   // helper: convert hex to rgba for subtle background tint
   const hexToRgba = (hex?: string, alpha = 0.06) => {
     if (!hex) return undefined;
@@ -67,7 +85,15 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
 
   return (
     <section className="arena-panel" style={arenaStyle}>
-      <div className="arena-log">
+      <div className="arena-log" style={{position:'relative'}}>
+        {critFlash && (
+          <div style={{
+            position:'absolute', inset:0, zIndex:20, borderRadius:8, pointerEvents:'none',
+            background:'rgba(220,30,30,0.22)',
+            boxShadow:'inset 0 0 0 3px #ff3c3c, 0 0 32px 8px rgba(255,60,60,0.5)',
+            animation:'critFlash 0.55s ease-out forwards',
+          }} />
+        )}
         {/* Active event display at top of log */}
         {activeEvent && <EventDisplay activeEvent={activeEvent} />}
         
@@ -132,7 +158,7 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, pickups = [
         </div>
       )}
 
-      <ArenaActions onAttack={onAttack} onRun={onRun} disableRun={disableRun} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} />
+      <ArenaActions onAttack={onAttack} onRun={onRun} onSpecial={onSpecial} disableRun={disableRun} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} specialCooldown={specialCooldown} weaponType={weaponType} />
     </section>
   );
 }

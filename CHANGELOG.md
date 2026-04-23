@@ -1,5 +1,63 @@
 # Changelog
 
+## v0.64 — Weapon Special Abilities (23 avril 2026)
+
+### Système d'attaque spéciale par type d'arme
+
+Ajout d'un bouton **✦ [Spécial]** dans le panel d'actions de l'arène, affiché uniquement quand le joueur a une arme équipée (pas en mains nues). Chaque type d'arme dispose d'une capacité unique avec son propre cooldown.
+
+#### Capacités spéciales
+
+| Arme | Nom | Effet | Cooldown |
+|------|-----|-------|----------|
+| Hache | **Vortex** | 3 coups AoE sur tous les ennemis à 65% des dégâts par coup | 4 tours |
+| Épée | **Blade Dance** | 3 coupes à 85% — si l'ennemi meurt, les coups restants s'enchaînent sur le suivant | 3 tours |
+| Lance | **Hammer Throw** | 1 coup puissant à 150% sur tous les ennemis | 3 tours |
+| Dague | **Clear Tear** | 3-5 coups rapides à 75% + crit +20%, s'enchaîne sur le prochain ennemi si kill | 3 tours |
+
+#### Équilibre
+
+- **Vortex** est le plus fort en AoE totale (1.95× par ennemi × tous) mais a le cooldown le plus long (4 tours)
+- **Hammer Throw** inflige 1.5× sur tous — plus simple, plus fréquent (3 tours)
+- **Blade Dance** est le meilleur mono-cible avec kill-chain — efficace contre boss
+- **Clear Tear** est la plus variable (dépend du nombre de coups et des crits) — haut risque/récompense
+
+Tous les spéciaux déclenchent une contre-attaque ennemie après utilisation (comme une attaque normale).
+
+#### Détails techniques
+
+- **`useCombat.tsx`** : nouvelle fonction `onSpecial` avec la logique des 4 attaques. Le `specialCooldown` est décrémenté chaque tour dans `onAttack` (comme les cooldowns Safe/Risky). Retourné dans `{ onAttack, onRun, onSpecial }`.
+- **`Game.tsx`** : état `specialCooldown` (`useState<number>(0)`), reset dans `startEncounter` et `endEncounter`. Passé à `ArenaPanel` avec `onSpecial` et `weaponType` (depuis `equipment?.weapon?.weaponType`).
+- **`ArenaPanel.tsx`** : nouvelles props `onSpecial`, `specialCooldown`, `weaponType` — transmises à `ArenaActions`.
+- **`ArenaActions.tsx`** : table `SPECIAL_META` par type d'arme (label, couleur, tooltip). Bouton `✦ [Nom]` plein-largeur sous Flee, caché pour `barehand`. Couleur et glow uniques par type : orange (hache), cyan (épée), vert (lance), rouge (dague).
+
+---
+
+## v0.63 — Visual Combat Feedback (23 avril 2026)
+
+### Feedback visuel sur la barre de vie et les coups critiques
+
+#### Barre de vie — animations de seuil et crit
+
+- À **≤ 50% HP** : la barre pulse lentement (`pulse-low 1s infinite`) — signal d'alerte précoce
+- À **≤ 20% HP** : la barre pulse rapidement en rouge vif (`pulse-critical 0.6s infinite`) — danger immédiat
+- **Coup critique reçu** : déclenche `pulse-critical` une seule fois (0.6s) quelle que soit la vie actuelle
+- Les deux keyframes (`pulse-critical`, `pulse-low`) sont définis dans `globals.css`
+- Animation appliquée via `style` inline dans `Player.tsx` — `critPulse` prend priorité sur les seuils HP
+- `Player.tsx` reçoit la prop `lastCritAt` depuis `Game.tsx`, gère `critPulse` via `useState` + `useRef` anti-spam
+
+#### Coup critique reçu — flash de l'arène
+
+Quand un ennemi inflige un coup critique au joueur, la zone de log de l'arène flashe en rouge.
+
+- **`Game.tsx`** : état `lastCritAt` (`useState<number>(0)`) mis à jour via `Date.now()` dans `addEffect` quand `kind === 'crit' && target === 'player'`, passé en prop à `ArenaPanel`
+- **`ArenaPanel.tsx`** : `useEffect` sur `lastCritAt` → monte un `<div>` overlay absolu rouge pendant 550ms avec anti-spam via `useRef` + `clearTimeout`
+- **`globals.css`** : `@keyframes critFlash` en fondu sur 0.55s, appliqué en `animation` inline sur l'overlay
+- L'overlay est un vrai `<div>` React (`position:absolute; inset:0`) — évite tout conflit avec le `background: linear-gradient` et l'`overflow` du conteneur parent
+- Fond rouge semi-transparent + bordure `3px` rouge + glow extérieur pour un impact visuel immédiat
+
+---
+
 ## v0.62 — Weapon Type Badges in Inventory (22 avril 2026)
 
 ### Feedback visuel du type d'arme dans l'inventaire

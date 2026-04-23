@@ -38,6 +38,8 @@ export default function useCombat({
   riskyCooldown,
   selectedTargetId,
   equipment,
+  onSpecialCooldownChange,
+  specialCooldown,
 }: {
   player: Player;
   setPlayer: (updater: any) => void;
@@ -57,6 +59,8 @@ export default function useCombat({
   riskyCooldown?: number;
   selectedTargetId?: string | null;
   equipment?: any;
+  onSpecialCooldownChange?: (cooldown: number) => void;
+  specialCooldown?: number;
 }) {
   const lockedRef = useRef(false);
   const initiativeRef = useRef(false); // Track if initiative message was shown
@@ -190,6 +194,9 @@ export default function useCombat({
     }
     if (riskyCooldown && riskyCooldown > 0 && onRiskyCooldownChange) {
       onRiskyCooldownChange(riskyCooldown - 1);
+    }
+    if (specialCooldown && specialCooldown > 0 && onSpecialCooldownChange) {
+      onSpecialCooldownChange(specialCooldown - 1);
     }
 
     // Check if turn is skipped
@@ -689,7 +696,7 @@ export default function useCombat({
     setTimeout(() => {
       lockedRef.current = false;
     }, 120);
-  }, [enemies, player, setEnemies, setPlayer, addXp, pushLog, endEncounter, rollChance, calcDamage, saveCoreGame, turnModifier, onModifierChange, safeCooldown, riskyCooldown, onSafeCooldownChange, onRiskyCooldownChange, getBonusHitsChance, getSpeedRageMultiplier, onEffect, getTotalResolve, getEquippedWeaponType]);
+  }, [enemies, player, setEnemies, setPlayer, addXp, pushLog, endEncounter, rollChance, calcDamage, saveCoreGame, turnModifier, onModifierChange, safeCooldown, riskyCooldown, onSafeCooldownChange, onRiskyCooldownChange, specialCooldown, onSpecialCooldownChange, getBonusHitsChance, getSpeedRageMultiplier, onEffect, getTotalResolve, getEquippedWeaponType]);
 
   const onRun = useCallback(() => {
     if (lockedRef.current) {
@@ -778,5 +785,255 @@ export default function useCombat({
     }, 120);
   }, [enemies, setPlayer, pushLog, endEncounter, rollChance, calcDamage, hasWeaponSkillByType, getEquippedWeaponType, getTotalResolve]);
 
-  return { onAttack, onRun } as const;
+  const onSpecial = useCallback(() => {
+    if (lockedRef.current) {
+      pushLog('Action in progress...');
+      return;
+    }
+    if (!enemies || enemies.length === 0) return pushLog("You're not in combat.");
+    const aliveEnemies = (enemies || []).filter((e) => e.hp > 0);
+    if (aliveEnemies.length === 0) return;
+    lockedRef.current = true;
+
+    const weaponType = getEquippedWeaponType();
+    const speedRageMultiplier = getSpeedRageMultiplier(player.speed ?? 0);
+
+    // Helper: process a killed enemy (XP + drop)
+    const processKill = (killed: any) => {
+      pushLog(<> <span className={`enemy-name ${killed.rarity ?? 'common'}`}>{killed.name ?? killed.id}</span> defeated!</>);
+      const baseXp = 6 + Math.floor(Math.random() * 11);
+      const levelFactor = 1 + (killed.level ?? 1) / 10;
+      const rarityMults: Record<string, number> = { common: 1, rare: 1.5, epic: 2, legendary: 3, mythic: 6 };
+      const xpGain = Math.floor(baseXp * levelFactor * (rarityMults[killed.rarity ?? 'common'] ?? 1));
+      pushLog(`Gain XP: ${xpGain}`);
+      if (typeof addXp === 'function') addXp(xpGain);
+      try {
+        const dropped = typeof onDrop === 'function' ? onDrop(killed) : null;
+        if (dropped) {
+          const statsText = dropped.stats && Object.keys(dropped.stats).length > 0
+            ? Object.entries(dropped.stats).map(([k, v]) => `+${k} ${v}`).join(' • ')
+            : '';
+          pushLog(`Loot obtained: ${dropped.name} (${dropped.rarity})${statsText ? ' — ' + statsText : ''}`);
+          if (onEffect) onEffect({ type: 'item', text: dropped.name, target: 'player', id: dropped.id });
+        }
+      } catch (e) {}
+    };
+
+    let postAttackEnemies = (enemies || []).slice();
+
+    switch (weaponType) {
+      case 'axe': {
+        // Vortex: 3 hits on all enemies at 65% damage — cooldown 4 turns
+        pushLog(<>🌀 <span style={{color:'#ffa500', fontWeight:'bold'}}>Vortex!</span> A deadly whirlwind strikes all enemies!</>);
+        for (let hit = 1; hit <= 3; hit++) {
+          const alive = postAttackEnemies.filter((e) => e.hp > 0);
+          if (alive.length === 0) break;
+          for (const enemy of alive) {
+            const dodgeRoll = rollChance(enemy.dodge ?? 0);
+            if (dodgeRoll) {
+              pushLog(<> <span className={`enemy-name ${enemy.rarity ?? 'common'}`}>{enemy.name ?? enemy.id}</span> dodges!</>);
+              continue;
+            }
+            const critRoll = rollChance(player.crit ?? 0);
+            const weaponDmg = getWeaponDamage(Math.max(1, (player.dmg ?? 1) * 0.65), player);
+            const dmg = calcDamage(weaponDmg, enemy.def ?? 0, critRoll);
+            const rageGain = applyWeaponRageModifier(Math.round(dmg / 2 * speedRageMultiplier), player);
+            postAttackEnemies = postAttackEnemies.map((e) =>
+              e.id === enemy.id ? { ...e, hp: Math.max(0, e.hp - dmg), rage: Math.min(100, (e.rage ?? 0) + rageGain) } : e
+            );
+            if (critRoll) {
+              pushLog(<>💥 Vortex crit! {dmg} to <span className={`enemy-name ${enemy.rarity ?? 'common'}`}>{enemy.name ?? enemy.id}</span>!</>);
+            } else {
+              pushLog(<>🌀 Hit {hit}: {dmg} to <span className={`enemy-name ${enemy.rarity ?? 'common'}`}>{enemy.name ?? enemy.id}</span>.</>);
+            }
+            if (onEffect) onEffect({ type: 'damage', text: String(dmg), kind: critRoll ? 'crit' : 'hit', target: 'enemy', id: enemy.id });
+            const killed = postAttackEnemies.find((e) => e.id === enemy.id && e.hp === 0);
+            if (killed) processKill(killed);
+          }
+        }
+        setEnemies(postAttackEnemies);
+        if (typeof onSpecialCooldownChange === 'function') onSpecialCooldownChange(4);
+        break;
+      }
+
+      case 'sword': {
+        // Blade Dance: 3 hits at 85%, redirects to next enemy on kill — cooldown 3 turns
+        pushLog(<>⚡ <span style={{color:'#4ecdc4', fontWeight:'bold'}}>Blade Dance!</span> Three swift cuts!</>);
+        let target: any = selectedTargetId
+          ? postAttackEnemies.find((e) => e.id === selectedTargetId && e.hp > 0)
+          : null;
+        if (!target) target = postAttackEnemies.find((e) => e.hp > 0) ?? null;
+        let hitsLeft = 3;
+        while (hitsLeft > 0 && target) {
+          const dodgeRoll = rollChance(target.dodge ?? 0);
+          if (dodgeRoll) {
+            pushLog(<> <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span> dodges!</>);
+            hitsLeft--;
+            target = postAttackEnemies.find((e) => e.id === target!.id && e.hp > 0) ?? null;
+            continue;
+          }
+          const critRoll = rollChance(player.crit ?? 0);
+          const weaponDmg = getWeaponDamage(Math.max(1, (player.dmg ?? 1) * 0.85), player);
+          const dmg = calcDamage(weaponDmg, target.def ?? 0, critRoll);
+          const rageGain = applyWeaponRageModifier(Math.round(dmg / 2 * speedRageMultiplier), player);
+          postAttackEnemies = postAttackEnemies.map((e) =>
+            e.id === target!.id ? { ...e, hp: Math.max(0, e.hp - dmg), rage: Math.min(100, (e.rage ?? 0) + rageGain) } : e
+          );
+          if (critRoll) {
+            pushLog(<>💥 Blade Dance crit! {dmg} to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>!</>);
+          } else {
+            pushLog(<>⚡ Blade Dance: {dmg} to <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>.</>);
+          }
+          if (onEffect) onEffect({ type: 'damage', text: String(dmg), kind: critRoll ? 'crit' : 'hit', target: 'enemy', id: target.id });
+          hitsLeft--;
+          const killed = postAttackEnemies.find((e) => e.id === target!.id && e.hp === 0);
+          if (killed) {
+            processKill(killed);
+            if (hitsLeft > 0) {
+              target = postAttackEnemies.find((e) => e.hp > 0) ?? null;
+              if (target) pushLog(<>→ Blade Dance continues on <span className={`enemy-name ${target.rarity ?? 'common'}`}>{target.name ?? target.id}</span>!</>);
+            } else {
+              target = null;
+            }
+          } else {
+            target = postAttackEnemies.find((e) => e.id === target!.id && e.hp > 0) ?? null;
+          }
+        }
+        setEnemies(postAttackEnemies);
+        if (typeof onSpecialCooldownChange === 'function') onSpecialCooldownChange(3);
+        break;
+      }
+
+      case 'spear': {
+        // Hammer Throw: 1 powerful hit on all enemies at 150% damage — cooldown 3 turns
+        pushLog(<>🔨 <span style={{color:'#95e1d3', fontWeight:'bold'}}>Hammer Throw!</span> A devastating strike across all enemies!</>);
+        for (const enemy of postAttackEnemies.filter((e) => e.hp > 0)) {
+          const dodgeRoll = rollChance(enemy.dodge ?? 0);
+          if (dodgeRoll) {
+            pushLog(<> <span className={`enemy-name ${enemy.rarity ?? 'common'}`}>{enemy.name ?? enemy.id}</span> dodges the throw!</>);
+            continue;
+          }
+          const critRoll = rollChance(player.crit ?? 0);
+          const weaponDmg = getWeaponDamage(Math.max(1, (player.dmg ?? 1) * 1.5), player);
+          const dmg = calcDamage(weaponDmg, enemy.def ?? 0, critRoll);
+          const rageGain = applyWeaponRageModifier(Math.round(dmg / 2 * speedRageMultiplier), player);
+          postAttackEnemies = postAttackEnemies.map((e) =>
+            e.id === enemy.id ? { ...e, hp: Math.max(0, e.hp - dmg), rage: Math.min(100, (e.rage ?? 0) + rageGain) } : e
+          );
+          if (critRoll) {
+            pushLog(<>💥 Hammer Throw crit! {dmg} to <span className={`enemy-name ${enemy.rarity ?? 'common'}`}>{enemy.name ?? enemy.id}</span>!</>);
+          } else {
+            pushLog(<>🔨 {dmg} to <span className={`enemy-name ${enemy.rarity ?? 'common'}`}>{enemy.name ?? enemy.id}</span>.</>);
+          }
+          if (onEffect) onEffect({ type: 'damage', text: String(dmg), kind: critRoll ? 'crit' : 'hit', target: 'enemy', id: enemy.id });
+          const killed = postAttackEnemies.find((e) => e.id === enemy.id && e.hp === 0);
+          if (killed) processKill(killed);
+        }
+        setEnemies(postAttackEnemies);
+        if (typeof onSpecialCooldownChange === 'function') onSpecialCooldownChange(3);
+        break;
+      }
+
+      case 'dagger': {
+        // Clear Tear: 3-5 hits at 75% + crit+20%, chain on kill — cooldown 3 turns
+        const hitCount = 3 + Math.floor(Math.random() * 3); // 3–5 hits
+        pushLog(<>🗡️ <span style={{color:'#ff6b6b', fontWeight:'bold'}}>Clear Tear!</span> A flurry of {hitCount} rapid strikes with heightened precision!</>);
+        let ctTarget: any = selectedTargetId
+          ? postAttackEnemies.find((e) => e.id === selectedTargetId && e.hp > 0)
+          : null;
+        if (!ctTarget) ctTarget = postAttackEnemies.find((e) => e.hp > 0) ?? null;
+        let ctHitsLeft = hitCount;
+        while (ctHitsLeft > 0 && ctTarget) {
+          const dodgeRoll = rollChance(ctTarget.dodge ?? 0);
+          if (dodgeRoll) {
+            pushLog(<> <span className={`enemy-name ${ctTarget.rarity ?? 'common'}`}>{ctTarget.name ?? ctTarget.id}</span> dodges!</>);
+            ctHitsLeft--;
+            ctTarget = postAttackEnemies.find((e) => e.id === ctTarget!.id && e.hp > 0) ?? null;
+            continue;
+          }
+          const critRoll = rollChance((player.crit ?? 0) + 20); // +20% crit bonus
+          const weaponDmg = getWeaponDamage(Math.max(1, (player.dmg ?? 1) * 0.75), player);
+          const dmg = calcDamage(weaponDmg, ctTarget.def ?? 0, critRoll);
+          const rageGain = applyWeaponRageModifier(Math.round(dmg / 2 * speedRageMultiplier), player);
+          postAttackEnemies = postAttackEnemies.map((e) =>
+            e.id === ctTarget!.id ? { ...e, hp: Math.max(0, e.hp - dmg), rage: Math.min(100, (e.rage ?? 0) + rageGain) } : e
+          );
+          if (critRoll) {
+            pushLog(<>💥 Clear Tear crit! {dmg} to <span className={`enemy-name ${ctTarget.rarity ?? 'common'}`}>{ctTarget.name ?? ctTarget.id}</span>!</>);
+          } else {
+            pushLog(<>🗡️ {dmg} to <span className={`enemy-name ${ctTarget.rarity ?? 'common'}`}>{ctTarget.name ?? ctTarget.id}</span>.</>);
+          }
+          if (onEffect) onEffect({ type: 'damage', text: String(dmg), kind: critRoll ? 'crit' : 'hit', target: 'enemy', id: ctTarget.id });
+          ctHitsLeft--;
+          const killed = postAttackEnemies.find((e) => e.id === ctTarget!.id && e.hp === 0);
+          if (killed) {
+            processKill(killed);
+            if (ctHitsLeft > 0) {
+              ctTarget = postAttackEnemies.find((e) => e.hp > 0) ?? null;
+              if (ctTarget) pushLog(<>→ Clear Tear chains to <span className={`enemy-name ${ctTarget.rarity ?? 'common'}`}>{ctTarget.name ?? ctTarget.id}</span>!</>);
+            } else {
+              ctTarget = null;
+            }
+          } else {
+            ctTarget = postAttackEnemies.find((e) => e.id === ctTarget!.id && e.hp > 0) ?? null;
+          }
+        }
+        setEnemies(postAttackEnemies);
+        if (typeof onSpecialCooldownChange === 'function') onSpecialCooldownChange(3);
+        break;
+      }
+
+      default:
+        pushLog('No special ability for this weapon type.');
+        lockedRef.current = false;
+        return;
+    }
+
+    // Check if all enemies defeated after special
+    const allDead = postAttackEnemies.every((e) => e.hp <= 0);
+    if (allDead) {
+      const defeatedBoss = postAttackEnemies.find((e) => e.isBoss);
+      const opts: any = { type: 'clear' };
+      if (defeatedBoss) { opts.isBoss = true; opts.bossName = defeatedBoss.name; }
+      endEncounter('All enemies defeated!', opts);
+      lockedRef.current = false;
+      return;
+    }
+
+    // Enemies counter-attack after special
+    let playerSnap = { ...player };
+    const aliveAfterSpecial = postAttackEnemies.filter((e) => e.hp > 0);
+    if (aliveAfterSpecial.length > 0) {
+      const result = applyEnemyAttacksToPlayer(aliveAfterSpecial, playerSnap, 0, false, getTotalResolve());
+      playerSnap = result.playerSnap;
+      setPlayer((currentPlayer: Player) => ({ ...currentPlayer, hp: playerSnap.hp }));
+      setEnemies((currentEnemies: Enemy[]) =>
+        currentEnemies.map((e) =>
+          result.rageUpdates[e.id] ? { ...e, rage: Math.min(100, (e.rage ?? 0) + result.rageUpdates[e.id]) } : e
+        )
+      );
+      if (playerSnap.hp <= 0) {
+        pushLog('You are dead...');
+        endEncounter('You died. Respawned at the tavern.', { type: 'death' });
+        lockedRef.current = false;
+        return;
+      }
+    }
+
+    // Passive rage gain after special
+    const resolveVal = getTotalResolve();
+    setEnemies((currentEnemies: Enemy[]) => {
+      const aliveCount = currentEnemies.filter((e) => e.hp > 0).length;
+      let baseRage = hasWeaponSkillByType(getEquippedWeaponType(), 'anti_rage') ? 0 : 20;
+      baseRage = Math.round(baseRage * (1 - Math.min(100, resolveVal) / 100));
+      const perEnemyRage = aliveCount > 1 ? Math.floor(Math.min(30, baseRage * aliveCount) / aliveCount) : baseRage;
+      return currentEnemies.map((e) =>
+        e.hp > 0 ? { ...e, rage: Math.min(100, (e.rage ?? 0) + perEnemyRage) } : e
+      );
+    });
+
+    setTimeout(() => { lockedRef.current = false; }, 120);
+  }, [enemies, player, setEnemies, setPlayer, addXp, pushLog, endEncounter, rollChance, calcDamage, specialCooldown, onSpecialCooldownChange, getSpeedRageMultiplier, onEffect, getTotalResolve, selectedTargetId, onDrop, hasWeaponSkillByType, getEquippedWeaponType, applyEnemyAttacksToPlayer]);
+
+  return { onAttack, onRun, onSpecial } as const;
 }

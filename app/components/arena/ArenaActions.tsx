@@ -3,12 +3,23 @@ import React from "react";
 type Props = {
   onAttack?: (type: 'quick' | 'safe' | 'risky') => void;
   onRun?: () => void;
+  onSpecial?: () => void;
   disableRun?: boolean;
   safeCooldown?: number;
   riskyCooldown?: number;
+  specialCooldown?: number;
+  weaponType?: string;
 };
 
-export default function ArenaActions({ onAttack, onRun, disableRun, safeCooldown = 0, riskyCooldown = 0 }: Props) {
+const SPECIAL_META: Record<string, { label: string; color: string; border: string; glow: string; tooltip: string }> = {
+  axe:    { label: 'Vortex',        color: 'linear-gradient(135deg, #ffb347 0%, #e07800 100%)', border: '#ffa500', glow: 'rgba(255,165,0,0.45)',    tooltip: 'Vortex — 3 AoE hits on all enemies at 65% dmg each. Cooldown: 4 turns.' },
+  sword:  { label: 'Blade Dance',   color: 'linear-gradient(135deg, #7fffff 0%, #00b3b3 100%)', border: '#4ecdc4', glow: 'rgba(78,205,196,0.45)',  tooltip: 'Blade Dance — 3 swift cuts at 85% dmg. Overflows to next enemy on kill. Cooldown: 3 turns.' },
+  spear:  { label: 'Hammer Throw',  color: 'linear-gradient(135deg, #adf7c0 0%, #30a855 100%)', border: '#95e1d3', glow: 'rgba(149,225,211,0.45)', tooltip: 'Hammer Throw — 1 devastating hit on all enemies at 150% dmg. Cooldown: 3 turns.' },
+  dagger: { label: 'Clear Tear',    color: 'linear-gradient(135deg, #ff9999 0%, #cc2222 100%)', border: '#ff6b6b', glow: 'rgba(255,107,107,0.45)', tooltip: 'Clear Tear — 3–5 rapid hits at 75% dmg with +20% crit. Chains on kill. Cooldown: 3 turns.' },
+};
+
+export default function ArenaActions({ onAttack, onRun, onSpecial, disableRun, safeCooldown = 0, riskyCooldown = 0, specialCooldown = 0, weaponType = 'barehand' }: Props) {
+  const special = weaponType && weaponType !== 'barehand' ? SPECIAL_META[weaponType] : null;
   return (
     <div className="arena-actions">
       <div className="tooltip-wrapper">
@@ -74,6 +85,32 @@ export default function ArenaActions({ onAttack, onRun, disableRun, safeCooldown
         <div className="tooltip">Deal 80% more damage but skip next turn. 2-turn cooldown.</div>
       </div>
       
+      {special && (
+        <div className="tooltip-wrapper">
+          <button
+            className="btn combat-btn special-btn"
+            style={{
+              background: specialCooldown > 0 ? 'linear-gradient(135deg, #333 0%, #1a1a1a 100%)' : special.color,
+              border: `2px solid ${specialCooldown > 0 ? '#555' : special.border}`,
+              boxShadow: specialCooldown > 0 ? 'none' : `0 4px 12px ${special.glow}, inset 0 -2px 4px rgba(0,0,0,0.3)`,
+              color: specialCooldown > 0 ? '#666' : '#fff',
+              fontWeight: 'bold',
+              fontSize: 13,
+              letterSpacing: 0.5,
+              opacity: specialCooldown > 0 ? 0.5 : 1,
+              cursor: specialCooldown > 0 ? 'not-allowed' : 'pointer',
+              gridColumn: '1 / -1',
+              marginTop: 2,
+            }}
+            onClick={() => specialCooldown === 0 && onSpecial && onSpecial()}
+            disabled={specialCooldown > 0}
+          >
+            ✦ {special.label}{specialCooldown > 0 && ` (${specialCooldown})`}
+          </button>
+          <div className="tooltip">{special.tooltip}</div>
+        </div>
+      )}
+
       <div className="tooltip-wrapper">
         <button 
           className={`btn flee-btn ${disableRun ? 'disabled' : ''}`} 
