@@ -67,6 +67,12 @@ export const ITEM_POOL: ItemTemplate[] = [
     { slot: "weapon", name: "Gungnir", category: "weapon", weaponType: "spear", stats: { dmg: 18, speed: 6, dodge: 5 }, weight: 6, rarity: "legendary", allowedMaps: ["ruins", "volcano"], description: "Anti-Rage: Prevents +20% rage boost" },
     { slot: "weapon", name: "Tear of Austre", category: "weapon", weaponType: "spear", stats: { dmg: 22,  speed: 10, dodge: 8 }, weight: 6, rarity: "mythic", allowedMaps: ["volcano", "burning_throne"], description: "Anti-Rage: Prevents +20% rage boost" },
   
+    // Armes - BOW TYPE
+    // Arc: distance (dmg+, crit++, speed+), special Volley touche tous les ennemis
+    { slot: "weapon", name: "Shortbow", category: "weapon", weaponType: "bow", stats: { dmg: 2, crit: 3, speed: 2 }, weight: 4, rarity: "common", allowedMaps: ["spawn", "forest", "caves", "ruins", "volcano"], description: "Volley: Rain of arrows — hits all enemies" },
+    { slot: "weapon", name: "Elven Recurve", category: "weapon", weaponType: "bow", stats: { dmg: 6, crit: 7, speed: 4 }, weight: 4, rarity: "rare", allowedMaps: ["forest", "caves", "ruins", "volcano"], description: "Volley: Rain of arrows — hits all enemies" },
+    { slot: "weapon", name: "Whisper of the Void", category: "weapon", weaponType: "bow", stats: { dmg: 14, crit: 14, speed: 8 }, weight: 4, rarity: "legendary", allowedMaps: ["ruins", "volcano"], description: "Volley: Rain of arrows — hits all enemies" },
+
     // Armes - AXE TYPE
     // Hache: brutal (dmg++, pénétration+, def+, boss damage)
     { slot: "weapon", name: "Shroud cutter", category: "weapon", weaponType: "axe", stats: { dmg: 3, def: 1 }, weight: 5, rarity: "common", allowedMaps: ["spawn", "forest", "caves", "ruins", "volcano"], description: "Boss Damage: +25% vs Bosses | Penetration: 25% def ignore" },

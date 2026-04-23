@@ -905,12 +905,63 @@ export default function useCombat({
       }
 
       case 'spear': {
-        // Hammer Throw: 1 powerful hit on all enemies at 150% damage — cooldown 3 turns
-        pushLog(<>🔨 <span style={{color:'#95e1d3', fontWeight:'bold'}}>Hammer Throw!</span> A devastating strike across all enemies!</>);
+        // Empalement: 165% on primary target, pierce hits a second enemy at 55% — cooldown 3 turns
+        // (Hammer Throw — AoE 150% all enemies — reserved for future bow/ranged weapon)
+        let spearTarget: any = selectedTargetId
+          ? postAttackEnemies.find((e) => e.id === selectedTargetId && e.hp > 0)
+          : null;
+        if (!spearTarget) spearTarget = postAttackEnemies.find((e) => e.hp > 0) ?? null;
+        if (!spearTarget) break;
+        pushLog(<>🗡️ <span style={{color:'#95e1d3', fontWeight:'bold'}}>Empalement!</span> A brutal thrust through <span className={`enemy-name ${spearTarget.rarity ?? 'common'}`}>{spearTarget.name ?? spearTarget.id}</span>!</>);
+        // Primary hit
+        const spearDodge = rollChance(spearTarget.dodge ?? 0);
+        if (spearDodge) {
+          pushLog(<> <span className={`enemy-name ${spearTarget.rarity ?? 'common'}`}>{spearTarget.name ?? spearTarget.id}</span> sidesteps the thrust!</>);
+        } else {
+          const spearCrit = rollChance(player.crit ?? 0);
+          const spearDmg = calcDamage(getWeaponDamage(Math.max(1, (player.dmg ?? 1) * 1.65), player), spearTarget.def ?? 0, spearCrit);
+          const spearRage = applyWeaponRageModifier(Math.round(spearDmg / 2 * speedRageMultiplier), player);
+          postAttackEnemies = postAttackEnemies.map((e) =>
+            e.id === spearTarget!.id ? { ...e, hp: Math.max(0, e.hp - spearDmg), rage: Math.min(100, (e.rage ?? 0) + spearRage) } : e
+          );
+          if (spearCrit) {
+            pushLog(<>💥 Impale crit! {spearDmg} to <span className={`enemy-name ${spearTarget.rarity ?? 'common'}`}>{spearTarget.name ?? spearTarget.id}</span>!</>);
+          } else {
+            pushLog(<>🗡️ {spearDmg} to <span className={`enemy-name ${spearTarget.rarity ?? 'common'}`}>{spearTarget.name ?? spearTarget.id}</span>.</>);
+          }
+          if (onEffect) onEffect({ type: 'damage', text: String(spearDmg), kind: spearCrit ? 'crit' : 'hit', target: 'enemy', id: spearTarget.id });
+          const spearKilled = postAttackEnemies.find((e) => e.id === spearTarget!.id && e.hp === 0);
+          if (spearKilled) processKill(spearKilled);
+        }
+        // Pierce: secondary hit on another alive enemy
+        const spearSecondary = postAttackEnemies.find((e) => e.hp > 0 && e.id !== spearTarget!.id) ?? null;
+        if (spearSecondary) {
+          const pierceDodge = rollChance(spearSecondary.dodge ?? 0);
+          if (!pierceDodge) {
+            const pierceCrit = rollChance(player.crit ?? 0);
+            const pierceDmg = calcDamage(getWeaponDamage(Math.max(1, (player.dmg ?? 1) * 0.55), player), spearSecondary.def ?? 0, pierceCrit);
+            const pierceRage = applyWeaponRageModifier(Math.round(pierceDmg / 2 * speedRageMultiplier), player);
+            postAttackEnemies = postAttackEnemies.map((e) =>
+              e.id === spearSecondary.id ? { ...e, hp: Math.max(0, e.hp - pierceDmg), rage: Math.min(100, (e.rage ?? 0) + pierceRage) } : e
+            );
+            pushLog(<>↪️ Pierce! {pierceDmg} to <span className={`enemy-name ${spearSecondary.rarity ?? 'common'}`}>{spearSecondary.name ?? spearSecondary.id}</span>.</>);
+            if (onEffect) onEffect({ type: 'damage', text: String(pierceDmg), kind: pierceCrit ? 'crit' : 'hit', target: 'enemy', id: spearSecondary.id });
+            const pierceKilled = postAttackEnemies.find((e) => e.id === spearSecondary.id && e.hp === 0);
+            if (pierceKilled) processKill(pierceKilled);
+          }
+        }
+        setEnemies(postAttackEnemies);
+        if (typeof onSpecialCooldownChange === 'function') onSpecialCooldownChange(3);
+        break;
+      }
+
+      case 'bow': {
+        // Volley: Rain of arrows — 150% dmg on all enemies (same mechanic as old Hammer Throw) — cooldown 3 turns
+        pushLog(<>🏹 <span style={{color:'#c8961a', fontWeight:'bold'}}>Volley!</span> A rain of arrows strikes every enemy!</>);
         for (const enemy of postAttackEnemies.filter((e) => e.hp > 0)) {
           const dodgeRoll = rollChance(enemy.dodge ?? 0);
           if (dodgeRoll) {
-            pushLog(<> <span className={`enemy-name ${enemy.rarity ?? 'common'}`}>{enemy.name ?? enemy.id}</span> dodges the throw!</>);
+            pushLog(<> <span className={`enemy-name ${enemy.rarity ?? 'common'}`}>{enemy.name ?? enemy.id}</span> dodges the arrows!</>);
             continue;
           }
           const critRoll = rollChance(player.crit ?? 0);
@@ -921,9 +972,9 @@ export default function useCombat({
             e.id === enemy.id ? { ...e, hp: Math.max(0, e.hp - dmg), rage: Math.min(100, (e.rage ?? 0) + rageGain) } : e
           );
           if (critRoll) {
-            pushLog(<>💥 Hammer Throw crit! {dmg} to <span className={`enemy-name ${enemy.rarity ?? 'common'}`}>{enemy.name ?? enemy.id}</span>!</>);
+            pushLog(<>💥 Volley crit! {dmg} to <span className={`enemy-name ${enemy.rarity ?? 'common'}`}>{enemy.name ?? enemy.id}</span>!</>);
           } else {
-            pushLog(<>🔨 {dmg} to <span className={`enemy-name ${enemy.rarity ?? 'common'}`}>{enemy.name ?? enemy.id}</span>.</>);
+            pushLog(<>🏹 {dmg} to <span className={`enemy-name ${enemy.rarity ?? 'common'}`}>{enemy.name ?? enemy.id}</span>.</>);
           }
           if (onEffect) onEffect({ type: 'damage', text: String(dmg), kind: critRoll ? 'crit' : 'hit', target: 'enemy', id: enemy.id });
           const killed = postAttackEnemies.find((e) => e.id === enemy.id && e.hp === 0);

@@ -173,7 +173,7 @@ export type ActiveGameEvent = GameEvent & {
 };
 
 // === WEAPON SYSTEM ===
-export type WeaponType = 'barehand' | 'dagger' | 'sword' | 'axe' | 'spear';
+export type WeaponType = 'barehand' | 'dagger' | 'sword' | 'axe' | 'spear' | 'bow';
 
 /**
  * Weapon skills/abilities with scaling based on rarity

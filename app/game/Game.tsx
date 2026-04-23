@@ -813,6 +813,48 @@ export default function Game() {
         if (triggeredEvent === null) {
           decrementEventDuration();
         }
+
+        // === EVENT BONUS REWARDS ===
+        // If an event is active, give scaled bonus rewards each combat win
+        // Balanced: gold often, essence occasionally, forge materials rarely
+        try {
+          const evEffects = getActiveEventEffects();
+          if (evEffects) {
+            const lootBonus = evEffects.loot_rarity_bonus ?? 0; // e.g. 10 → +10%
+            const scale = 1 + lootBonus / 100; // 1.0 – 1.15 typically
+
+            // Gold: 70% base chance, 3–12 gold
+            if (Math.random() < 0.70 * scale) {
+              const gold = Math.floor((3 + Math.random() * 10) * scale);
+              setPlayer((p) => ({ ...p, gold: (p.gold ?? 0) + gold }));
+              pushLog(<>🪙 Event bonus: <span style={{color:'#ffd700'}}>+{gold} gold</span></>);
+            }
+
+            // Essence: 18% base chance, 1–3 essence
+            if (Math.random() < 0.18 * scale) {
+              const ess = 1 + Math.floor(Math.random() * 3);
+              setPlayer((p) => ({ ...p, essence: (p.essence ?? 0) + ess }));
+              pushLog(<>✨ Event bonus: <span style={{color:'#bf9fff'}}>+{ess} essence</span></>);
+            }
+
+            // Forge material: 10% base chance, 1 material
+            if (Math.random() < 0.10 * scale) {
+              const forgeOptions = ['essence_dust', 'mithril_ore', 'star_fragment', 'void_shard'] as const;
+              const mat = forgeOptions[Math.floor(Math.random() * forgeOptions.length)];
+              const matLabels: Record<typeof mat, string> = {
+                essence_dust: '🌫️ Essence Dust',
+                mithril_ore:  '⚙️ Mithril Ore',
+                star_fragment:'⭐ Star Fragment',
+                void_shard:   '🌑 Void Shard',
+              };
+              setPlayer((p) => ({
+                ...p,
+                materials: { ...(p.materials ?? {}), [mat]: ((p.materials ?? {})[mat] ?? 0) + 1 },
+              }));
+              pushLog(<>🔨 Event bonus: <span style={{color:'#a8d8a8'}}>{matLabels[mat]}</span></>);
+            }
+          }
+        } catch (e) {}
       }
     } catch (e) { console.error('[DEBUG] event system error', e); }
       
@@ -988,7 +1030,7 @@ export default function Game() {
       {/* debug overlay removed in production */}
       <header className="app-header">
         <h1>Arena Quest</h1>
-        <p className="subtitle">Adventure mmorpg - v0.63</p>
+        <p className="subtitle">Adventure mmorpg - v0.65</p>
         <div style={{ position: 'absolute', right: 28, top: 50, transform: 'translateY(-50%)', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
           Press <span style={{ background: '#a8563837', border: '1px solid #a85638ff', borderRadius: '4px', padding: '0.2rem 0.4rem', fontFamily: 'monospace' }}>ESC</span> to pause
         </div>

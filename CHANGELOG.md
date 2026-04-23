@@ -1,5 +1,37 @@
 # Changelog
 
+## v0.65 — Event Bonus Rewards (23 avril 2026)
+
+### Récompenses améliorées pendant les événements actifs
+
+Quand un événement est actif, chaque victoire en combat peut désormais générer des récompenses bonus en plus du loot normal. Les récompenses sont équilibrées : fréquentes mais pas excessives.
+
+#### Récompenses possibles par victoire
+
+| Récompense | Chance de base | Quantité |
+|------------|---------------|----------|
+| 🪙 Or | 70% | 3–12 gold |
+| ✨ Essence | 18% | 1–3 |
+| 🔨 Matériau de forge | 10% | 1 (aléatoire parmi 4) |
+
+Les 4 matériaux de forge possibles : Essence Dust, Mithril Ore, Star Fragment, Void Shard.
+
+#### Scaling par événement
+
+Chaque événement possède un effet `loot_bonus` (ex. Blood Moon : +10%). Ce bonus applique un multiplicateur `scale = 1 + loot_bonus / 100` sur toutes les probabilités de récompense. L'écart reste modeste (≤ +15%) pour conserver l'équilibre.
+
+#### Comportement
+
+- Aucune récompense en cas de fuite ou de mort
+- Aucune récompense si aucun événement n'est actif
+- Les logs affichent chaque récompense obtenue avec sa couleur dédiée (or, violet pour essence, vert pour forge)
+
+#### Détails techniques
+
+- **`Game.tsx`** : bloc `EVENT BONUS REWARDS` ajouté dans `endEncounter`, dans la branche `isBattleWon && event actif`. Appelle `getActiveEventEffects()` et effectue 3 rolls indépendants (or / essence / matériau). Met à jour le player via `setPlayer`.
+
+---
+
 ## v0.64 — Weapon Special Abilities (23 avril 2026)
 
 ### Système d'attaque spéciale par type d'arme
@@ -12,24 +44,53 @@ Ajout d'un bouton **✦ [Spécial]** dans le panel d'actions de l'arène, affich
 |------|-----|-------|----------|
 | Hache | **Vortex** | 3 coups AoE sur tous les ennemis à 65% des dégâts par coup | 4 tours |
 | Épée | **Blade Dance** | 3 coupes à 85% — si l'ennemi meurt, les coups restants s'enchaînent sur le suivant | 3 tours |
-| Lance | **Hammer Throw** | 1 coup puissant à 150% sur tous les ennemis | 3 tours |
-| Dague | **Clear Tear** | 3-5 coups rapides à 75% + crit +20%, s'enchaîne sur le prochain ennemi si kill | 3 tours |
+| Lance | **Impalement** | 165% sur la cible principale + pénétration à 55% sur un 2ème ennemi | 3 tours |
+| Dague | **Clear Tear** | 3–5 coups rapides à 75% + crit +20%, s'enchaîne sur le prochain ennemi si kill | 3 tours |
+| Arc | **Volley** | Pluie de flèches à 150% sur tous les ennemis | 3 tours |
 
 #### Équilibre
 
 - **Vortex** est le plus fort en AoE totale (1.95× par ennemi × tous) mais a le cooldown le plus long (4 tours)
-- **Hammer Throw** inflige 1.5× sur tous — plus simple, plus fréquent (3 tours)
+- **Impalement** : fort mono-cible (165%) + dommage de pénétration sur un second ennemi (55%) — cohérent avec le gameplay "lance = cible principale + contrôle de foule léger"
+- **Volley** (arc) : même puissance AoE que Hammer Throw — 150% sur tous les ennemis. Réservé à l'arc.
 - **Blade Dance** est le meilleur mono-cible avec kill-chain — efficace contre boss
 - **Clear Tear** est la plus variable (dépend du nombre de coups et des crits) — haut risque/récompense
 
 Tous les spéciaux déclenchent une contre-attaque ennemie après utilisation (comme une attaque normale).
 
+#### Nouvelles armes — Arc (`bow`)
+
+Ajout du type d'arme `bow` dans `WeaponType` et 3 arcs dans le pool d'items. Les arcs privilégient crit et speed au détriment du dmg brut.
+
+| Nom | Rareté | Stats | Maps |
+|-----|--------|-------|------|
+| Shortbow | common | dmg 2, crit 3, speed 2 | toutes |
+| Elven Recurve | rare | dmg 6, crit 7, speed 4 | forest+ |
+| Whisper of the Void | legendary | dmg 14, crit 14, speed 8 | ruins/volcano |
+
+#### Fix — Dual-wield : 2 armes identiques
+
+Corriger le comportement où équiper un second axe (ou dague) du même type remplaçait le slot primaire au lieu d'aller dans `weapon2`. Désormais, si le slot `weapon` est déjà occupé par le même type dual-wieldable et que `weapon2` est libre, l'item est automatiquement redirigé vers `weapon2` (stocké avec `slot: 'weapon2'` pour que le déséquipement fonctionne correctement).
+
+#### Fix — Layout des boutons d'action
+
+Le panel d'actions passe de `display: flex` à `display: grid` (4 colonnes). Le bouton spécial occupe une ligne dédiée pleine largeur (`gridRow: 2, gridColumn: '1 / -1'`), placé avant Flee dans l'ordre JSX.
+
+```
+[ Quick ] [ Safe ] [ Risky ] [ Flee ]
+[          ✦ Impalement          ]
+```
+
 #### Détails techniques
 
-- **`useCombat.tsx`** : nouvelle fonction `onSpecial` avec la logique des 4 attaques. Le `specialCooldown` est décrémenté chaque tour dans `onAttack` (comme les cooldowns Safe/Risky). Retourné dans `{ onAttack, onRun, onSpecial }`.
-- **`Game.tsx`** : état `specialCooldown` (`useState<number>(0)`), reset dans `startEncounter` et `endEncounter`. Passé à `ArenaPanel` avec `onSpecial` et `weaponType` (depuis `equipment?.weapon?.weaponType`).
-- **`ArenaPanel.tsx`** : nouvelles props `onSpecial`, `specialCooldown`, `weaponType` — transmises à `ArenaActions`.
-- **`ArenaActions.tsx`** : table `SPECIAL_META` par type d'arme (label, couleur, tooltip). Bouton `✦ [Nom]` plein-largeur sous Flee, caché pour `barehand`. Couleur et glow uniques par type : orange (hache), cyan (épée), vert (lance), rouge (dague).
+- **`useCombat.tsx`** : nouvelle fonction `onSpecial` (5 cases : axe/sword/spear/bow/dagger). `specialCooldown` décrémenté chaque tour dans `onAttack`. Lance → `Impalement` (165% + pierce 55%). Arc → `Volley` (150% AoE, logique identique à l'ancien Hammer Throw). Retourné dans `{ onAttack, onRun, onSpecial }`.
+- **`Game.tsx`** : état `specialCooldown`, resets dans `startEncounter` / `endEncounter`, props `onSpecial` + `weaponType` passées à `ArenaPanel`.
+- **`ArenaPanel.tsx`** : props `onSpecial`, `specialCooldown`, `weaponType` transmises à `ArenaActions`.
+- **`ArenaActions.tsx`** : table `SPECIAL_META` (axe/sword/spear/bow/dagger). Bouton plein-largeur, couleur-codé par type. Arc = or/marron.
+- **`useGameState.tsx`** : auto-redirect vers `weapon2` si dual-wield identique détecté.
+- **`types.ts`** : `'bow'` ajouté à `WeaponType`.
+- **`items.ts`** : 3 arcs ajoutés dans `ITEM_POOL`.
+- **`globals.css`** : `.arena-actions` passe en `display: grid`, `.tooltip-wrapper` forcé en `display: block`, `.btn` en `width: 100%` dans ce contexte.
 
 ---
 

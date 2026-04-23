@@ -1307,11 +1307,32 @@ export function useGameState() {
       const currentWeapon2 = (equipmentRef.current || {})['weapon2'];
       const currentShield = (equipmentRef.current || {})['shield'];
       const isSpear = item.weaponType === 'spear';
+      const isBow = item.weaponType === 'bow';
       const isAxe = item.weaponType === 'axe';
       const isDagger = item.weaponType === 'dagger';
       const isSword = item.weaponType === 'sword';
+      const primaryWeapon = (equipmentRef.current || {})['weapon'];
 
-      if (isSpear) {
+      // Auto-redirect to weapon2 if primary slot already has the same dual-wieldable type
+      const canDualWield = isAxe || isDagger;
+      if (canDualWield && primaryWeapon?.weaponType === item.weaponType && !currentWeapon2) {
+        const itemWithSlot2 = { ...item, slot: 'weapon2' as EquipmentSlot };
+        setEquipment((prevEquip) => ({ ...prevEquip, weapon2: itemWithSlot2 }));
+        setInventory((prevInv) => prevInv.filter((i) => i.id !== item.id));
+        try {
+          window.setTimeout(() => {
+            try {
+              const payload = { version: 1, player: pickPlayerData(playerRef.current || {} as Player), inventory: inventoryRef.current || [], equipment: equipmentRef.current || {}, timestamp: Date.now() };
+              try { localStorage.setItem('arenaquest_core_v1', JSON.stringify(payload)); } catch (e) {}
+              const fn = (window as any).__arenaquest_save_game;
+              if (typeof fn === 'function') fn();
+            } catch (e) {}
+          }, 50);
+        } catch (e) {}
+        return true;
+      }
+
+      if (isSpear || isBow) {
         // Two-handed: unequip weapon2 and shield
         if (currentWeapon2) { setEquipment((prev) => ({ ...prev, weapon2: null })); addToInventory(currentWeapon2); }
         if (currentShield) { setEquipment((prev) => ({ ...prev, shield: null })); addToInventory(currentShield); }
