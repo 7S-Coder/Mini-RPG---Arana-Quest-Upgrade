@@ -78,6 +78,11 @@ export default function EventDisplay({ activeEvent }: Props) {
             {formatEffects().map((effect, idx) => (
               <div key={idx}>{effect}</div>
             ))}
+            {activeEvent.effects.some((e) => e.type === 'loot_bonus') && (
+              <div style={{ marginTop: "6px", borderTop: "1px solid rgba(255,215,0,0.2)", paddingTop: "6px", color: "#ffd700", fontWeight: "bold", fontSize: "11px" }}>
+                Loot frenzy! Bonus drops on every kill.
+              </div>
+            )}
           </div>
         </div>
       )}

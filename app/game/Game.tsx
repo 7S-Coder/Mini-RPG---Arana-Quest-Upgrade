@@ -380,6 +380,22 @@ export default function Game() {
     }
   }, [selectedMapId, showNarration, isTutorialShown, markTutorialShown]);
 
+  // Tutorial: First weapon equipped
+  useEffect(() => {
+    if (equipment?.weapon && !isTutorialShown('firstWeapon')) {
+      showNarration(TUTORIAL_MESSAGES.firstWeaponTutorial);
+      markTutorialShown('firstWeapon');
+    }
+  }, [equipment?.weapon, showNarration, isTutorialShown, markTutorialShown]);
+
+  // Tutorial: First event
+  useEffect(() => {
+    if (activeEvent && !isTutorialShown('firstEvent')) {
+      showNarration(TUTORIAL_MESSAGES.firstEventTutorial);
+      markTutorialShown('firstEvent');
+    }
+  }, [activeEvent, showNarration, isTutorialShown, markTutorialShown]);
+
 
   // Track active timeouts for cleanup
   const effectTimeoutsRef = useRef<Map<string, number>>(new Map());
@@ -466,11 +482,12 @@ export default function Game() {
     encounterSessionRef.current = (encounterSessionRef.current || 0) + 1;
   
     // spawn 1-3 enemies
-    // clear pending log clear timeout if any
+    // clear pending log clear timeout if any, then clear logs for fresh encounter
     if (logClearRef.current) {
       clearTimeout(logClearRef.current);
       logClearRef.current = null;
     }
+    clearLogs();
     // determine count based on dungeon state: weighted random (40% 1 enemy, 35% 2, 25% 3), dungeon rooms fixed 4, boss room single
     const spawnRoll = Math.random();
     let count = spawnRoll < 0.40 ? 1 : spawnRoll < 0.75 ? 2 : 3;
@@ -868,19 +885,7 @@ export default function Game() {
       } catch (e) { console.error('[DEBUG] endEncounter error', e); }
     // Save the game state after encounter ends (including any HP changes)
     try { saveGameWithEvents && saveGameWithEvents(null, 'end_encounter'); } catch (e) {}
-    // schedule clearing the logs after a short delay so player can read result
-    // BUT: don't clear logs on death so player can see what happened
     if (logClearRef.current) clearTimeout(logClearRef.current);
-    const currentSessionId = encounterSessionRef.current; // capture current session
-    if (opts?.type !== 'death') {
-      logClearRef.current = window.setTimeout(() => {
-        // Only clear if we're still in the same encounter session
-        if (encounterSessionRef.current === currentSessionId) {
-          clearLogs();
-        }
-        logClearRef.current = null;
-      }, 1000);
-    }
   }, [setEnemies, pushLog, spawnGoldPickup, player.x, player.y, selectedMapId, startEncounter, setPlayer, addXp, createCustomItem, addToast, addEffect, showNarration, setSafeCooldown, setRiskyCooldown, setNextTurnModifier, enemies, consecWins, saveGameWithEvents, achievements, tryTriggerEvent, decrementEventDuration, endActiveEvent, getMapStreak, getActiveEventEffects]);
 
   // clear timeout on unmount
@@ -1145,6 +1150,12 @@ export default function Game() {
           progression={progression}
           allocate={allocate}
           deallocate={deallocate}
+          onForgeTabOpen={() => {
+            if (!isTutorialShown('firstForge')) {
+              showNarration(TUTORIAL_MESSAGES.firstForgeTutorial);
+              markTutorialShown('firstForge');
+            }
+          }}
           onEquip={(item: any) => {
             try {  } catch (e) {}
             try {

@@ -58,6 +58,18 @@ export const TUTORIAL_MESSAGES: Record<string, NarrativeMessage> = {
     npc: 'lya',
     text: 'New paths open. The world is vast because vast things live in it. Tread carefully.',
   },
+  firstWeaponTutorial: {
+    npc: 'lya',
+    text: 'A real weapon means a real move. In combat, your special ability charges — watch for the button and hit it when they least expect it.',
+  },
+  firstEventTutorial: {
+    npc: 'eldran',
+    text: 'The world shifts tonight. When an event is active, the rules change — enemies grow fiercer, but the rewards follow. Check the top of the arena.',
+  },
+  firstForgeTutorial: {
+    npc: 'brak',
+    text: 'Select an item, pick an action. Gold upgrades a stat. Mithril locks it from being rerolled. Essence pushes an item to its limits. Materials aren\'t cheap — spend them on things worth keeping.',
+  },
 };
 
 // Level milestone narrations - advance the lore at key progression points

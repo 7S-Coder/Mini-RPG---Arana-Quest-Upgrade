@@ -15,6 +15,7 @@ type Props = {
   onSell: (itemId: string) => void;
   onUse?: (itemId: string) => boolean | Promise<boolean> | void;
   onForge?: (itemId: string) => { ok: boolean; msg: string } | Promise<{ ok: boolean; msg: string }>;
+  onForgeTabOpen?: () => void;
   onUpgradeStat?: (itemId: string, statKey: string) => { ok: boolean; msg: string };
   onLockStat?: (itemId: string, statKey: string) => { ok: boolean; msg: string };
   onInfuse?: (itemId: string) => { ok: boolean; msg: string };
@@ -64,7 +65,7 @@ const SLOT_LABELS: Record<string, string> = {
 
 const SLOT_ORDER = ['hat', 'chestplate', 'belt', 'weapon', 'weapon2', 'shield', 'ring', 'familiar','boots' ];
 
-export default function InventoryModal({ inventory, equipment, player, onEquip, onUnequip, onSell, onUse, onForge, onUpgradeStat, onLockStat, onInfuse, onMythicEvolution, onClose, progression, allocate, deallocate }: Props) {
+export default function InventoryModal({ inventory, equipment, player, onEquip, onUnequip, onSell, onUse, onForge, onForgeTabOpen, onUpgradeStat, onLockStat, onInfuse, onMythicEvolution, onClose, progression, allocate, deallocate }: Props) {
   React.useEffect(() => { try { console.log('[InventoryModal] progression changed ->', progression); } catch (e) {} }, [progression]);
   
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
@@ -196,7 +197,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
             <div style={{ display: 'flex', gap: 8 }}>
               <button className={activeTab === 'inventory' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => setActiveTab('inventory')}>Inventory</button>
               <button className={activeTab === 'artifacts' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => setActiveTab('artifacts')}>Artifacts</button>
-              <button className={activeTab === 'forge' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => { setActiveTab('forge'); setSelectedItemForAction(null); }}>Forge</button>
+              <button className={activeTab === 'forge' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => { setActiveTab('forge'); setSelectedItemForAction(null); if (activeTab !== 'forge' && onForgeTabOpen) onForgeTabOpen(); }}>Forge</button>
               <button className={activeTab === 'statistics' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => setActiveTab('statistics')}>Statistics</button>
             </div>
             <div>
