@@ -166,6 +166,7 @@ export default function Game() {
   const [selectedTargetId, setSelectedTargetId] = useState<string | null>(null);
   const [effects, setEffects] = useState<Array<{ id: string; type: string; text?: string; kind?: string; target?: string; x?: number; y?: number }>>([])
   const [lastCritAt, setLastCritAt] = useState<number>(0);;
+  const [lastPlayerCritAt, setLastPlayerCritAt] = useState<number>(0);
   const logClearRef = useRef<number | null>(null);
   const encounterCountRef = useRef<number>(0);
   const encounterSessionRef = useRef<number>(0);
@@ -385,6 +386,7 @@ export default function Game() {
 
   const addEffect = useCallback((eff: { type: string; text?: string; kind?: string; target?: string; id?: string }) => {
     if (eff.kind === 'crit' && eff.target === 'player') setLastCritAt(Date.now());
+    if (eff.kind === 'crit' && eff.target === 'enemy') setLastPlayerCritAt(Date.now());
     const id = eff.id ? `${eff.id}_${uid()}` : uid();
     // randomize position a bit
     const x = eff.target === "player" ? 80 : 300 + Math.random() * 260;
@@ -458,7 +460,7 @@ export default function Game() {
     // Reset cooldowns and modifiers at the start of a new encounter
     setSafeCooldown(0);
     setRiskyCooldown(0);
-    setSpecialCooldown(0);
+    setSpecialCooldown(2); // Special unavailable for first 2 turns
     setNextTurnModifier(null);
     // bump encounter session id so endEncounter can know which encounter finished
     encounterSessionRef.current = (encounterSessionRef.current || 0) + 1;
@@ -1123,7 +1125,7 @@ export default function Game() {
             {
               (() => {
                 const inDungeonActive = selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null;
-                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} onSpecial={onSpecial} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} activeEvent={activeEvent} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} nextTurnModifier={nextTurnModifier} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} specialCooldown={specialCooldown} weaponType={equipment?.weapon?.weaponType || 'barehand'} selectedTargetId={selectedTargetId} onSelectTarget={setSelectedTargetId} lastCritAt={lastCritAt} />;
+                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} onSpecial={onSpecial} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} activeEvent={activeEvent} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} nextTurnModifier={nextTurnModifier} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} specialCooldown={specialCooldown} weaponType={equipment?.weapon?.weaponType || 'barehand'} selectedTargetId={selectedTargetId} onSelectTarget={setSelectedTargetId} lastCritAt={lastCritAt} lastPlayerCritAt={lastPlayerCritAt} />;
               })()
             }
      

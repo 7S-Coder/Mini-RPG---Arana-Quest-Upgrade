@@ -1544,6 +1544,7 @@ export function useGameState() {
       x: Math.random() * 500,
       y: Math.random() * 500,
       hp,
+      maxHp: hp,
       dmg,
       dodge: Math.max(0, Math.round(Math.random() * 10 + level * 0.05)),
       crit: Math.max(0, Math.round(Math.random() * 8 + level * 0.03)),

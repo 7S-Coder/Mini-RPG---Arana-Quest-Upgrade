@@ -10,9 +10,7 @@ export default function EnemiesRow({ enemies, selectedTargetId, onSelectTarget }
   return (
     <div className="enemies-row">
       {enemies.map((e) => {
-        const maxHp = e.hp + (e.maxHp ?? 0) - (e.hp ?? 0); // fallback if no maxHp
-        // Estimate maxHp from initial spawn (rough estimate if not tracked)
-        const estimatedMaxHp = e.maxHp || e.hp || 100;
+        const estimatedMaxHp = e.maxHp || 100;
         const hpPercent = Math.max(0, Math.min(100, (e.hp / estimatedMaxHp) * 100));
         const ragePercent = Math.max(0, Math.min(100, (e.rage ?? 0)));
         const isSelected = selectedTargetId === e.id;

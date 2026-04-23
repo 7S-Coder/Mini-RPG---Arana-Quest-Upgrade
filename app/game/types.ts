@@ -28,6 +28,7 @@ export type Enemy = {
   level?: number;
   rarity?: Rarity;
   hp: number;
+  maxHp?: number;
   dmg: number;
   dodge: number;
   crit: number;

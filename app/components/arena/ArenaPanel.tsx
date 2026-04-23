@@ -27,11 +27,14 @@ type Props = {
   selectedTargetId?: string | null;
   onSelectTarget?: (targetId: string) => void;
   lastCritAt?: number;
+  lastPlayerCritAt?: number;
 };
 
-export default function ArenaPanel({ enemies, logs, onAttack, onRun, onSpecial, pickups = [], collectPickup, collectAllPickups, pushLog, logColor, activeEvent, disableRun = false, inDungeonActive, nextTurnModifier, safeCooldown = 0, riskyCooldown = 0, specialCooldown = 0, weaponType = 'barehand', selectedTargetId, onSelectTarget, lastCritAt = 0 }: Props & { inDungeonActive?: boolean }) {
+export default function ArenaPanel({ enemies, logs, onAttack, onRun, onSpecial, pickups = [], collectPickup, collectAllPickups, pushLog, logColor, activeEvent, disableRun = false, inDungeonActive, nextTurnModifier, safeCooldown = 0, riskyCooldown = 0, specialCooldown = 0, weaponType = 'barehand', selectedTargetId, onSelectTarget, lastCritAt = 0, lastPlayerCritAt = 0 }: Props & { inDungeonActive?: boolean }) {
   const [critFlash, setCritFlash] = useState(false);
   const critTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [playerCritFlash, setPlayerCritFlash] = useState(false);
+  const playerCritTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!lastCritAt) return;
@@ -43,6 +46,17 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, onSpecial, 
     }, 550);
     return () => { if (critTimeoutRef.current) clearTimeout(critTimeoutRef.current); };
   }, [lastCritAt]);
+
+  useEffect(() => {
+    if (!lastPlayerCritAt) return;
+    if (playerCritTimeoutRef.current) clearTimeout(playerCritTimeoutRef.current);
+    setPlayerCritFlash(true);
+    playerCritTimeoutRef.current = setTimeout(() => {
+      setPlayerCritFlash(false);
+      playerCritTimeoutRef.current = null;
+    }, 500);
+    return () => { if (playerCritTimeoutRef.current) clearTimeout(playerCritTimeoutRef.current); };
+  }, [lastPlayerCritAt]);
 
   // helper: convert hex to rgba for subtle background tint
   const hexToRgba = (hex?: string, alpha = 0.06) => {
@@ -92,6 +106,14 @@ export default function ArenaPanel({ enemies, logs, onAttack, onRun, onSpecial, 
             background:'rgba(220,30,30,0.22)',
             boxShadow:'inset 0 0 0 3px #ff3c3c, 0 0 32px 8px rgba(255,60,60,0.5)',
             animation:'critFlash 0.55s ease-out forwards',
+          }} />
+        )}
+        {playerCritFlash && (
+          <div style={{
+            position:'absolute', inset:0, zIndex:20, borderRadius:8, pointerEvents:'none',
+            background:'rgba(255,215,0,0.18)',
+            boxShadow:'inset 0 0 0 3px #ffd700, 0 0 32px 8px rgba(255,215,0,0.45)',
+            animation:'playerCritFlash 0.5s ease-out forwards',
           }} />
         )}
         {/* Active event display at top of log */}
