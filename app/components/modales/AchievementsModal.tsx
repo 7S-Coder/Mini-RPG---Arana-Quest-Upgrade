@@ -9,6 +9,7 @@ import GoldSVG from "@/app/assets/gold.svg";
 
 interface AchievementsModalProps {
   achievements: Record<string, Achievement>;
+  newAchievementIds?: Set<string>;
   onClose: () => void;
 }
 
@@ -22,7 +23,7 @@ interface AchievementsModalProps {
  * - Reward information
  */
 
-export default function AchievementsModal({ achievements, onClose }: AchievementsModalProps) {
+export default function AchievementsModal({ achievements, newAchievementIds, onClose }: AchievementsModalProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // Get unique categories
@@ -122,7 +123,11 @@ export default function AchievementsModal({ achievements, onClose }: Achievement
               <div
                 key={ach.id}
                 className={`achievement-item ${ach.unlocked ? "unlocked" : "locked"}`}
+                style={newAchievementIds?.has(ach.id) ? { border: '2px solid #ff8c00', position: 'relative' } : undefined}
               >
+                {newAchievementIds?.has(ach.id) && (
+                  <span style={{ position: 'absolute', top: 4, right: 4, background: '#ff8c00', color: '#000', fontSize: 9, fontWeight: 800, padding: '2px 5px', borderRadius: 3, letterSpacing: '0.05em', zIndex: 1 }}>NEW</span>
+                )}
                 {/* Icon and basic info */}
                 <div className="achievement-icon">
                   {ach.unlocked ? (

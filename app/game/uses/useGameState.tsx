@@ -1395,8 +1395,11 @@ export function useGameState() {
     const current = (equipmentRef.current || {})[slot];
     // remove equipment entry
     setEquipment((prev) => ({ ...prev, [slot]: null }));
-    // add the unequipped item back into inventory; stats are recomputed from `equipment`
-    if (current) addToInventory(current);
+    // add the unequipped item back into inventory; restore slot to 'weapon' if it was redirected to weapon2
+    if (current) {
+      const restored = current.slot === 'weapon2' && current.category === 'weapon' ? { ...current, slot: 'weapon' as EquipmentSlot } : current;
+      addToInventory(restored);
+    }
     // ensure save occurs after state updates (use refs)
     try {
       window.setTimeout(() => {

@@ -1,5 +1,45 @@
 # Changelog
 
+## v0.66 — Système de notifications (25 avril 2026)
+
+### Badges et highlights pour les nouveaux contenus
+
+Ajout d'un système de notifications visuelles sur la sidebar droite et à l'intérieur des modales, pour signaler tout nouveau contenu non consulté.
+
+#### Badges sur les boutons de la sidebar
+
+| Bouton | Badge affiché quand… |
+|--------|----------------------|
+| **Inventory** | Un ou plusieurs items ont été ramassés ET/OU des points de stats sont disponibles après un level-up |
+| **Achievements** | Un ou plusieurs achievements ont été débloqués depuis la dernière ouverture |
+| **Narrations** | Un ou plusieurs paliers de narration ont été débloqués depuis la dernière ouverture |
+
+Le badge est un cercle orange avec le nombre d'éléments non vus (≤ 99, sinon "99+").
+
+#### Highlights à l'intérieur des modales
+
+- **InventoryModal** : chaque item ramassé récemment affiche une bordure orange + badge "NEW". L'onglet **Statistics** affiche un badge avec le nombre de points de stats non alloués ; il disparaît au clic sur l'onglet.
+- **AchievementsModal** : chaque achievement nouvellement débloqué est bordé en orange avec un badge "NEW".
+- **NarrationsModal** : chaque entrée de narration récemment débloquée est bordée en orange avec un badge "NEW".
+
+#### Persistance entre sessions
+
+Les états "vus / non vus" sont stockés en localStorage :
+- `aq_notif_stat_points` — points de stats non alloués
+- `aq_ach_seen` — IDs des achievements déjà vus (set JSON)
+- `aq_nar_seen` — niveaux de narration déjà vus (set JSON)
+
+Les items inventaire ("NEW") sont intentionnellement session-only (non persistés).
+
+#### Détails techniques
+
+- **`useNotifications.ts`** : simplifié, ne gère plus que `newItemIds` (session) et `newStatPoints` (persisté). Exposition : `addNewItem`, `markInventorySeen`, `addNewStatPoints`, `markStatsSeen`.
+- **`Game.tsx`** : `seenAchievementIds` et `seenNarrationLevels` (Sets persistés) + `newAchievementIds` / `newNarrationLevels` dérivés via `useMemo` — aucun appel manuel nécessaire lors du déverrouillage. `addNewStatPoints` appelé dans l'effet de level-up.
+- **`RightSidebar.tsx`** : type `Badges` étendu avec `stats?`. Le badge Inventory combine `inventory + stats`.
+- **`AchievementsModal.tsx`** / **`NarrationsModal.tsx`** / **`InventoryModal.tsx`** : props `newAchievementIds`, `newNarrationLevels`, `newStatPoints`, `onStatTabSeen` ajoutées.
+
+---
+
 ## v0.65 — Event Bonus Rewards (23 avril 2026)
 
 ### Récompenses améliorées pendant les événements actifs

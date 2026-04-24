@@ -31,12 +31,15 @@ import { useToasts } from "../hooks/useToasts";
 import { useDungeon } from "../hooks/useDungeon";
 import { useNarration } from "../hooks/useNarration";
 import { useLevelMilestones } from "../hooks/useLevelMilestones";
+import { useNotifications } from "../hooks/useNotifications";
 import { TUTORIAL_MESSAGES } from "./templates/narration";
 import { loadAllDialoguesByNPC } from "./templates/dialogues/allDialoguesLoader";
 
 export default function Game() {
   const { player, setPlayer, enemies, setEnemies, spawnEnemy, addXp, maybeDropFromEnemy, equipment, setEquipment, inventory, setInventory, equipItem, unequipItem, sellItem, spawnGoldPickup, addEssence, maybeDropEssenceFromEnemy, pickups, collectPickup, collectAllPickups, buyPotion, consumeItem, createCustomItem, createItemFromTemplate, forgeThreeIdentical, upgradeStat, lockStat, infuseItem, mythicEvolution, progression, allocate, deallocate, saveCoreGame, consecWins, incConsecWins, resetConsecWins, achievements, unlockDialogue } = useGameState();
   const { getNPC } = useRelationships();
+  const { newItemIds, newStatPoints, addNewItem, markInventorySeen, addNewStatPoints, markStatsSeen } = useNotifications();
+  const { checkAndTriggerMilestone, unlockedLevels } = useLevelMilestones();
 
   // streak per map (instead of global streak)
   const [mapStreaks, setMapStreaks] = useState<Record<string, number>>({});
@@ -63,6 +66,33 @@ export default function Game() {
     }
   };
 
+  // achievement / narration "seen" tracking
+  const [seenAchievementIds, setSeenAchievementIds] = useState<Set<string>>(() => {
+    try { return new Set<string>(JSON.parse(localStorage.getItem('aq_ach_seen') || '[]')); } catch { return new Set(); }
+  });
+  const [seenNarrationLevels, setSeenNarrationLevels] = useState<Set<number>>(() => {
+    try { return new Set<number>(JSON.parse(localStorage.getItem('aq_nar_seen') || '[]')); } catch { return new Set(); }
+  });
+  const newAchievementIds = useMemo(() => {
+    const result = new Set<string>();
+    for (const [id, ach] of Object.entries(achievements)) {
+      if ((ach as any).unlocked && !seenAchievementIds.has(id)) result.add(id);
+    }
+    return result;
+  }, [achievements, seenAchievementIds]);
+  const newNarrationLevels = useMemo(() => new Set(unlockedLevels.filter(l => !seenNarrationLevels.has(l))), [unlockedLevels, seenNarrationLevels]);
+  const markAchievementsSeen = useCallback(() => {
+    const allUnlocked = Object.entries(achievements).filter(([, a]) => (a as any).unlocked).map(([id]) => id);
+    const next = new Set([...seenAchievementIds, ...allUnlocked]);
+    setSeenAchievementIds(next);
+    try { localStorage.setItem('aq_ach_seen', JSON.stringify([...next])); } catch {}
+  }, [achievements, seenAchievementIds]);
+  const markNarrationsSeen = useCallback(() => {
+    const next = new Set([...seenNarrationLevels, ...unlockedLevels]);
+    setSeenNarrationLevels(next);
+    try { localStorage.setItem('aq_nar_seen', JSON.stringify([...next])); } catch {}
+  }, [unlockedLevels, seenNarrationLevels]);
+
   // modal system (generalized)
   const [modalName, setModalName] = useState<string | null>(null);
   const [modalProps, setModalProps] = useState<any>(null);
@@ -70,15 +100,18 @@ export default function Game() {
   const openModal = useCallback((name: string, props?: any) => {
     // compute final props (apply defaults for inventory modal)
     const resolved = name === "inventory" ? (props ?? { inventory, equipment, player, progression, allocate, deallocate }) : (props ?? null);
-    // debug log to help verify clicks and show resolved props
-    try { 
-
-    } catch (e) {}
     setModalName(name);
     setModalProps(resolved);
   }, [inventory, equipment, player, progression, allocate, deallocate]);
 
-  const closeModal = useCallback(() => { setModalName(null); setModalProps(null); }, []);
+  const closeModal = useCallback(() => {
+    // clear notification badges when closing the relevant modal
+    if (modalName === 'inventory') markInventorySeen();
+    if (modalName === 'achievements') markAchievementsSeen();
+    if (modalName === 'narrations') markNarrationsSeen();
+    setModalName(null);
+    setModalProps(null);
+  }, [modalName, markInventorySeen, markAchievementsSeen, markNarrationsSeen]);
 
   // Keyboard shortcuts for modals
   useEffect(() => {
@@ -190,8 +223,6 @@ export default function Game() {
   const { logs, pushLog, clearLogs } = useLogs();
   const { toasts, addToast } = useToasts();
   const { currentMessage, showNarration, closeNarration, markTutorialShown, isTutorialShown } = useNarration();
-  const { checkAndTriggerMilestone, unlockedLevels } = useLevelMilestones();
-  
   // Event system
   const { activeEvent, tryTriggerEvent, decrementEventDuration, endActiveEvent, loadFromSave: loadEventFromSave, getSaveData: getEventSaveData, getActiveEventEffects } = useEvents();
 
@@ -235,6 +266,7 @@ export default function Game() {
         const gained = (cur - lastLevelRef.current) || 0;
         const points = gained * 5;
         try { addToast && addToast(`Level up! ${points} points to be allocated.`, 'ok', 4000); } catch (e) {}
+        try { addNewStatPoints(points); } catch (e) {}
       }
       lastLevelRef.current = cur;
     } catch (e) {}
@@ -902,9 +934,27 @@ export default function Game() {
   const { onAttack, onRun, onSpecial } = useCombat({ player, setPlayer, enemies, setEnemies, addXp, pushLog, endEncounter, onEffect: addEffect, saveCoreGame, onModifierChange: setNextTurnModifier, turnModifier: nextTurnModifier, onSafeCooldownChange: setSafeCooldown, onRiskyCooldownChange: setRiskyCooldown, safeCooldown, riskyCooldown, selectedTargetId, equipment, onSpecialCooldownChange: setSpecialCooldown, specialCooldown, onDrop: (enemy: any) => {
     const isDungeonRoom = !!enemy.roomId;
     const droppedItem = maybeDropFromEnemy(enemy, selectedMapId, !!enemy.isBoss, isDungeonRoom);
-    
     return droppedItem;
   } });
+
+  // Wrapped pickup collectors: badge fires when player actually picks up the item
+  const handleCollectPickup = useCallback((pickupId: string) => {
+    const pk = pickups.find((p) => p.id === pickupId);
+    const ok = collectPickup(pickupId, pushLog);
+    if (ok && pk?.kind === 'item' && pk.item) addNewItem(pk.item.id);
+    return ok;
+  }, [pickups, collectPickup, pushLog, addNewItem]);
+
+  const handleCollectAllPickups = useCallback((logger?: (msg: string) => void) => {
+    const itemPickupsBefore = pickups.filter((p) => p.kind === 'item' && p.item);
+    const count = collectAllPickups(logger);
+    if (count > 0) {
+      for (const pk of itemPickupsBefore) {
+        if (pk.item) addNewItem(pk.item.id);
+      }
+    }
+    return count;
+  }, [pickups, collectAllPickups, addNewItem]);
 
   const mapsList = getMaps();
   const selectedMap = useMemo(() => mapsList.find((m) => m.id === selectedMapId) ?? null, [mapsList, selectedMapId]);
@@ -1004,7 +1054,8 @@ export default function Game() {
       }
 
       // Créer l'item dans l'inventaire
-      createItemFromTemplate(randomItem.name, rarity, true);
+      const lootBoxItem = createItemFromTemplate(randomItem.name, rarity, true);
+      if (lootBoxItem) addNewItem(lootBoxItem.id);
       const msg = `Loot box opened! You got: ${randomItem.name}.`;
       pushLog(msg);
       // Force save after state updates complete
@@ -1037,7 +1088,7 @@ export default function Game() {
       {/* debug overlay removed in production */}
       <header className="app-header">
         <h1>Arena Quest</h1>
-        <p className="subtitle">Adventure mmorpg - v0.65</p>
+        <p className="subtitle">Adventure mmorpg - v0.66</p>
         <div style={{ position: 'absolute', right: 28, top: 50, transform: 'translateY(-50%)', fontSize: '0.9rem', color: 'rgba(255, 255, 255, 0.6)' }}>
           Press <span style={{ background: '#a8563837', border: '1px solid #a85638ff', borderRadius: '4px', padding: '0.2rem 0.4rem', fontFamily: 'monospace' }}>ESC</span> to pause
         </div>
@@ -1130,7 +1181,7 @@ export default function Game() {
             {
               (() => {
                 const inDungeonActive = selectedMap?.dungeons && dungeonUI.activeMapId === selectedMap.id && dungeonUI.activeDungeonIndex != null;
-                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} onSpecial={onSpecial} pickups={pickups} collectPickup={collectPickup} collectAllPickups={collectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} activeEvent={activeEvent} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} nextTurnModifier={nextTurnModifier} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} specialCooldown={specialCooldown} weaponType={equipment?.weapon?.weaponType || 'barehand'} selectedTargetId={selectedTargetId} onSelectTarget={setSelectedTargetId} lastCritAt={lastCritAt} lastPlayerCritAt={lastPlayerCritAt} />;
+                return <ArenaPanel enemies={enemies} logs={logs} onAttack={onAttack} onRun={onRun} onSpecial={onSpecial} pickups={pickups} collectPickup={handleCollectPickup} collectAllPickups={handleCollectAllPickups} pushLog={pushLog} logColor={selectedMap?.logColor} activeEvent={activeEvent} disableRun={!!inDungeonActive} inDungeonActive={!!inDungeonActive} nextTurnModifier={nextTurnModifier} safeCooldown={safeCooldown} riskyCooldown={riskyCooldown} specialCooldown={specialCooldown} weaponType={equipment?.weapon?.weaponType || 'barehand'} selectedTargetId={selectedTargetId} onSelectTarget={setSelectedTargetId} lastCritAt={lastCritAt} lastPlayerCritAt={lastPlayerCritAt} />;
               })()
             }
      
@@ -1139,7 +1190,7 @@ export default function Game() {
         </main>
 
         <aside className="sidebar-right" >
-          <RightSidebar onOpenModal={openModal} />
+          <RightSidebar onOpenModal={openModal} badges={{ inventory: newItemIds.size, achievements: newAchievementIds.size, narrations: newNarrationLevels.size, stats: newStatPoints }} />
         </aside>
       </div>
       {modalName === "inventory" && (
@@ -1150,6 +1201,9 @@ export default function Game() {
           progression={progression}
           allocate={allocate}
           deallocate={deallocate}
+          newItemIds={newItemIds}
+          newStatPoints={newStatPoints}
+          onStatTabSeen={markStatsSeen}
           onForgeTabOpen={() => {
             if (!isTutorialShown('firstForge')) {
               showNarration(TUTORIAL_MESSAGES.firstForgeTutorial);
@@ -1255,11 +1309,12 @@ export default function Game() {
         <CatalogModal onClose={closeModal} />
       )}
       {modalName === 'achievements' && (
-        <AchievementsModal onClose={closeModal} achievements={achievements.achievements} />
+        <AchievementsModal onClose={closeModal} achievements={achievements.achievements} newAchievementIds={newAchievementIds} />
       )}
       {modalName === 'narrations' && (
         <NarrationsModal 
-          onClose={closeModal} 
+          onClose={closeModal}
+          newNarrationLevels={newNarrationLevels}
           unlockedLevels={unlockedLevels}
           unlockedDialogues={player.unlockedDialogues ?? {}}
           allDialogues={loadAllDialoguesByNPC()}

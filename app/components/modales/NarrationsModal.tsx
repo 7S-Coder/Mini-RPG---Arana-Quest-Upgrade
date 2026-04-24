@@ -20,6 +20,7 @@ interface SimpleDialogue {
 
 interface NarrationsModalProps {
   unlockedLevels: number[];
+  newNarrationLevels?: Set<number>;
   unlockedDialogues?: Record<string, Record<string, string[]>>;
   allDialogues?: Record<string, SimpleDialogue[]>;
   onClose: () => void;
@@ -39,7 +40,7 @@ const NPC_NAMES: Record<string, string> = {
  * Shows NPC name and narration text
  */
 
-export default function NarrationsModal({ unlockedLevels, unlockedDialogues = {}, allDialogues = {}, onClose }: NarrationsModalProps) {
+export default function NarrationsModal({ unlockedLevels, newNarrationLevels, unlockedDialogues = {}, allDialogues = {}, onClose }: NarrationsModalProps) {
   const [activeTab, setActiveTab] = useState<'narrations' | 'dialogues'>('narrations');
   // Get all unlocked narrations sorted by level
   const unlockedNarrations = useMemo(() => {
@@ -157,7 +158,10 @@ export default function NarrationsModal({ unlockedLevels, unlockedDialogues = {}
                 </div>
               ) : (
                 unlockedNarrations.map(({ level, narration }) => (
-                  <div key={level} className="narration-item">
+                  <div key={level} className="narration-item" style={newNarrationLevels?.has(level) ? { border: '2px solid #ff8c00', position: 'relative' } : undefined}>
+                    {newNarrationLevels?.has(level) && (
+                      <span style={{ position: 'absolute', top: 4, right: 4, background: '#ff8c00', color: '#000', fontSize: 9, fontWeight: 800, padding: '2px 5px', borderRadius: 3, letterSpacing: '0.05em', zIndex: 1 }}>NEW</span>
+                    )}
                     {/* Icon and basic info */}
                     <div className="narration-icon">
                       <span className="icon-emoji">📖</span>

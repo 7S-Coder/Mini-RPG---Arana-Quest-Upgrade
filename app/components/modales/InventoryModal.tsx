@@ -24,6 +24,9 @@ type Props = {
   progression?: any;
   allocate?: (stat: AllocationStat) => void;
   deallocate?: (stat: AllocationStat) => void;
+  newItemIds?: Set<string>;
+  newStatPoints?: number;
+  onStatTabSeen?: () => void;
 };
 
 const RARITY_COLOR: Record<string, string> = {
@@ -66,7 +69,7 @@ const SLOT_LABELS: Record<string, string> = {
 
 const SLOT_ORDER = ['hat', 'chestplate', 'belt', 'weapon', 'weapon2', 'shield', 'ring', 'familiar','boots' ];
 
-export default function InventoryModal({ inventory, equipment, player, onEquip, onUnequip, onSell, onUse, onForge, onForgeTabOpen, onUpgradeStat, onLockStat, onInfuse, onMythicEvolution, onClose, progression, allocate, deallocate }: Props) {
+export default function InventoryModal({ inventory, equipment, player, onEquip, onUnequip, onSell, onUse, onForge, onForgeTabOpen, onUpgradeStat, onLockStat, onInfuse, onMythicEvolution, onClose, progression, allocate, deallocate, newItemIds, newStatPoints, onStatTabSeen }: Props) {
   React.useEffect(() => { try { console.log('[InventoryModal] progression changed ->', progression); } catch (e) {} }, [progression]);
   
   const [status, setStatus] = React.useState<{ ok: boolean; text: string } | null>(null);
@@ -199,7 +202,10 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
               <button className={activeTab === 'inventory' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => setActiveTab('inventory')}>Inventory</button>
               <button className={activeTab === 'artifacts' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => setActiveTab('artifacts')}>Artifacts</button>
               <button className={activeTab === 'forge' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => { setActiveTab('forge'); setSelectedItemForAction(null); if (activeTab !== 'forge' && onForgeTabOpen) onForgeTabOpen(); }}>Forge</button>
-              <button className={activeTab === 'statistics' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => setActiveTab('statistics')}>Statistics</button>
+              <div style={{ position: 'relative' }}>
+                <button className={activeTab === 'statistics' ? 'btn primary inventory-tab-btn active' : 'btn primary inventory-tab-btn'} onClick={() => { setActiveTab('statistics'); onStatTabSeen?.(); }}>Statistics</button>
+                {(newStatPoints ?? 0) > 0 && <span style={{ position: 'absolute', top: -5, right: -5, backgroundColor: '#ff8c00', color: '#000', borderRadius: '50%', minWidth: 18, height: 18, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 800, padding: '0 3px', pointerEvents: 'none', boxShadow: '0 0 6px rgba(255,140,0,0.7)', lineHeight: 1 }}>{(newStatPoints ?? 0) > 99 ? '99+' : newStatPoints}</span>}
+              </div>
             </div>
             <div>
               {status ? (
@@ -417,7 +423,10 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                           {filteredInventory.map((it, idx) => {
                             const isInFirstHalf = idx < filteredInventory.length / 2;
                             return (
-                            <div key={it.id} onMouseEnter={() => setHoveredItemId(it.id)} onMouseLeave={() => setHoveredItemId(null)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1vw', background: it.isForged ? 'rgba(255, 193, 7, 0.08)' : '#0d0d0d', borderRadius: '0.8vw', position: 'relative', border: it.isForged ? '1px solid rgba(255, 193, 7, 0.5)' : '1px solid transparent' }}>
+                            <div key={it.id} onMouseEnter={() => setHoveredItemId(it.id)} onMouseLeave={() => setHoveredItemId(null)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1vw', background: it.isForged ? 'rgba(255, 193, 7, 0.08)' : '#0d0d0d', borderRadius: '0.8vw', position: 'relative', border: it.isForged ? '1px solid rgba(255, 193, 7, 0.5)' : newItemIds?.has(it.id) ? '1px solid rgba(255,140,0,0.6)' : '1px solid transparent' }}>
+                              {newItemIds?.has(it.id) && (
+                                <span style={{ position: 'absolute', top: -7, right: 8, backgroundColor: '#ff8c00', color: '#000', borderRadius: 3, padding: '1px 5px', fontSize: '0.6vw', fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase', pointerEvents: 'none', boxShadow: '0 0 6px rgba(255,140,0,0.6)', lineHeight: 1.6 }}>NEW</span>
+                              )}
                               <div style={{ position: 'relative', flex: 1 }}>
                                 <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.6vw', flexWrap: 'wrap' }}>
                                   <span>{it.name}</span>

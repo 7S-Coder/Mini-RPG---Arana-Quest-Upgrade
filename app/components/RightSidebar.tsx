@@ -1,15 +1,58 @@
 import React from "react";
 
-export default function RightSidebar({ onOpenModal }: { onOpenModal?: (name: string) => void }) {
+type Badges = {
+  inventory?: number;
+  achievements?: number;
+  narrations?: number;
+  stats?: number;
+};
+
+const BadgeDot = ({ count }: { count: number }) => {
+  if (!count) return null;
+  return (
+    <span style={{
+      position: 'absolute',
+      top: -5,
+      right: -5,
+      backgroundColor: '#ff8c00',
+      color: '#000',
+      borderRadius: '50%',
+      minWidth: 18,
+      height: 18,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontSize: 10,
+      fontWeight: 800,
+      padding: '0 3px',
+      pointerEvents: 'none',
+      boxShadow: '0 0 6px rgba(255,140,0,0.7)',
+      lineHeight: 1,
+    }}>
+      {count > 99 ? '99+' : count}
+    </span>
+  );
+};
+
+export default function RightSidebar({ onOpenModal, badges }: { onOpenModal?: (name: string) => void; badges?: Badges }) {
   return (
     <aside>
       <div className="right-buttons">
-        <button className="btn" onClick={() => onOpenModal?.("inventory")}>Inventory</button>
+        <div style={{ position: 'relative' }}>
+          <button className="btn" style={{ width: '100%' }} onClick={() => onOpenModal?.("inventory")}>Inventory</button>
+          <BadgeDot count={(badges?.inventory ?? 0) + (badges?.stats ?? 0)} />
+        </div>
         <button className="btn" onClick={() => onOpenModal?.("store")}>Store</button>
         <button className="btn" onClick={() => onOpenModal?.("catalog")}>Catalog</button>
         <button className="btn" onClick={() => onOpenModal?.("bestiary")}>Bestiary</button>
-        <button className="btn" onClick={() => onOpenModal?.("achievements")}>Achievements</button>
-        <button className="btn" onClick={() => onOpenModal?.("narrations")}>Narrations</button>
+        <div style={{ position: 'relative' }}>
+          <button className="btn" style={{ width: '100%' }} onClick={() => onOpenModal?.("achievements")}>Achievements</button>
+          <BadgeDot count={badges?.achievements ?? 0} />
+        </div>
+        <div style={{ position: 'relative' }}>
+          <button className="btn" style={{ width: '100%' }} onClick={() => onOpenModal?.("narrations")}>Narrations</button>
+          <BadgeDot count={badges?.narrations ?? 0} />
+        </div>
         <button className="btn" onClick={() => onOpenModal?.("maps")}>Maps</button>
       </div>
 
