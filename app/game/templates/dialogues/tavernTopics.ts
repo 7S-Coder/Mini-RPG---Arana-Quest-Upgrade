@@ -262,6 +262,31 @@ const BRAK_TOPICS: TavernTopic[] = [
     ],
   },
   {
+    id: 'brak_bow',
+    label: 'Tell me about bows',
+    unlockCondition: { minLevel: 3 },
+    dialogues: [
+      {
+        id: 'brak_bow_1',
+        playerPrompt: 'What are bows good for?',
+        npcText:
+          'Distance. You hit before they reach you — if your aim holds. A bow doesn\'t forgive shaky hands or slow thinking. But a clean shot from range is the safest kill there is.',
+      },
+      {
+        id: 'brak_bow_2',
+        playerPrompt: 'What makes a good bow fighter?',
+        npcText:
+          'Crits and speed. A bow\'s raw damage is modest — that\'s the trade-off for range. But string a few critical hits together and the numbers stop looking modest. Stack your crit chance, never rely on base damage alone.',
+      },
+      {
+        id: 'brak_bow_3',
+        playerPrompt: 'Any weakness to the bow?',
+        npcText:
+          'If the enemy gets close, you\'re in trouble. A bow is not a melee weapon — and fighters who forget that end up trying to parry with a stick. Volley buys you breathing room; use it before they close the gap.',
+      },
+    ],
+  },
+  {
     id: 'brak_forge',
     label: 'Tell me about the forge',
     unlockCondition: { minLevel: 5 },
