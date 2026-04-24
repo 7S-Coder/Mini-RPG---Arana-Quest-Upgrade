@@ -912,7 +912,7 @@ export default function useCombat({
           : null;
         if (!spearTarget) spearTarget = postAttackEnemies.find((e) => e.hp > 0) ?? null;
         if (!spearTarget) break;
-        pushLog(<>🗡️ <span style={{color:'#95e1d3', fontWeight:'bold'}}>Empalement!</span> A brutal thrust through <span className={`enemy-name ${spearTarget.rarity ?? 'common'}`}>{spearTarget.name ?? spearTarget.id}</span>!</>);
+        pushLog(<>🗡️ <span style={{color:'#a855f7', fontWeight:'bold'}}>Empalement!</span> A brutal thrust through <span className={`enemy-name ${spearTarget.rarity ?? 'common'}`}>{spearTarget.name ?? spearTarget.id}</span>!</>);
         // Primary hit
         const spearDodge = rollChance(spearTarget.dodge ?? 0);
         if (spearDodge) {
@@ -957,7 +957,7 @@ export default function useCombat({
 
       case 'bow': {
         // Volley: Rain of arrows — 150% dmg on all enemies (same mechanic as old Hammer Throw) — cooldown 3 turns
-        pushLog(<>🏹 <span style={{color:'#c8961a', fontWeight:'bold'}}>Volley!</span> A rain of arrows strikes every enemy!</>);
+        pushLog(<>🏹 <span style={{color:'#a0522d', fontWeight:'bold'}}>Volley!</span> A rain of arrows strikes every enemy!</>);
         for (const enemy of postAttackEnemies.filter((e) => e.hp > 0)) {
           const dodgeRoll = rollChance(enemy.dodge ?? 0);
           if (dodgeRoll) {

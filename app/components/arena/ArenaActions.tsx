@@ -14,8 +14,8 @@ type Props = {
 const SPECIAL_META: Record<string, { label: string; color: string; border: string; glow: string; tooltip: string }> = {
   axe:    { label: 'Vortex',        color: 'linear-gradient(135deg, #ffb347 0%, #e07800 100%)', border: '#ffa500', glow: 'rgba(255,165,0,0.45)',    tooltip: 'Vortex — 3 AoE hits on all enemies at 65% dmg each. Cooldown: 4 turns.' },
   sword:  { label: 'Blade Dance',   color: 'linear-gradient(135deg, #7fffff 0%, #00b3b3 100%)', border: '#4ecdc4', glow: 'rgba(78,205,196,0.45)',  tooltip: 'Blade Dance — 3 swift cuts at 85% dmg. Overflows to next enemy on kill. Cooldown: 3 turns.' },
-  spear:  { label: 'Impalement',    color: 'linear-gradient(135deg, #adf7c0 0%, #30a855 100%)', border: '#95e1d3', glow: 'rgba(149,225,211,0.45)', tooltip: 'Impalement — 165% dmg on main target + pierce hits a 2nd enemy at 55%. Cooldown: 3 turns.' },
-  bow:    { label: 'Volley',         color: 'linear-gradient(135deg, #d4a017 0%, #7a5c00 100%)', border: '#c8961a', glow: 'rgba(200,150,26,0.45)',   tooltip: 'Volley — Rain of arrows: 150% dmg on every enemy. Cooldown: 3 turns.' },
+  spear:  { label: 'Impalement',    color: 'linear-gradient(135deg, #d8b4fe 0%, #7c3aed 100%)', border: '#a855f7', glow: 'rgba(168,85,247,0.45)', tooltip: 'Impalement — 165% dmg on main target + pierce hits a 2nd enemy at 55%. Cooldown: 3 turns.' },
+  bow:    { label: 'Volley',         color: 'linear-gradient(135deg, #c8956c 0%, #6b3a1f 100%)', border: '#a0522d', glow: 'rgba(160,82,45,0.45)',   tooltip: 'Volley — Rain of arrows: 150% dmg on every enemy. Cooldown: 3 turns.' },
   dagger: { label: 'Clear Tear',    color: 'linear-gradient(135deg, #ff9999 0%, #cc2222 100%)', border: '#ff6b6b', glow: 'rgba(255,107,107,0.45)', tooltip: 'Clear Tear — 3–5 rapid hits at 75% dmg with +20% crit. Chains on kill. Cooldown: 3 turns.' },
 };
 

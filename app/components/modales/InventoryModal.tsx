@@ -40,7 +40,8 @@ const WEAPON_TYPE_COLOR: Record<string, string> = {
   dagger: '#ff6b6b',
   sword: '#4ecdc4',
   axe: '#ffa500',
-  spear: '#95e1d3',
+  spear: '#a855f7',
+  bow: '#a0522d',
 };
 
 const WEAPON_TYPE_DESCRIPTION: Record<string, string> = {
@@ -565,13 +566,15 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                     {artifacts.map((it) => (
                       <div key={it.id} onMouseEnter={() => setHoveredItemId(it.id)} onMouseLeave={() => setHoveredItemId(null)} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 12, background: '#0d0d0d', borderRadius: 10, position: 'relative', transition: 'background 0.2s', border: '1px solid transparent' }}>
                         <div style={{ position: 'relative', flex: 1 }}>
+                          {hoveredItemId === it.id && (
+                            <div style={{ position: 'absolute', top: '100%', left: 0, background: '#111', border: '1px solid #666', borderRadius: 6, padding: '8px 12px', fontSize: 12, color: '#ccc', zIndex: 100, whiteSpace: 'normal', marginTop: 4, lineHeight: 1.4, minWidth: 200, maxWidth: 320 }}>
+                              {getItemDescription(it)}
+                            </div>
+                          )}
                           <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>
                             {it.name}
                             {it.quantity && it.quantity > 1 && <span style={{ marginLeft: 8, color: '#999', fontSize: 12 }}>×{it.quantity}</span>}
                           </div>
-                          {hoveredItemId === it.id && (
-                            <div style={{ fontSize: 11, color: '#999', marginTop: 2 }}>{getItemDescription(it)}</div>
-                          )}
                         </div>
                         <div style={{ display: 'flex', gap: 8 }}>
                           <button type="button" onClick={(e) => { e.stopPropagation(); if (!onSell) return; setTimeout(() => { try { onSell(it.id); } catch {} }, 0); }}>Sell ({priceFor(it)} g)</button>
