@@ -162,9 +162,13 @@ export default function NarrationsModal({ unlockedLevels, newNarrationLevels, un
                     {newNarrationLevels?.has(level) && (
                       <span style={{ position: 'absolute', top: 4, right: 4, background: '#ff8c00', color: '#000', fontSize: 9, fontWeight: 800, padding: '2px 5px', borderRadius: 3, letterSpacing: '0.05em', zIndex: 1 }}>NEW</span>
                     )}
-                    {/* Icon and basic info */}
+                    {/* NPC portrait and info */}
                     <div className="narration-icon">
-                      <span className="icon-emoji">📖</span>
+                      <img
+                        src={`/assets/npcs/${narration.npc.charAt(0).toUpperCase() + narration.npc.slice(1)}.png`}
+                        alt={getNPCName(narration.npc)}
+                        style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.15)' }}
+                      />
                     </div>
 
                     <div className="narration-content">
@@ -180,10 +184,10 @@ export default function NarrationsModal({ unlockedLevels, newNarrationLevels, un
 
                       <div className="narration-narrator">
                         <span className="narrator-label">
-                          {narration.npc === 'eldran' && '👴 Eldran (The Watcher)'}
-                          {narration.npc === 'lya' && '🗺️ Lya (The Scout)'}
-                          {narration.npc === 'brak' && '🔨 Brak (The Smith)'}
-                          {narration.npc === 'messenger' && '🎭 The Masked Messenger (Enigmatic)'}
+                          {narration.npc === 'eldran' && 'Eldran (The Watcher)'}
+                          {narration.npc === 'lya' && 'Lya (The Scout)'}
+                          {narration.npc === 'brak' && 'Brak (The Smith)'}
+                          {narration.npc === 'messenger' && 'The Masked Messenger (Enigmatic)'}
                         </span>
                       </div>
 

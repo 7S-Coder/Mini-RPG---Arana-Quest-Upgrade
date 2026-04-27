@@ -37,6 +37,8 @@ export type MapTemplate = {
   dungeons?: DungeonDef[]; // maps may contain multiple dungeons
   // optional list of item names (fragments) required to unlock the map
   requiredKeyFragments?: string[];
+  // optional list of dungeon IDs — at least one must be completed to unlock this map
+  requiredDungeonIds?: string[];
 };
 
 const defaultMaps: MapTemplate[] = [
@@ -100,6 +102,7 @@ const defaultMaps: MapTemplate[] = [
     loot: 'loot: Uncommon - Rare - Epic',
     enemyPool: ['stone_golem', 'crystal_bug', 'cave_troll', 'bat', 'snail', 'salamander', 'snake', 'wood_fairy', 'bear', 'batwan', 'rabid_hyenas'],
     requiredKeyFragments: ['Cave Key A', 'Cave Key B'],
+    requiredDungeonIds: ['beehive', 'celestial_tree'],
     dungeons: [
       { id: 'underground_cave', name: 'The Underground Cave', floors: 5, bossTemplateId: 'rabid_hyenas' },
     ],

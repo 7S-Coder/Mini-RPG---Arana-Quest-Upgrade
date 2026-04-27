@@ -8,9 +8,8 @@ type Badges = {
 };
 
 const BadgeDot = ({ count }: { count: number }) => {
-  if (!count) return null;
   return (
-    <span style={{
+    <span suppressHydrationWarning style={{
       position: 'absolute',
       top: -5,
       right: -5,
@@ -28,6 +27,7 @@ const BadgeDot = ({ count }: { count: number }) => {
       pointerEvents: 'none',
       boxShadow: '0 0 6px rgba(255,140,0,0.7)',
       lineHeight: 1,
+      visibility: count > 0 ? 'visible' : 'hidden',
     }}>
       {count > 99 ? '99+' : count}
     </span>

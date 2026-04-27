@@ -1,6 +1,7 @@
 "use client";
 
 import EssenceSVG from "@/app/assets/essence.svg";
+import GoldSVG from "@/app/assets/gold.svg";
 import { useGameState } from "./uses/useGameState";
 import { useGameLoop } from "./uses/useGameLoop";
 import useEvents from "./uses/useEvents";
@@ -300,9 +301,15 @@ export default function Game() {
             (inventory as any[]).some((item: any) => item && item.name === frag)
           );
         }
+
+        // Check dungeon requirements (at least one of the required dungeons must be completed)
+        let dungeonMet = true;
+        if (Array.isArray((map as any).requiredDungeonIds) && (map as any).requiredDungeonIds.length > 0) {
+          dungeonMet = (map as any).requiredDungeonIds.some((id: string) => (achievements.stats.dungeonCompleted[id] ?? 0) > 0);
+        }
         
         // If all requirements met, add to ref and show toast only if not first run
-        if (levelMet && fragmentsMet) {
+        if (levelMet && fragmentsMet && dungeonMet) {
           unlockedMapsRef.current.add(map.id);
           if (!isFirstRun) {
             try { addToast && addToast(`🗺️ Map unlocked: ${map.name}`, 'ok', 3000); } catch (e) {}
@@ -310,7 +317,7 @@ export default function Game() {
         }
       });
     } catch (e) {}
-  }, [player && player.level, inventory, addToast]);
+  }, [player && player.level, inventory, achievements.stats.dungeonCompleted, addToast]);
 
   useEffect(() => { inCombatRef.current = inCombat; }, [inCombat]);
 
@@ -412,13 +419,16 @@ export default function Game() {
     }
   }, [selectedMapId, showNarration, isTutorialShown, markTutorialShown]);
 
-  // Tutorial: First weapon equipped
+  // Tutorial: First weapon dropped (in inventory)
   useEffect(() => {
-    if (equipment?.weapon && !isTutorialShown('firstWeapon')) {
-      showNarration(TUTORIAL_MESSAGES.firstWeaponTutorial);
-      markTutorialShown('firstWeapon');
+    if (!isTutorialShown('firstWeaponDrop')) {
+      const hasWeaponInInventory = (inventory as any[])?.some((it: any) => it.slot === 'weapon' || it.slot === 'weapon2');
+      if (hasWeaponInInventory) {
+        showNarration(TUTORIAL_MESSAGES.firstWeaponDropTutorial);
+        markTutorialShown('firstWeaponDrop');
+      }
     }
-  }, [equipment?.weapon, showNarration, isTutorialShown, markTutorialShown]);
+  }, [inventory, showNarration, isTutorialShown, markTutorialShown]);
 
   // Tutorial: First event
   useEffect(() => {
@@ -576,7 +586,7 @@ export default function Game() {
       if (dungeonRemaining === 1) {
         count = 1; // boss only
       } else {
-        count = 4;
+        count = 3; // 3 enemies per dungeon floor (down from 4)
       }
     }
 
@@ -728,8 +738,6 @@ export default function Game() {
       total = Number(total.toFixed(2));
       try {
         spawnGoldPickup(total, player.x, player.y);
-        // notify player via log and a short effect so drops are visible
-        pushLog(`Gold dropped: +${total} g`);
         try { addEffect({ type: 'pickup', text: `+${total} g`, target: 'player' }); } catch (e) {}
       } catch (e) {}
     }
@@ -820,11 +828,11 @@ export default function Game() {
             
             if (goldReward > 0) {
               setPlayer((prev) => ({ ...prev, gold: Math.max(0, (prev.gold ?? 0) + goldReward) }));
-              pushLog(`💛 +${goldReward} Gold`);
+              pushLog(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /> <span style={{ color: '#ffd700' }}>+{goldReward} Gold</span></>);
             }
             if (essenceReward > 0) {
               addEssence(essenceReward);
-              pushLog(`✨ +${essenceReward} Essence`);
+              pushLog(<><img src={EssenceSVG.src} alt="Essence" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /> <span style={{ color: '#94CAFC' }}>+{essenceReward} Essence</span></>);
             }
           }
           
@@ -878,14 +886,14 @@ export default function Game() {
             if (Math.random() < 0.70 * scale) {
               const gold = Math.floor((3 + Math.random() * 10) * scale);
               setPlayer((p) => ({ ...p, gold: (p.gold ?? 0) + gold }));
-              pushLog(<>🪙 Event bonus: <span style={{color:'#ffd700'}}>+{gold} gold</span></>);
+              pushLog(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: '#ffd700' }}>Event bonus: +{gold} Gold</span></>);
             }
 
             // Essence: 18% base chance, 1–3 essence
             if (Math.random() < 0.18 * scale) {
               const ess = 1 + Math.floor(Math.random() * 3);
               setPlayer((p) => ({ ...p, essence: (p.essence ?? 0) + ess }));
-              pushLog(<>✨ Event bonus: <span style={{color:'#bf9fff'}}>+{ess} essence</span></>);
+              pushLog(<><img src={EssenceSVG.src} alt="Essence" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: '#bf9fff' }}>Event bonus: +{ess} Essence</span></>);
             }
 
             // Forge material: 10% base chance, 1 material
@@ -945,7 +953,7 @@ export default function Game() {
     return ok;
   }, [pickups, collectPickup, pushLog, addNewItem]);
 
-  const handleCollectAllPickups = useCallback((logger?: (msg: string) => void) => {
+  const handleCollectAllPickups = useCallback((logger?: (msg: React.ReactNode) => void) => {
     const itemPickupsBefore = pickups.filter((p) => p.kind === 'item' && p.item);
     const count = collectAllPickups(logger);
     if (count > 0) {
@@ -1240,7 +1248,7 @@ export default function Game() {
               return;
             }
             const ok = sellItem(itemId);
-            if (ok) pushLog(`Sold: +${it.cost ?? 0} g`);
+            if (ok) pushLog(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: '#ffd700' }}>Sold: +{it.cost ?? 0} Gold</span></>);
             else pushLog('Unable to sell.');
           }}
           onUse={(itemId: string) => {
@@ -1356,7 +1364,7 @@ export default function Game() {
         );
       })()}
       {modalName === 'maps' && (
-        <MapsModal inventory={inventory} playerLevel={player.level} onClose={closeModal} onSelect={(id?: string | null) => {
+        <MapsModal inventory={inventory} playerLevel={player.level} dungeonCompleted={achievements.stats.dungeonCompleted} onClose={closeModal} onSelect={(id?: string | null) => {
               try {
               if (id) {
                 const mm = mapsList.find((x) => x.id === id);
@@ -1413,7 +1421,7 @@ export default function Game() {
             <div>Do you really want to sell <strong>{modalProps.item.name}</strong> for <strong>{modalProps.item.cost ?? 0} g</strong>?</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn primary" onClick={() => {
-                try { const ok = sellItem(modalProps.item.id); if (ok) pushLog(`Sold: +${modalProps.item.cost ?? 0} g`); else pushLog('Unable to sell.'); } catch(e){ try{console.error(e)}catch(e){} }
+                try { const ok = sellItem(modalProps.item.id); if (ok) pushLog(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: '#ffd700' }}>Sold: +{modalProps.item.cost ?? 0} Gold</span></>); else pushLog('Unable to sell.'); } catch(e){ try{console.error(e)}catch(e){} }
                 closeModal();
               }}>Sell</button>
               <button className="btn" onClick={closeModal}>Cancel</button>

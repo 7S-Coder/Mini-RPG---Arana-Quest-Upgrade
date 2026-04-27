@@ -5,7 +5,7 @@ import Modal from "./Modal";
 import { getMaps, getRoomsForMap } from "../../game/templates/maps";
 import { ENEMY_TEMPLATES } from "../../game/templates/enemies";
 
-export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgress, playerLevel, inventory }: { onClose: () => void; onSelect: (id?: string | null) => void; selectedId?: string | null; dungeonProgress?: { activeMapId?: string | null; activeDungeonIndex?: number | null; activeDungeonId?: string | null; remaining?: number; fightsRemainingBeforeDungeon?: number }; playerLevel?: number, inventory?: any[] }) {
+export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgress, playerLevel, inventory, dungeonCompleted }: { onClose: () => void; onSelect: (id?: string | null) => void; selectedId?: string | null; dungeonProgress?: { activeMapId?: string | null; activeDungeonIndex?: number | null; activeDungeonId?: string | null; remaining?: number; fightsRemainingBeforeDungeon?: number }; playerLevel?: number, inventory?: any[], dungeonCompleted?: Record<string, number> }) {
   const maps = getMaps();
 
   const hexToRgba = (hex?: string, alpha = 1) => {
@@ -90,15 +90,16 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
                     const levelLocked = (typeof m.minLevel === 'number' && typeof playerLevel === 'number' && playerLevel < m.minLevel);
                     const missingFragments = (Array.isArray(m.requiredKeyFragments) ? m.requiredKeyFragments.filter(f => !(Array.isArray(inventory) && inventory.some((it: any) => it && it.name === f))) : []);
                     const keyLocked = (missingFragments.length > 0);
-                    const locked = levelLocked || keyLocked;
-                    const label = locked ? (levelLocked ? `Locked (lvl ${m.minLevel}+)` : (keyLocked ? `Locked (missing key fragments)` : 'Locked')) : (selected ? 'Active' : 'Choose');
+                    const dungeonLocked = (Array.isArray(m.requiredDungeonIds) && m.requiredDungeonIds.length > 0 && !m.requiredDungeonIds.some(id => (dungeonCompleted?.[id] ?? 0) > 0));
+                    const locked = levelLocked || keyLocked || dungeonLocked;
+                    const label = locked ? (levelLocked ? `Locked (lvl ${m.minLevel}+)` : (dungeonLocked ? `Locked (complete a previous dungeon first)` : (keyLocked ? `Locked (missing key fragments)` : 'Locked'))) : (selected ? 'Active' : 'Choose');
                     return (
                       <button
                         className="btn"
                         style={{ ...btnStyle, opacity: locked ? 0.6 : 1 }}
                         onClick={() => { if (!locked) { onSelect(m.id); onClose(); } }}
                         disabled={locked}
-                        title={keyLocked ? `Missing fragments: ${missingFragments.join(', ')}` : undefined}
+                        title={dungeonLocked ? `Complete a dungeon on the previous map first` : keyLocked ? `Missing fragments: ${missingFragments.join(', ')}` : undefined}
                       >
                         {label}
                       </button>

@@ -58,9 +58,9 @@ export const TUTORIAL_MESSAGES: Record<string, NarrativeMessage> = {
     npc: 'lya',
     text: 'New paths open. The world is vast because vast things live in it. Tread carefully.',
   },
-  firstWeaponTutorial: {
-    npc: 'lya',
-    text: 'A real weapon means a real move. In combat, your special ability charges — watch for the button and hit it when they least expect it.',
+  firstWeaponDropTutorial: {
+    npc: 'brak',
+    text: 'A weapon is not just weight and edge. Each one carries a trick — a special move unique to its kind. Equip it, enter combat, and you\'ll see it unlock. Don\'t waste it.',
   },
   firstEventTutorial: {
     npc: 'eldran',

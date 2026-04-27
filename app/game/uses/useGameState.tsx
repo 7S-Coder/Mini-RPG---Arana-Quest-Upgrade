@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import GoldSVG from "@/app/assets/gold.svg";
 import { uid, clampToViewport } from "../utils";
 import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "../templates/items";
 import { isTierAllowedOnMap, getMapById, getMaps } from "../templates/maps";
@@ -144,8 +145,8 @@ export function useGameState() {
         if (gained > 0) {
           // recalc stats from base and new level (small per-level increases)
           const newMaxHp = BASE_HP + Math.floor((lvl - 1) * 6); // +6 HP per level
-          const newDmg = BASE_DMG + Math.floor((lvl - 1) * 0.2); // +1 DMG every ~5 levels
-          const newDef = BASE_DEF + Math.floor((lvl - 1) * 0.05); // +1 DEF every 20 levels
+          const newDmg = BASE_DMG + Math.floor((lvl - 1) * 0.3); // +1 DMG every ~3 levels
+          const newDef = BASE_DEF + Math.floor((lvl - 1) * 0.2); // +1 DEF every 5 levels
           const newDodge = BASE_DODGE + Math.floor((lvl - 1) * 0.03);
           const newCrit = BASE_CRIT + Math.floor((lvl - 1) * 0.02);
 
@@ -581,7 +582,7 @@ export function useGameState() {
   };
 
   // collect a pickup (gold or item). returns true if collected
-  const collectPickup = (pickupId: string, logger?: (msg: string) => void): boolean => {
+  const collectPickup = (pickupId: string, logger?: (msg: React.ReactNode) => void): boolean => {
     try {
       if (collectedRef.current.has(pickupId)) return false;
       const pk = pickups.find((p) => p.id === pickupId);
@@ -603,7 +604,7 @@ export function useGameState() {
         setPickups(nextPickups);
         try { record.goldEarned && record.goldEarned(amount); } catch (e) {}
         try { saveCoreGame({ player: pickPlayerData(nextPlayer), inventory: inventoryRef.current || [], equipment: equipmentRef.current || {}, pickups: nextPickups }); } catch (e) {}
-        logger && logger(`Picked up: +${Number(amount).toFixed(2)} g`);
+        logger && logger(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: '#ffd700' }}>+{Number(amount).toFixed(2)} Gold</span></>);
       } else if (pk.kind === 'item' && pk.item) {
         // check weight limit
         const itemWeight = Number(pk.item.weight ?? 1);
@@ -623,7 +624,8 @@ export function useGameState() {
           setInventory(next);
           setPickups((prev) => prev.filter((p) => p.id !== pickupId));
           try { saveCoreGame({ player: pickPlayerData(player), inventory: next, equipment: equipmentRef.current || equipment }); } catch (e) {}
-          logger && logger(`Picked up: ${item.name}`);
+          const rarityColors: Record<string, string> = { common: '#ddd', uncommon: '#2ecc71', rare: '#6fb3ff', epic: '#b47cff', legendary: '#ffd16b', mythic: '#ff7b7b' };
+          logger && logger(<>Picked up: <span style={{ color: rarityColors[item.rarity ?? 'common'] ?? '#ddd', fontWeight: 700 }}>{item.name}</span></>);
         } else {
           // item already in inventory; just remove pickup
           setPickups((prev) => prev.filter((p) => p.id !== pickupId));
@@ -640,7 +642,7 @@ export function useGameState() {
   };
 
   // Collect all eligible pickups currently present (respects combat rules).
-  const collectAllPickups = (logger?: (msg: string) => void): number => {
+  const collectAllPickups = (logger?: (msg: React.ReactNode) => void): number => {
     try {
       const nowPickups = [...pickups];
       if (!nowPickups || nowPickups.length === 0) return 0;
@@ -659,7 +661,7 @@ export function useGameState() {
           toCollectIds.push(pk.id);
           const amt = Number(pk.amount ?? 0);
           goldTotal += amt;
-          try { logger && logger(`Picked up: +${amt.toFixed(2)} g`); } catch (e) {}
+          try { logger && logger(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: '#ffd700' }}>+{amt.toFixed(2)} Gold</span></>); } catch (e) {}
         } else if (pk.kind === 'item' && pk.item) {
           // compute prospective weight and skip if it would exceed limit
           const itemWeight = Number(pk.item.weight ?? 1);
@@ -674,7 +676,8 @@ export function useGameState() {
             collectedRef.current.add(pk.id);
             toCollectIds.push(pk.id);
             itemsToAdd.push(item);
-            try { logger && logger(`Picked up: ${item.name}`); } catch (e) {}
+            const rarityColors: Record<string, string> = { common: '#ddd', uncommon: '#2ecc71', rare: '#6fb3ff', epic: '#b47cff', legendary: '#ffd16b', mythic: '#ff7b7b' };
+            try { logger && logger(<>Picked up: <span style={{ color: rarityColors[item.rarity ?? 'common'] ?? '#ddd', fontWeight: 700 }}>{item.name}</span></>); } catch (e) {}
           } else {
             // already owned
             try { logger && logger(`Already have: ${item.name}`); } catch (e) {}
@@ -1430,8 +1433,8 @@ export function useGameState() {
   useEffect(() => {
     const lvl = player.level;
     const baseMaxHp = BASE_HP + Math.floor((lvl - 1) * 6);
-    const baseDmg = BASE_DMG + Math.floor((lvl - 1) * 0.2);
-    const baseDef = BASE_DEF + Math.floor((lvl - 1) * 0.05);
+    const baseDmg = BASE_DMG + Math.floor((lvl - 1) * 0.3);
+    const baseDef = BASE_DEF + Math.floor((lvl - 1) * 0.2);
     const baseDodge = BASE_DODGE + Math.floor((lvl - 1) * 0.03);
     const baseCrit = BASE_CRIT + Math.floor((lvl - 1) * 0.02);
     const baseRegen = BASE_REGEN + Math.floor((lvl - 1) * 0.05);
@@ -1501,12 +1504,12 @@ export function useGameState() {
     const MAX_SPAWN_LEVEL = 120;
     const MIN_SPAWN_LEVEL = 1;
     let level: number;
+    const mapId = meta?.mapId;
+    const map = mapId ? getMapById(mapId) : null;
     if (typeof levelOverride === "number") {
       level = Math.max(MIN_SPAWN_LEVEL, Math.min(MAX_SPAWN_LEVEL, Math.floor(levelOverride)));
     } else {
       // Get map constraints if mapId is provided
-      const mapId = meta?.mapId;
-      const map = mapId ? getMapById(mapId) : null;
       const mapMaxLevel = map?.maxLevel ?? MAX_SPAWN_LEVEL;
       const mapMinLevel = map?.minLevel ?? MIN_SPAWN_LEVEL;
       
@@ -1518,7 +1521,16 @@ export function useGameState() {
     }
 
     // rarity by level ranges
-    const rarity = level <= 5 ? "common" : level <= 15 ? "uncommon" : level <= 29 ? "rare" : level <= 59 ? "epic" : level <= 89 ? "legendary" : "mythic";
+    const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'] as const;
+    let rarity: string = level <= 5 ? "common" : level <= 15 ? "uncommon" : level <= 29 ? "rare" : level <= 59 ? "epic" : level <= 89 ? "legendary" : "mythic";
+    // Cap rarity to map's allowedTiers (e.g. forest caps at 'rare', caves at 'epic')
+    if (map?.allowedTiers && map.allowedTiers.length > 0) {
+      const maxAllowed = map.allowedTiers.reduce((best: string, tier: string) =>
+        rarityOrder.indexOf(tier as typeof rarityOrder[number]) > rarityOrder.indexOf(best as typeof rarityOrder[number]) ? tier : best, 'common');
+      if (rarityOrder.indexOf(rarity as typeof rarityOrder[number]) > rarityOrder.indexOf(maxAllowed as typeof rarityOrder[number])) {
+        rarity = maxAllowed;
+      }
+    }
 
     // base random factors
     const r1 = 0.6 + Math.random() * 1.0; // for dmg
@@ -1535,7 +1547,7 @@ export function useGameState() {
     const dmgMalus = tc >= 3 ? 0.75 : tc >= 2 ? 0.90 : 1.0;
 
     const hp = Math.max(6, Math.round((8 + Math.pow(level, 1.2) * (3 + Math.random() * 3) * rarityHpMult[rarity] * r2) * hpMalus));
-    const dmg = Math.max(1, Math.round(level * (0.6 + Math.random() * 1.0) * rarityDmgMult[rarity] * r1 * dmgMalus));
+    const dmg = Math.max(1, Math.round(level * r1 * rarityDmgMult[rarity] * dmgMalus));
     const def = Math.max(0, Math.round(level * (0.2 + Math.random() * 0.4) * rarityDefMult[rarity] * r3));
 
     const inst: Enemy = {

@@ -248,7 +248,7 @@ export function useDungeon(opts: {
                 }
               } catch (e) { console.error('[useDungeon] reward error:', e); }
               
-              pushLog(`Dungeon complete! Earned +${goldReward} g, +${xpReward} XP and +${essenceReward}!`);
+              pushLog(`Dungeon complete! +${goldReward} Gold · +${xpReward} XP · +${essenceReward} Essence`);
               
               // Build materials message with icons
               const materialIcons: Record<string, string> = {

@@ -664,6 +664,10 @@ export default function useCombat({
       if (typeof onModifierChange === 'function') onModifierChange({ skipped: true });
       // Set cooldown to 2 for risky attack
       if (typeof onRiskyCooldownChange === 'function') onRiskyCooldownChange(2);
+      // Risky attack also blocks the special for 1 turn (unless already on a longer cooldown)
+      if (typeof onSpecialCooldownChange === 'function' && (specialCooldown ?? 0) <= 1) {
+        onSpecialCooldownChange(1);
+      }
     } else if (attackType === 'safe') {
       pushLog('🛡️ Guard up! You take 50% reduced damage this turn.');
       if (typeof onModifierChange === 'function') onModifierChange(null); // No modifier since protection is immediate
@@ -794,6 +798,14 @@ export default function useCombat({
     const aliveEnemies = (enemies || []).filter((e) => e.hp > 0);
     if (aliveEnemies.length === 0) return;
     lockedRef.current = true;
+
+    // Decrement safe/risky cooldowns — special counts as a turn
+    if (safeCooldown && safeCooldown > 0 && onSafeCooldownChange) {
+      onSafeCooldownChange(safeCooldown - 1);
+    }
+    if (riskyCooldown && riskyCooldown > 0 && onRiskyCooldownChange) {
+      onRiskyCooldownChange(riskyCooldown - 1);
+    }
 
     const weaponType = getEquippedWeaponType();
     const speedRageMultiplier = getSpeedRageMultiplier(player.speed ?? 0);
