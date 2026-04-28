@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { getMaps } from "../game/templates/maps";
 import { ITEM_POOL, scaleStats, computeItemCost } from "../game/templates/items";
+import { COLORS } from "../game/utils";
 import EssenceDustSVG from "@/app/assets/forges/essence.svg";
 import MithrilOreSVG from "@/app/assets/forges/mithril.svg";
 import StarFragmentSVG from "@/app/assets/forges/star.svg";
 import VoidShardSVG from "@/app/assets/forges/void.svg";
+import GoldSVG from "@/app/assets/gold.svg";
+import EssenceSVG from "@/app/assets/essence.svg";
 import type { Rarity } from "../game/types";
 
 type DungeonProgress = {
@@ -18,7 +21,7 @@ type DungeonProgress = {
 
 export function useDungeon(opts: {
   selectedMapId: string | null;
-  pushLog: (s: string) => void;
+  pushLog: (s: React.ReactNode) => void;
   addEffect?: (e: any) => void;
   addToast?: (t: string, type?: string, ttl?: number, icon?: string) => void;
   createCustomItem?: (arg0: any, arg1?: boolean) => void;
@@ -248,7 +251,7 @@ export function useDungeon(opts: {
                 }
               } catch (e) { console.error('[useDungeon] reward error:', e); }
               
-              pushLog(`Dungeon complete! +${goldReward} Gold · +${xpReward} XP · +${essenceReward} Essence`);
+              pushLog(<>Dungeon complete! <img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 2 }} /><span style={{ color: COLORS.gold }}>+{goldReward} Gold</span> · +{xpReward} XP · <img src={EssenceSVG.src} alt="Essence" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 2 }} /><span style={{ color: COLORS.essence }}>+{essenceReward} Essence</span></>);
               
               // Build materials message with icons
               const materialIcons: Record<string, string> = {

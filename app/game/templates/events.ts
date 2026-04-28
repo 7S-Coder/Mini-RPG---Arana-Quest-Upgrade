@@ -64,15 +64,16 @@ export const GAME_EVENTS: Record<string, GameEvent> = {
     name: "Whispering Shadows",
     description: "Unseen forces interfere",
     lore: "Shadows whisper forgotten names. You feel watched.",
-    type: "combat",
+    type: "zone",
     narrator: "messenger" as NPCName,
     icon: "",
-    duration: 1, // single combat event
+    duration: 4,
     consoleTint: "rgba(30, 30, 40, 0.5)", // dark tint with slight transparency
     consolePulse: false,
     effects: [
-      { type: "rage_modifier", value: 50 }, // +50% enemy rage (enemies attack 2x more often)
-      { type: "dodge_bonus", value: 10 }, // +10% player dodge
+      { type: "rage_modifier", value: 50 }, // +50% enemy rage
+      { type: "dodge_bonus", value: 10 },   // +10% player dodge
+      { type: "loot_bonus", value: 8 },     // +8% loot rarity
     ],
   },
 

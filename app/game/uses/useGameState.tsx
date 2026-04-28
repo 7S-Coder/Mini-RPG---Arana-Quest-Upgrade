@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import GoldSVG from "@/app/assets/gold.svg";
-import { uid, clampToViewport, getRarityColor } from "../utils";
+import { uid, clampToViewport, getRarityColor, COLORS } from "../utils";
 import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "../templates/items";
 import { isTierAllowedOnMap, getMapById, getMaps } from "../templates/maps";
 import { ENEMY_TEMPLATES } from "../templates/enemies";
@@ -604,7 +604,7 @@ export function useGameState() {
         setPickups(nextPickups);
         try { record.goldEarned && record.goldEarned(amount); } catch (e) {}
         try { saveCoreGame({ player: pickPlayerData(nextPlayer), inventory: inventoryRef.current || [], equipment: equipmentRef.current || {}, pickups: nextPickups }); } catch (e) {}
-        logger && logger(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: '#ffd700' }}>+{Number(amount).toFixed(2)} Gold</span></>);
+        logger && logger(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: COLORS.gold }}>+{Number(amount).toFixed(2)} Gold</span></>);
       } else if (pk.kind === 'item' && pk.item) {
         // check weight limit
         const itemWeight = Number(pk.item.weight ?? 1);
@@ -660,7 +660,7 @@ export function useGameState() {
           toCollectIds.push(pk.id);
           const amt = Number(pk.amount ?? 0);
           goldTotal += amt;
-          try { logger && logger(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: '#ffd700' }}>+{amt.toFixed(2)} Gold</span></>); } catch (e) {}
+          try { logger && logger(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: COLORS.gold }}>+{amt.toFixed(2)} Gold</span></>); } catch (e) {}
         } else if (pk.kind === 'item' && pk.item) {
           // compute prospective weight and skip if it would exceed limit
           const itemWeight = Number(pk.item.weight ?? 1);

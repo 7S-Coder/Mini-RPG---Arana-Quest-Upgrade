@@ -29,7 +29,7 @@ import { getMaps, pickEnemyFromMap, pickEnemyFromRoom, getRoomsForMap } from "./
 import { ENEMY_TEMPLATES } from "./templates/enemies";
 import { calcDamage } from "./damage";
 import { useLogs } from "../hooks/useLogs";
-import { getRarityColor } from "./utils";
+import { getRarityColor, COLORS } from "./utils";
 import { useToasts } from "../hooks/useToasts";
 import { useDungeon } from "../hooks/useDungeon";
 import { useNarration } from "../hooks/useNarration";
@@ -833,11 +833,11 @@ export default function Game() {
             
             if (goldReward > 0) {
               setPlayer((prev) => ({ ...prev, gold: Math.max(0, (prev.gold ?? 0) + goldReward) }));
-              pushLog(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /> <span style={{ color: '#ffd700' }}>+{goldReward} Gold</span></>);
+              pushLog(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /> <span style={{ color: COLORS.gold }}>+{goldReward} Gold</span></>);
             }
             if (essenceReward > 0) {
               addEssence(essenceReward);
-              pushLog(<><img src={EssenceSVG.src} alt="Essence" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /> <span style={{ color: '#94CAFC' }}>+{essenceReward} Essence</span></>);
+              pushLog(<><img src={EssenceSVG.src} alt="Essence" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /> <span style={{ color: COLORS.essence }}>+{essenceReward} Essence</span></>);
             }
           }
           
@@ -891,14 +891,14 @@ export default function Game() {
             if (Math.random() < 0.70 * scale) {
               const gold = Math.floor((3 + Math.random() * 10) * scale);
               setPlayer((p) => ({ ...p, gold: (p.gold ?? 0) + gold }));
-              pushLog(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: '#ffd700' }}>Event bonus: +{gold} Gold</span></>);
+              pushLog(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: COLORS.gold }}>Event bonus: +{gold} Gold</span></>);
             }
 
             // Essence: 18% base chance, 1–3 essence
             if (Math.random() < 0.18 * scale) {
               const ess = 1 + Math.floor(Math.random() * 3);
               setPlayer((p) => ({ ...p, essence: (p.essence ?? 0) + ess }));
-              pushLog(<><img src={EssenceSVG.src} alt="Essence" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: '#bf9fff' }}>Event bonus: +{ess} Essence</span></>);
+              pushLog(<><img src={EssenceSVG.src} alt="Essence" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: COLORS.essence }}>Event bonus: +{ess} Essence</span></>);
             }
 
             // Forge material: 10% base chance, 1 material
@@ -1255,7 +1255,7 @@ export default function Game() {
               return;
             }
             const ok = sellItem(itemId);
-            if (ok) pushLog(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: '#ffd700' }}>Sold: +{it.cost ?? 0} Gold</span></>);
+            if (ok) pushLog(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: COLORS.gold }}>Sold: +{it.cost ?? 0} Gold</span></>);
             else pushLog('Unable to sell.');
           }}
           onUse={(itemId: string) => {
@@ -1428,7 +1428,7 @@ export default function Game() {
             <div>Do you really want to sell <strong>{modalProps.item.name}</strong> for <strong>{modalProps.item.cost ?? 0} g</strong>?</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn primary" onClick={() => {
-                try { const ok = sellItem(modalProps.item.id); if (ok) pushLog(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: '#ffd700' }}>Sold: +{modalProps.item.cost ?? 0} Gold</span></>); else pushLog('Unable to sell.'); } catch(e){ try{console.error(e)}catch(e){} }
+                try { const ok = sellItem(modalProps.item.id); if (ok) pushLog(<><img src={GoldSVG.src} alt="Gold" style={{ width: 14, height: 14, verticalAlign: 'middle', marginRight: 4 }} /><span style={{ color: COLORS.gold }}>Sold: +{modalProps.item.cost ?? 0} Gold</span></>); else pushLog('Unable to sell.'); } catch(e){ try{console.error(e)}catch(e){} }
                 closeModal();
               }}>Sell</button>
               <button className="btn" onClick={closeModal}>Cancel</button>

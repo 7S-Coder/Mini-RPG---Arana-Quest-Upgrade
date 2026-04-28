@@ -36,3 +36,8 @@ const RARITY_COLORS: Record<string, string> = {
 
 export const getRarityColor = (rarity?: string | null): string =>
   RARITY_COLORS[rarity ?? 'common'] ?? '#ddd';
+
+export const COLORS = {
+  gold: '#ffd700',
+  essence: '#94CAFC',
+} as const;
