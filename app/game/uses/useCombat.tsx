@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef } from "react";
+import { getRarityColor } from "../utils";
 import {
   getPlayerWeaponStats,
   getWeaponDamage,
@@ -507,7 +508,7 @@ export default function useCombat({
               const statsText = dropped.stats && Object.keys(dropped.stats).length > 0
                 ? Object.entries(dropped.stats).map(([k, v]) => `+${k} ${v}`).join(' • ')
                 : '';
-              pushLog(`Loot obtained: ${dropped.name} (${dropped.rarity})${statsText ? ' — ' + statsText : ''}`);
+              pushLog(<>Loot obtained: <span style={{ color: getRarityColor(dropped.rarity), fontWeight: 700 }}>{dropped.name}</span>{statsText ? <span style={{ color: '#888' }}> — {statsText}</span> : ''}</>);
               if (onEffect) onEffect({ type: 'item', text: dropped.name, target: 'player', id: dropped.id });
             }
           } catch (e) {
@@ -825,7 +826,7 @@ export default function useCombat({
           const statsText = dropped.stats && Object.keys(dropped.stats).length > 0
             ? Object.entries(dropped.stats).map(([k, v]) => `+${k} ${v}`).join(' • ')
             : '';
-          pushLog(`Loot obtained: ${dropped.name} (${dropped.rarity})${statsText ? ' — ' + statsText : ''}`);
+          pushLog(<>Loot obtained: <span style={{ color: getRarityColor(dropped.rarity), fontWeight: 700 }}>{dropped.name}</span>{statsText ? <span style={{ color: '#888' }}> — {statsText}</span> : ''}</>);
           if (onEffect) onEffect({ type: 'item', text: dropped.name, target: 'player', id: dropped.id });
         }
       } catch (e) {}

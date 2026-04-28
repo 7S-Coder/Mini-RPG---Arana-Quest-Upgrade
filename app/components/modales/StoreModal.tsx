@@ -5,6 +5,7 @@ import Modal from "./Modal";
 import type { Rarity } from "@/app/game/types";
 import EssenceSVG from "@/app/assets/essence.svg";
 import GoldSVG from "@/app/assets/gold.svg";
+import { getRarityColor } from "../../game/utils";
 
 type Props = {
   onClose: () => void;
@@ -14,15 +15,6 @@ type Props = {
   playerEssence?: number;
   playerLevel?: number;
   unlockedRarities?: Rarity[];
-};
-
-const RARITY_COLOR: Record<Rarity, string> = {
-  common: '#ddd',
-  uncommon: '#2ecc71',
-  rare: '#6fb3ff',
-  epic: '#b47cff',
-  legendary: '#ffd16b',
-  mythic: '#ff7b7b',
 };
 
 // Prix des boites par rareté (or)
@@ -127,7 +119,7 @@ export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold,
                 
                 return (
                   <div key={rarity} style={{ padding: 8, borderRadius: 8, background: '#111' }}>
-                    <div style={{ fontWeight: 700, color: RARITY_COLOR[rarity], marginBottom: 6 }}>{boxLabel}</div>
+                    <div style={{ fontWeight: 700, color: getRarityColor(rarity), marginBottom: 6 }}>{boxLabel}</div>
                     <div style={{ fontSize: 12, color: '#bbb', marginBottom: 8 }}>{isUnlocked ? `Random ${rarity} item` : 'Locked - Get an item of this rarity first'}</div>
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <button 

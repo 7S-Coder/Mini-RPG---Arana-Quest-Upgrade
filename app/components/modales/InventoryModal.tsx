@@ -3,6 +3,7 @@
 import React from "react";
 import Modal from "./Modal";
 import "../styles/inventoryModal.css";
+import { getRarityColor } from "../../game/utils";
 
 type AllocationStat = 'hp' | 'dmg' | 'def' | 'crit' | 'dodge' | 'regen';
 
@@ -27,15 +28,6 @@ type Props = {
   newItemIds?: Set<string>;
   newStatPoints?: number;
   onStatTabSeen?: () => void;
-};
-
-const RARITY_COLOR: Record<string, string> = {
-  common: '#ddd',
-  uncommon: '#2ecc71',
-  rare: '#6fb3ff',
-  epic: '#b47cff',
-  legendary: '#ffd16b',
-  mythic: '#ff7b7b',
 };
 
 const WEAPON_TYPE_COLOR: Record<string, string> = {
@@ -224,7 +216,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                     {selectedItemForAction ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8vw', maxHeight: '35vh', overflow: 'auto', flex: 1 }}>
                         <div style={{ padding: '1vw', background: '#0d0d0d', borderRadius: '0.8vw', flexShrink: 0 }}>
-                          <div style={{ color: RARITY_COLOR[selectedItemForAction.rarity] || '#fff', fontWeight: 700, marginBottom: '0.6vw' }}>{selectedItemForAction.name}</div>
+                          <div style={{ color: getRarityColor(selectedItemForAction.rarity), fontWeight: 700, marginBottom: '0.6vw' }}>{selectedItemForAction.name}</div>
                           <div style={{ fontSize: '0.9vw', color: '#999', marginBottom: '0.6vw' }}>
                             {selectedItemForAction.infused && <div>Infused</div>}
                             {selectedItemForAction.lockedStats && selectedItemForAction.lockedStats.length > 0 && (
@@ -368,7 +360,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                                     </>
                                   )}
                                 </div>
-                                <div style={{ color: it ? (RARITY_COLOR[it.rarity] || '#fff') : '#777', fontWeight: it ? 700 : 400, marginTop: '0.3vw', overflowWrap: 'anywhere', fontSize: '0.9vw', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4vw' }}>
+                                <div style={{ color: it ? getRarityColor(it.rarity) : '#777', fontWeight: it ? 700 : 400, marginTop: '0.3vw', overflowWrap: 'anywhere', fontSize: '0.9vw', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4vw' }}>
                                   <span>{it ? it.name : 'empty'}</span>
                                   {it && it.isForged && <span style={{ fontSize: '0.75vw', color: '#ffc107', fontWeight: 600 }}>FORGED</span>}
                                 </div>
@@ -428,7 +420,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                                 <span style={{ position: 'absolute', top: -7, right: 8, backgroundColor: '#ff8c00', color: '#000', borderRadius: 3, padding: '1px 5px', fontSize: '0.6vw', fontWeight: 800, letterSpacing: '0.5px', textTransform: 'uppercase', pointerEvents: 'none', boxShadow: '0 0 6px rgba(255,140,0,0.6)', lineHeight: 1.6 }}>NEW</span>
                               )}
                               <div style={{ position: 'relative', flex: 1 }}>
-                                <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.6vw', flexWrap: 'wrap' }}>
+                                <div style={{ color: getRarityColor(it.rarity), fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.6vw', flexWrap: 'wrap' }}>
                                   <span>{it.name}</span>
                                   {(it as any).weaponType && (() => { const wc = WEAPON_TYPE_COLOR[(it as any).weaponType] || '#aaa'; return <span style={{ fontSize: '0.7vw', color: wc, fontWeight: 600, background: '#1a1a1a', border: `1px solid ${wc}`, borderRadius: '0.3vw', padding: '0.1vw 0.4vw' }}>{(it as any).weaponType}</span>; })()}
                                   {it.isForged && <span style={{ color: '#ffc107', fontSize: '0.75vw', fontWeight: 600 }}>⚒️ FORGED</span>}
@@ -486,7 +478,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                     <div style={{ display: 'grid', gap: '0.8vw', overflow: 'auto', flex: 1, alignContent: 'start' }}>
                       {[...equipment ? Object.values(equipment).filter(Boolean) : [], ...inventory].map((it) => (
                         <div key={it?.id} onClick={() => it && setSelectedItemForAction(it)} style={{ padding: '1vw', background: selectedItemForAction?.id === it?.id ? '#1a3a2e' : '#0d0d0d', borderRadius: '0.6vw', cursor: 'pointer', border: selectedItemForAction?.id === it?.id ? '1px solid #2ecc71' : '1px solid transparent' }}>
-                          <div style={{ color: RARITY_COLOR[it?.rarity] || '#fff', fontWeight: 700, fontSize: '0.9vw' }}>{it?.name}</div>
+                          <div style={{ color: getRarityColor(it?.rarity), fontWeight: 700, fontSize: '0.9vw' }}>{it?.name}</div>
                           <div style={{ fontSize: '0.75vw', color: '#999', marginTop: '0.15vw' }}>{it?.slot || 'item'}</div>
                         </div>
                       ))}
@@ -580,7 +572,7 @@ export default function InventoryModal({ inventory, equipment, player, onEquip, 
                               {getItemDescription(it)}
                             </div>
                           )}
-                          <div style={{ color: RARITY_COLOR[it.rarity] || '#fff', fontWeight: 700 }}>
+                          <div style={{ color: getRarityColor(it.rarity), fontWeight: 700 }}>
                             {it.name}
                             {it.quantity && it.quantity > 1 && <span style={{ marginLeft: 8, color: '#999', fontSize: 12 }}>×{it.quantity}</span>}
                           </div>

@@ -13,6 +13,7 @@ import Modal from "../components/modales/Modal";
 import StoreModal from "../components/modales/StoreModal";
 import type { Rarity, Player as PlayerType } from "@/app/game/types";
 import { useCallback, useMemo, useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import useCombat from "./uses/useCombat";
 import EffectsLayer from "../components/EffectsLayer";
 import BestiaryModal from "../components/modales/BestiaryModal";
@@ -28,6 +29,7 @@ import { getMaps, pickEnemyFromMap, pickEnemyFromRoom, getRoomsForMap } from "./
 import { ENEMY_TEMPLATES } from "./templates/enemies";
 import { calcDamage } from "./damage";
 import { useLogs } from "../hooks/useLogs";
+import { getRarityColor } from "./utils";
 import { useToasts } from "../hooks/useToasts";
 import { useDungeon } from "../hooks/useDungeon";
 import { useNarration } from "../hooks/useNarration";
@@ -1222,7 +1224,9 @@ export default function Game() {
             try {  } catch (e) {}
             try {
               const ok = equipItem(item);
-              if (ok) pushLog(`Equipped: ${item.name} (${item.slot})`);
+              if (ok) {
+                pushLog(<>Equipped: <span style={{ color: getRarityColor(item.rarity), fontWeight: 700 }}>{item.name}</span> <span style={{ color: '#888' }}>({item.slot})</span></>);
+              }
               else {
                 const msg = `Unable to equip ${item.name} `;
                 pushLog(msg);
@@ -1433,15 +1437,19 @@ export default function Game() {
       <DialogueModal message={currentMessage} onClose={closeNarration} />
       {/* Pause Modal */}
       <PauseModal isOpen={isPaused} onClose={() => setIsPaused(false)} />
-      {/* Toast container */}
-      <div style={{ position: 'fixed', right: 16, top: 16, zIndex: 999999, display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {toasts.map((t) => (
-          <div key={t.id} style={{ minWidth: 220, maxWidth: 360, padding: '8px 12px', borderRadius: 8, background: t.type === 'ok' ? 'linear-gradient(90deg,#103218,#144a2a)' : 'linear-gradient(90deg,#3b0b0b,#521010)', color: '#fff', boxShadow: '0 6px 18px rgba(0,0,0,0.6)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-            {t.icon && <img src={t.icon} alt="icon" style={{ width: 20, height: 20, flexShrink: 0 }} />}
-            {t.text}
-          </div>
-        ))}
-      </div>
+      {/* Toast container – rendered via portal so Opera GX / any browser with
+           transformed ancestors doesn't clip the fixed overlay */}
+      {typeof document !== 'undefined' && createPortal(
+        <div style={{ position: 'fixed', right: 16, top: 16, zIndex: 999999, display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {toasts.map((t) => (
+            <div key={t.id} style={{ minWidth: 220, maxWidth: 360, padding: '8px 12px', borderRadius: 8, background: t.type === 'ok' ? 'linear-gradient(90deg,#103218,#144a2a)' : 'linear-gradient(90deg,#3b0b0b,#521010)', color: '#fff', boxShadow: '0 6px 18px rgba(0,0,0,0.6)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+              {t.icon && <img src={t.icon} alt="icon" style={{ width: 20, height: 20, flexShrink: 0 }} />}
+              {t.text}
+            </div>
+          ))}
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import GoldSVG from "@/app/assets/gold.svg";
-import { uid, clampToViewport } from "../utils";
+import { uid, clampToViewport, getRarityColor } from "../utils";
 import { ITEM_POOL, SLOTS, scaleStats, computeItemCost } from "../templates/items";
 import { isTierAllowedOnMap, getMapById, getMaps } from "../templates/maps";
 import { ENEMY_TEMPLATES } from "../templates/enemies";
@@ -624,8 +624,7 @@ export function useGameState() {
           setInventory(next);
           setPickups((prev) => prev.filter((p) => p.id !== pickupId));
           try { saveCoreGame({ player: pickPlayerData(player), inventory: next, equipment: equipmentRef.current || equipment }); } catch (e) {}
-          const rarityColors: Record<string, string> = { common: '#ddd', uncommon: '#2ecc71', rare: '#6fb3ff', epic: '#b47cff', legendary: '#ffd16b', mythic: '#ff7b7b' };
-          logger && logger(<>Picked up: <span style={{ color: rarityColors[item.rarity ?? 'common'] ?? '#ddd', fontWeight: 700 }}>{item.name}</span></>);
+          logger && logger(<>Picked up: <span style={{ color: getRarityColor(item.rarity), fontWeight: 700 }}>{item.name}</span></>);
         } else {
           // item already in inventory; just remove pickup
           setPickups((prev) => prev.filter((p) => p.id !== pickupId));
@@ -676,8 +675,7 @@ export function useGameState() {
             collectedRef.current.add(pk.id);
             toCollectIds.push(pk.id);
             itemsToAdd.push(item);
-            const rarityColors: Record<string, string> = { common: '#ddd', uncommon: '#2ecc71', rare: '#6fb3ff', epic: '#b47cff', legendary: '#ffd16b', mythic: '#ff7b7b' };
-            try { logger && logger(<>Picked up: <span style={{ color: rarityColors[item.rarity ?? 'common'] ?? '#ddd', fontWeight: 700 }}>{item.name}</span></>); } catch (e) {}
+            try { logger && logger(<>Picked up: <span style={{ color: getRarityColor(item.rarity), fontWeight: 700 }}>{item.name}</span></>); } catch (e) {}
           } else {
             // already owned
             try { logger && logger(`Already have: ${item.name}`); } catch (e) {}

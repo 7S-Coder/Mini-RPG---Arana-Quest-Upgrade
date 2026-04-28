@@ -3,14 +3,7 @@
 import React from "react";
 import Modal from "./Modal";
 import { ITEM_POOL, computeItemCost } from "../../game/templates/items";
-
-const RARITY_COLOR: Record<string, string> = {
-  common: '#ddd',
-  rare: '#6fb3ff',
-  epic: '#b47cff',
-  legendary: '#ffd16b',
-  mythic: '#ff7b7b',
-};
+import { getRarityColor } from "../../game/utils";
 
 const RARITY_ORDER: Record<string, number> = {
   mythic: 0,
@@ -30,10 +23,10 @@ export default function CatalogModal({ onClose }: { onClose: () => void }) {
             return (
             <div key={`${it.name}_${idx}`} style={{ padding: 12, background: '#0d0d0d', borderRadius: 8, border: '1px solid rgba(255,255,255,0.03)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ fontWeight: 800, color: RARITY_COLOR[it.rarity as string] || '#fff' }}>{it.name}</div>
+                <div style={{ fontWeight: 800, color: getRarityColor(it.rarity as string) }}>{it.name}</div>
                 <div style={{ color: '#ffd96b', fontWeight: 800 }}>{computeItemCost(it.stats, it.rarity ?? 'common')} g</div>
               </div>
-              <div style={{ fontSize: 12, color: '#bbb', marginTop: 6 }}>{it.slot} • {it.category ?? ''} • <span style={{ textTransform: 'capitalize', color: RARITY_COLOR[it.rarity as string] || '#fff', fontWeight: 800 }}>{it.rarity}</span></div>
+              <div style={{ fontSize: 12, color: '#bbb', marginTop: 6 }}>{it.slot} • {it.category ?? ''} • <span style={{ textTransform: 'capitalize', color: getRarityColor(it.rarity as string), fontWeight: 800 }}>{it.rarity}</span></div>
               <div style={{ marginTop: 8, fontSize: 13 }}>
                 {statsEntries.map(([k, v]) => (
                   <div key={k} style={{ display: 'flex', justifyContent: 'space-between', color: '#ddd' }}>

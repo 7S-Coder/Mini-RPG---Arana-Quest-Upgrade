@@ -8,11 +8,12 @@ type Badges = {
 };
 
 const BadgeDot = ({ count }: { count: number }) => {
+  if (count <= 0) return null;
   return (
     <span suppressHydrationWarning style={{
       position: 'absolute',
-      top: -5,
-      right: -5,
+      top: -6,
+      right: -6,
       backgroundColor: '#ff8c00',
       color: '#000',
       borderRadius: '50%',
@@ -27,7 +28,7 @@ const BadgeDot = ({ count }: { count: number }) => {
       pointerEvents: 'none',
       boxShadow: '0 0 6px rgba(255,140,0,0.7)',
       lineHeight: 1,
-      visibility: count > 0 ? 'visible' : 'hidden',
+      zIndex: 20,
     }}>
       {count > 99 ? '99+' : count}
     </span>
@@ -38,18 +39,18 @@ export default function RightSidebar({ onOpenModal, badges }: { onOpenModal?: (n
   return (
     <aside>
       <div className="right-buttons">
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', overflow: 'visible' }}>
           <button className="btn" style={{ width: '100%' }} onClick={() => onOpenModal?.("inventory")}>Inventory</button>
           <BadgeDot count={(badges?.inventory ?? 0) + (badges?.stats ?? 0)} />
         </div>
         <button className="btn" onClick={() => onOpenModal?.("store")}>Store</button>
         <button className="btn" onClick={() => onOpenModal?.("catalog")}>Catalog</button>
         <button className="btn" onClick={() => onOpenModal?.("bestiary")}>Bestiary</button>
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', overflow: 'visible' }}>
           <button className="btn" style={{ width: '100%' }} onClick={() => onOpenModal?.("achievements")}>Achievements</button>
           <BadgeDot count={badges?.achievements ?? 0} />
         </div>
-        <div style={{ position: 'relative' }}>
+        <div style={{ position: 'relative', overflow: 'visible' }}>
           <button className="btn" style={{ width: '100%' }} onClick={() => onOpenModal?.("narrations")}>Narrations</button>
           <BadgeDot count={badges?.narrations ?? 0} />
         </div>
