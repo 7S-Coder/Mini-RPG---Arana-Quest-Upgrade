@@ -47,6 +47,9 @@ export default function Game() {
   // streak per map (instead of global streak)
   const [mapStreaks, setMapStreaks] = useState<Record<string, number>>({});
 
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+
   // Turn modifiers (debuffs from previous action)
   const [nextTurnModifier, setNextTurnModifier] = useState<{ skipped?: boolean; defenseDebuff?: boolean } | null>(null);
 
@@ -1439,7 +1442,7 @@ export default function Game() {
       <PauseModal isOpen={isPaused} onClose={() => setIsPaused(false)} />
       {/* Toast container – rendered via portal so Opera GX / any browser with
            transformed ancestors doesn't clip the fixed overlay */}
-      {typeof document !== 'undefined' && createPortal(
+      {mounted && createPortal(
         <div style={{ position: 'fixed', right: 16, top: 16, zIndex: 999999, display: 'flex', flexDirection: 'column', gap: 8 }}>
           {toasts.map((t) => (
             <div key={t.id} style={{ minWidth: 220, maxWidth: 360, padding: '8px 12px', borderRadius: 8, background: t.type === 'ok' ? 'linear-gradient(90deg,#103218,#144a2a)' : 'linear-gradient(90deg,#3b0b0b,#521010)', color: '#fff', boxShadow: '0 6px 18px rgba(0,0,0,0.6)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
