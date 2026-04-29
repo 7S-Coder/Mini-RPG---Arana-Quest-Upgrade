@@ -81,14 +81,14 @@ export default function Game() {
   });
   const newAchievementIds = useMemo(() => {
     const result = new Set<string>();
-    for (const [id, ach] of Object.entries(achievements)) {
+    for (const [id, ach] of Object.entries(achievements.achievements)) {
       if ((ach as any).unlocked && !seenAchievementIds.has(id)) result.add(id);
     }
     return result;
-  }, [achievements, seenAchievementIds]);
+  }, [achievements.achievements, seenAchievementIds]);
   const newNarrationLevels = useMemo(() => new Set(unlockedLevels.filter(l => !seenNarrationLevels.has(l))), [unlockedLevels, seenNarrationLevels]);
   const markAchievementsSeen = useCallback(() => {
-    const allUnlocked = Object.entries(achievements).filter(([, a]) => (a as any).unlocked).map(([id]) => id);
+    const allUnlocked = Object.entries(achievements.achievements).filter(([, a]) => (a as any).unlocked).map(([id]) => id);
     const next = new Set([...seenAchievementIds, ...allUnlocked]);
     setSeenAchievementIds(next);
     try { localStorage.setItem('aq_ach_seen', JSON.stringify([...next])); } catch {}
@@ -1139,7 +1139,7 @@ export default function Game() {
                   fontSize: 14,
                 }}
                 onClick={() => {
-                  // TODO: Open tavern modal
+                  if (inCombat) return;
                   openModal('tavern');
                 }}
               >
