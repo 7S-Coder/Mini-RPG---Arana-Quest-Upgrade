@@ -159,7 +159,7 @@ export const ACHIEVEMENTS: Record<string, Achievement> = {
     id: "five_bosses",
     title: "Champion of Champions",
     description: "Defeat 5 different bosses",
-    lore: "Cinq. C’est plus que ce qu’on demande à un enfant. Plus que ce que j’ai demandé à un fils. Et pourtant tu es là.",
+    lore: "Five. That’s more than anyone could ask of a child. More than I've ever asked of a son. And yet, here you are.",
     narrator: "brak" as NPCName,
     icon: "🏆",
     reward: { gold: 500, essence: 150 },

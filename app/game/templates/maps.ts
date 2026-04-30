@@ -144,7 +144,7 @@ const defaultMaps: MapTemplate[] = [
       { id: 'ruins_library_of_ashes_floor_2', enemyPool: ['ghost_knight', 'cursed_statue'] },
       { id: 'ruins_library_of_ashes_floor_3', enemyPool: ['cursed_knight', 'gargoyle'] },
       { id: 'ruins_library_of_ashes_floor_4', enemyPool: ['wraith', 'ancient_sentinel'] },
-      { id: 'ruins_library_of_ashes_floor_5', enemyPool: ['wraith', 'wraith', 'forgotten_keeper'], isBossRoom: true },
+      { id: 'ruins_library_of_ashes_floor_5', enemyPool: ['wraith', 'gargoyle', 'forgotten_keeper'], isBossRoom: true },
     ],
   },
 

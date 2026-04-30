@@ -91,7 +91,9 @@ export default function MapsModal({ onClose, onSelect, selectedId, dungeonProgre
                     const missingFragments = (Array.isArray(m.requiredKeyFragments) ? m.requiredKeyFragments.filter(f => !(Array.isArray(inventory) && inventory.some((it: any) => it && it.name === f))) : []);
                     const keyLocked = (missingFragments.length > 0);
                     const dungeonLocked = (Array.isArray(m.requiredDungeonIds) && m.requiredDungeonIds.length > 0 && !m.requiredDungeonIds.some(id => (dungeonCompleted?.[id] ?? 0) > 0));
-                    const locked = levelLocked || keyLocked || dungeonLocked;
+                    const locked = levelLocked || keyLocked 
+                    // || dungeonLocked
+                    ;
                     const label = locked ? (levelLocked ? `Locked (lvl ${m.minLevel}+)` : (dungeonLocked ? `Locked (complete a previous dungeon first)` : (keyLocked ? `Locked (missing key fragments)` : 'Locked'))) : (selected ? 'Active' : 'Choose');
                     return (
                       <button

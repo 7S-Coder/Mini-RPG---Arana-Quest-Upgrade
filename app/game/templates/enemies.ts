@@ -36,8 +36,8 @@ export const ENEMY_TEMPLATES: EnemyTemplate[] = [
   { templateId: "monkey", name: "Monkey", hp: 40, dmg: 18, def: 10, dodge: 12, crit: 15, speed: 24, rarity: 'rare', rageEffect: 'multi_attack', rageThreshold: 0 },
   { templateId: "big_bee", name: "Big Bee", hp: 36, dmg: 16, def: 6, dodge: 8, crit: 10, speed: 24, rarity: 'rare', rageEffect: 'multiplier', rageThreshold: 0 },
   // Forest Bosses (Rare)
-  { templateId: "queen_bee", name: "Queen Bee", hp: 56, dmg: 30, def: 12, dodge: 10, crit: 12, speed: 28, rarity: 'rare', rageEffect: 'explosion', rageThreshold: 0 },
-  { templateId: "quetzal", name: "Quetzal", hp: 62, dmg: 32, def: 14, dodge: 12, crit: 14, speed: 30, rarity: 'rare', rageEffect: 'multiplier', rageThreshold: 0 },
+  { templateId: "queen_bee", name: "Queen Bee", hp: 156, dmg: 60, def: 12, dodge: 10, crit: 12, speed: 28, rarity: 'rare', rageEffect: 'explosion', rageThreshold: 0 },
+  { templateId: "quetzal", name: "Quetzal", hp: 162, dmg: 52, def: 14, dodge: 12, crit: 14, speed: 30, rarity: 'rare', rageEffect: 'multiplier', rageThreshold: 0 },
 
   // Caves Rare (Level 20-29)
   { templateId: "bat", name: "Bat", hp: 32, dmg: 10, def: 4, dodge: 6, crit: 12, speed: 18, rarity: 'rare', rageEffect: 'multi_attack', rageThreshold: 0 },
@@ -53,7 +53,7 @@ export const ENEMY_TEMPLATES: EnemyTemplate[] = [
   { templateId: "bear", name: "Bear", hp: 58, dmg: 28, def: 16, dodge: 8, crit: 12, speed: 16, rarity: 'epic', rageEffect: 'multiplier', rageThreshold: 0 },
   { templateId: "batwan", name: "Batwan", hp: 45, dmg: 20, def: 8, dodge: 8, crit: 14, speed: 22, rarity: 'epic', rageEffect: 'multi_attack', rageThreshold: 0 },
   // Caves Dungeon Boss
-  { templateId: "rabid_hyenas", name: "Rabid Hyenas", hp: 85, dmg: 38, def: 26, dodge: 10, crit: 10, speed: 18, rarity: 'epic', rageEffect: 'multi_attack', rageThreshold: 0 },
+  { templateId: "rabid_hyenas", name: "Rabid Hyenas", hp: 85, dmg: 58, def: 26, dodge: 10, crit: 10, speed: 18, rarity: 'epic', rageEffect: 'multi_attack', rageThreshold: 0 },
 
   // Ruins Epic (Level 30-49)
   { templateId: "skeleton", name: "Skeleton", hp: 55, dmg: 20, def: 12, dodge: 6, crit: 14, speed: 14, rarity: 'epic', rageEffect: 'debuff', rageThreshold: 0 },
@@ -72,8 +72,8 @@ export const ENEMY_TEMPLATES: EnemyTemplate[] = [
   { templateId: "wraith", name: "Wraith", hp: 68, dmg: 34, def: 16, dodge: 14, crit: 20, speed: 22, rarity: 'legendary', rageEffect: 'multi_attack', rageThreshold: 0 },
   { templateId: "ancient_sentinel", name: "Ancient Sentinel", hp: 80, dmg: 38, def: 20, dodge: 12, crit: 18, speed: 18, rarity: 'legendary', rageEffect: 'explosion', rageThreshold: 0 },
   // Ruins Dungeon Bosses
-  { templateId: "ancient_guardian", name: "Ancient Guardian", hp: 110, dmg: 50, def: 28, dodge: 14, crit: 18, speed: 20, rarity: 'legendary', rageEffect: 'multiplier', rageThreshold: 0 },
-  { templateId: "forgotten_keeper", name: "Forgotten Keeper", hp: 105, dmg: 52, def: 26, dodge: 16, crit: 20, speed: 22, rarity: 'legendary', rageEffect: 'multi_attack', rageThreshold: 0 },
+  { templateId: "ancient_guardian", name: "Ancient Guardian", hp: 110, dmg: 80, def: 48, dodge: 14, crit: 18, speed: 20, rarity: 'legendary', rageEffect: 'multiplier', rageThreshold: 0 },
+  { templateId: "forgotten_keeper", name: "Forgotten Keeper", hp: 105, dmg: 92, def: 46, dodge: 16, crit: 20, speed: 22, rarity: 'legendary', rageEffect: 'multi_attack', rageThreshold: 0 },
 
   // Volcano Legendary (Level 60-80)
   { templateId: "fire_imp", name: "Fire Imp", hp: 65, dmg: 28, def: 14, dodge: 10, crit: 16, speed: 20, rarity: 'legendary', rageEffect: 'explosion', rageThreshold: 0 },
@@ -93,7 +93,7 @@ export const ENEMY_TEMPLATES: EnemyTemplate[] = [
   // ============================================
   // BOSS FINAL (Level 100+)
   // ============================================
-  { templateId: "fire_overlord", name: "Fire Overlord", hp: 150, dmg: 75, def: 42, dodge: 18, crit: 22, speed: 28, rarity: 'mythic', rageEffect: 'explosion', rageThreshold: 0 },
+  { templateId: "fire_overlord", name: "Fire Overlord", hp: 450, dmg: 105, def: 72, dodge: 18, crit: 42, speed: 28, rarity: 'mythic', rageEffect: 'explosion', rageThreshold: 0 },
 ];
 
 export default ENEMY_TEMPLATES;
