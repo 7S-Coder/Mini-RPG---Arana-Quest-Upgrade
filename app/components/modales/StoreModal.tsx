@@ -19,31 +19,31 @@ type Props = {
 
 // Prix des boites par rareté (or)
 const LOOT_BOX_PRICES_GOLD: Record<Rarity, number> = {
-  common: 200,
-  uncommon: 400,
-  rare: 700,
-  epic: 1100,
-  legendary: 2500,
+  common: 600,
+  uncommon: 1000,
+  rare: 1500,
+  epic: 2200,
+  legendary: 3300,
   mythic: 5000,
 };
 
 // Prix des boites par rareté (essence)
 const LOOT_BOX_PRICES_ESSENCE: Record<Rarity, number> = {
-  common: 1,
-  uncommon: 3,
-  rare: 8,
-  epic: 20,
-  legendary: 50,
-  mythic: 120,
+  common: 20,
+  uncommon: 30,
+  rare: 80,
+  epic: 200,
+  legendary: 500,
+  mythic: 1200,
 };
 
 // Définition des potions
 const POTIONS = [
-  { type: 'small' as const, name: 'Small potion', hp: 20, cost: 5 },
-  { type: 'medium' as const, name: 'Medium potion', hp: 50, cost: 12 },
-  { type: 'large' as const, name: 'Large potion', hp: 100, cost: 25 },
-  { type: 'huge' as const, name: 'Huge potion', hp: 200, cost: 45 },
-  { type: 'giant' as const, name: 'Giant potion', hp: 400, cost: 80 },
+  { type: 'small' as const, name: 'Small potion', hp: 20, cost: 50 },
+  { type: 'medium' as const, name: 'Medium potion', hp: 50, cost: 120 },
+  { type: 'large' as const, name: 'Large potion', hp: 100, cost: 250 },
+  { type: 'huge' as const, name: 'Huge potion', hp: 200, cost: 450 },
+  { type: 'giant' as const, name: 'Giant potion', hp: 400, cost: 800 },
 ];
 
 export default function StoreModal({ onClose, buyPotion, buyLootBox, playerGold, playerEssence = 0, playerLevel = 1, unlockedRarities = [] }: Props) {
